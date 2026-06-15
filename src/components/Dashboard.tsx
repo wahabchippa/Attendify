@@ -36,7 +36,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const showOT = canSeeOT(currentUser.id);
   const canSeeAccountRequests = currentUser.id === 'emp-001' || currentUser.id === 'emp-005';
 
-  // ✅ Time formatter helper (timezone-safe)
   const formatTime12hr = (isoString: string | null | undefined) => {
     if (!isoString) return '—';
     try {
@@ -55,13 +54,11 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     }
   };
 
-  // 1. Clock Timer
   useEffect(() => { 
     const t = setInterval(() => setCurrentTime(getPKTDate()), 1000); 
     return () => clearInterval(t); 
   }, []);
 
-  // 2. LIVE AUTOMATIC SYNC
   useEffect(() => { 
     const initSync = async () => {
       await syncAll();
@@ -69,12 +66,10 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       loadTodayData(); 
     };
     initSync();
-
     const syncInterval = setInterval(async () => {
       await syncAll();
       loadTodayData();
     }, 5000);
-
     return () => clearInterval(syncInterval);
   }, [currentUser]);
 
@@ -105,7 +100,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     setCheckingIn(true);
     const result = await verifyWiFiConnection();
     if (!result.isConnected) { setCheckingIn(false); setOfficeLocation(''); showNotif('error', 'Not in office!'); return; }
-    
     const now = getPKTDate();
     const localDate = getPKTDateString();
     const isSunday = now.getDay() === 0;
@@ -113,27 +107,17 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     const [sH, sM] = t.officeStartTime.split(':').map(Number);
     const offStart = new Date(now); offStart.setHours(sH, sM, 0, 0);
     const lateThr = new Date(offStart); lateThr.setMinutes(lateThr.getMinutes() + t.lateThresholdMinutes);
-    
     const isLate = isSunday ? false : now > lateThr;
     const loc = getLocationFromIP(result.ipAddress);
     const localISOString = getPKTISOString();
-
     const record: AttendanceRecord = {
-      id: `${currentUser.id}-${localDate}`, 
-      employeeId: currentUser.id,
-      date: localDate, 
-      checkIn: localISOString, 
-      checkOut: null,
-      status: isLate ? 'late' : 'present', 
-      totalHours: 0, 
-      wifiVerified: true,
-      ipAddress: result.ipAddress, 
-      notes: isSunday ? `SUNDAY OT | ${loc}` : loc,
+      id: `${currentUser.id}-${localDate}`, employeeId: currentUser.id,
+      date: localDate, checkIn: localISOString, checkOut: null,
+      status: isLate ? 'late' : 'present', totalHours: 0, wifiVerified: true,
+      ipAddress: result.ipAddress, notes: isSunday ? `SUNDAY OT | ${loc}` : loc,
     };
-    
     await addAttendanceRecord(record); 
     await syncAll(); 
-    
     setTodayRecord(record); 
     setCheckingIn(false);
     const msg = isSunday ? `Sunday OT Check-in at ${loc}` : isLate ? `Checked in LATE at ${loc}` : `Checked in at ${loc}`;
@@ -151,16 +135,12 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     let status = todayRecord.status;
     if (!isSunday && totalHours < t.minHoursForHalfDay) status = 'half-day';
     else if (todayRecord.status === 'late') status = 'late';
-    
     const otHours = isSunday ? totalHours : (totalHours > t.minHoursForFullDay ? Math.round((totalHours - t.minHoursForFullDay)*100)/100 : 0);
     const loc = getLocationFromIP(todayRecord.ipAddress);
     const notes = isSunday ? `SUNDAY OT: ${otHours}h | ${loc}` : (otHours > 0 ? `OT: ${otHours}h | ${loc}` : loc);
-    
     const localISOString = getPKTISOString();
-
     await updateAttendanceRecord(todayRecord.id, { checkOut: localISOString, totalHours, status, notes });
     await syncAll();
-    
     setTodayRecord({ ...todayRecord, checkOut: localISOString, totalHours, status, notes });
     showNotif('success', `Checked out! ${totalHours.toFixed(1)}h${otHours > 0 ? ` (OT: +${otHours}h)` : ''}`);
     loadTodayData();
@@ -170,7 +150,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     if (!wfhReason.trim()) { showNotif('error', 'Enter reason'); return; }
     const localDate = getPKTDateString();
     const localISOString = getPKTISOString();
-
     addWFHRequest({ id: `wfh-${currentUser.id}-${localDate}`, employeeId: currentUser.id,
       date: localDate, reason: wfhReason, status: 'pending', requestedAt: localISOString, reviewedBy: null, reviewedAt: null });
     setTodayWFHRequest({ id: '', employeeId: currentUser.id, date: '', reason: wfhReason, status: 'pending', requestedAt: '', reviewedBy: null, reviewedAt: null });
@@ -272,7 +251,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {/* PENDING ACCOUNT REQUESTS */}
       {canSeeAccountRequests && pendingAccounts.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <h3 className="text-blue-800 font-medium text-sm mb-3 flex items-center gap-2"><span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>New Account Requests ({pendingAccounts.length})</h3>
@@ -293,7 +271,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {/* CHECK-IN CARD */}
       {canMarkAttendance && (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
           <div className="px-6 pt-5 pb-3 border-b border-slate-100">
@@ -361,7 +338,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {/* Manager Panel */}
       {isManagerOnly && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center gap-4">
@@ -372,7 +348,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {/* WFH Requests */}
       {isAdmin && pendingWFHRequests.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <h3 className="text-amber-800 font-medium text-sm mb-3">Pending WFH ({pendingWFHRequests.length})</h3>
@@ -386,7 +361,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {/* Today's Team */}
       {isAdmin && (
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <h3 className="text-slate-800 font-medium text-sm mb-4">Today's Team</h3>
@@ -409,7 +383,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {/* Stats */}
       {isAdmin && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
