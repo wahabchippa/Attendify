@@ -41,10 +41,11 @@ export function getPKTISOString(): string {
 }
 
 export const LOCATION_MAP: Record<string, string> = {
-  '103.93.13.182': 'Zone', '103.93.13.18': 'Zone',
-  '202.141.254.126': 'QC Center', '157.10.30.235': 'QC Center',
+  '103.93.12.229': 'Zone',
+  '202.141.254.126': 'QC Center', 
+  '157.10.30.235': 'QC Center',
 };
-export const ALL_ALLOWED_IPS = ['202.141.254.126', '157.10.30.235', '103.93.13.182', '103.93.13.18'];
+export const ALL_ALLOWED_IPS = ['202.141.254.126', '157.10.30.235', '103.93.12.229'];
 export function getLocationFromIP(ip: string): string { return LOCATION_MAP[ip] || 'Office'; }
 
 function cacheSet(key: string, data: any) { try { localStorage.setItem(key, JSON.stringify(data)); } catch {} }
