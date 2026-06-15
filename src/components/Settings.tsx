@@ -186,18 +186,15 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
               className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
-            <input type="time" placeholder="Check In" value={secretEditRecord?.checkInTime || ''} 
-              onChange={e => {
-                const d = secretEditRecord?.date || new Date().toISOString().split('T')[0];
-                setSecretEditRecord((p:any) => ({...p, checkInTime: e.target.value, checkIn: `${d}T${e.target.value}:00.000Z`}));
-              }}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" />
-            <input type="time" placeholder="Check Out" value={secretEditRecord?.checkOutTime || ''}
-              onChange={e => {
-                const d = secretEditRecord?.date || new Date().toISOString().split('T')[0];
-                setSecretEditRecord((p:any) => ({...p, checkOutTime: e.target.value, checkOut: `${d}T${e.target.value}:00.000Z`}));
-              }}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+            <div><label className="text-xs text-slate-500 mb-1 block">Check In</label>
+                  <input type="time" value={secretEditRecord.checkInTime||''} 
+                    onChange={e => setSecretEditRecord((p:any) => ({...p, checkInTime: e.target.value, checkIn: new Date(`${p.date}T${e.target.value}:00`).toISOString()}))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+                    
+                <div><label className="text-xs text-slate-500 mb-1 block">Check Out</label>
+                  <input type="time" value={secretEditRecord.checkOutTime||''} 
+                    onChange={e => setSecretEditRecord((p:any) => ({...p, checkOutTime: e.target.value, checkOut: new Date(`${p.date}T${e.target.value}:00`).toISOString()}))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
             <select value={secretEditRecord?.ipAddress || '103.93.13.182'} onChange={e => setSecretEditRecord((p:any) => ({...p, ipAddress: e.target.value}))}
               className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
               <option value="103.93.13.182">Zone</option><option value="103.93.13.18">Zone</option>
