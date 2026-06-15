@@ -105,7 +105,7 @@ async function syncRecords() {
         status: r.status || 'present',
         totalHours: r.total_hours || 0,
         wifiVerified: r.wifi_connected === 'true' || r.wifi_connected === true,
-        ipAddress: r.notes && r.notes.includes('QC') ? '202.141.254.126' : '103.93.13.182',
+                ipAddress: r.notes && r.notes.includes('QC') ? '202.141.254.126' : '103.93.12.229',
         notes: r.notes || '',
       })));
     }
