@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Employee, AttendanceRecord, WFHRequest } from '../types';
 import { 
-  import { 
   getEmployees, getAttendanceEmployees, getAttendanceRecords, 
   getTodayRecord, addAttendanceRecord, updateAttendanceRecord, 
   getEmployeeTiming, getLocationFromIP, canSeeOT,
@@ -20,7 +19,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
   const [officeLocation, setOfficeLocation] = useState<string | null>(null);
   const [detectedIP, setDetectedIP] = useState('');
-    const [currentTime, setCurrentTime] = useState(getPKTDate());
+  const [currentTime, setCurrentTime] = useState(getPKTDate());
   const [checkingIn, setCheckingIn] = useState(false);
   const [notification, setNotification] = useState<any>(null);
   const [todayAllRecords, setTodayAllRecords] = useState<AttendanceRecord[]>([]);
@@ -55,10 +54,9 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       return '—';
     }
   };
-  
 
   // 1. Clock Timer
-    useEffect(() => { 
+  useEffect(() => { 
     const t = setInterval(() => setCurrentTime(getPKTDate()), 1000); 
     return () => clearInterval(t); 
   }, []);
@@ -108,7 +106,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     const result = await verifyWiFiConnection();
     if (!result.isConnected) { setCheckingIn(false); setOfficeLocation(''); showNotif('error', 'Not in office!'); return; }
     
-        const now = getPKTDate();
+    const now = getPKTDate();
     const localDate = getPKTDateString();
     const isSunday = now.getDay() === 0;
     const t = getEmployeeTiming(currentUser.id);
@@ -203,7 +201,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     return m[s] || 'bg-slate-50 text-slate-600 border-slate-200';
   };
 
-  // Safe Check: Backspace parse aur real-time mapping crash protection
   const getLiveHours = () => {
     if (!todayRecord?.checkIn) return '0h 00m';
     try {
@@ -343,9 +340,8 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                     </div>
                     <div className="bg-slate-50 rounded-xl p-4 space-y-2">
                       <div className="flex justify-between text-sm"><span className="text-slate-500">Location</span><span className="text-blue-600 font-medium">{getLocationFromIP(todayRecord.ipAddress)}</span></div>
-                      <div className="flex justify-between text-sm"><span className="text-slate-500">Check In</span><span className="text-slate-800 font-medium font-mono">{todayRecord.checkIn ? formatTime12hr(todayRecord.checkIn) : '—'}
-</span></div>
-                      <div className="flex justify-between text-sm"><span className="text-slate-500">Check Out</span><span className="text-slate-800 font-medium font-mono">{todayRecord.checkOut ? safeFormatDate(todayRecord.checkOut,'hh:mm a') : '—'}</span></div>
+                      <div className="flex justify-between text-sm"><span className="text-slate-500">Check In</span><span className="text-slate-800 font-medium font-mono">{formatTime12hr(todayRecord.checkIn)}</span></div>
+                      <div className="flex justify-between text-sm"><span className="text-slate-500">Check Out</span><span className="text-slate-800 font-medium font-mono">{formatTime12hr(todayRecord.checkOut)}</span></div>
                       <div className="flex justify-between text-sm border-t border-slate-200 pt-2"><span className="text-slate-500">Working Time</span><span className="text-blue-600 font-bold font-mono">{getLiveHours()}</span></div>
                       {showOT && getLiveOT() > 0 && <div className="flex justify-between text-sm"><span className="text-slate-500">Overtime</span><span className="text-purple-600 font-bold font-mono">+{getLiveOT()}h</span></div>}
                     </div>
@@ -405,7 +401,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               <div><p className="text-slate-800 text-sm font-medium">{emp.name}</p><p className="text-slate-400 text-xs">{rec ? getLocationFromIP(rec.ipAddress) : ''}{isSunOT ? ' • Sunday OT' : ''}</p></div></div>
               <div className="text-right">{rec ? (<>
                 <span className={`px-2 py-1 rounded text-xs font-medium border ${ss(rec.status)}`}>{rec.status === 'work-from-home' ? 'WFH' : rec.status.toUpperCase()}</span>
-                <p className="text-slate-400 text-xs mt-1">{rec.checkIn ? safeFormatDate(rec.checkIn,'hh:mm a') : ''}{showOT && otHrs > 0 ? ` • OT:+${otHrs.toFixed(1)}h` : ''}</p>
+                <p className="text-slate-400 text-xs mt-1">{rec.checkIn ? formatTime12hr(rec.checkIn) : ''}{showOT && otHrs > 0 ? ` • OT:+${otHrs.toFixed(1)}h` : ''}</p>
               </>) : wfhReq?.status === 'pending' ? <span className="px-2 py-1 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">WFH PENDING</span>
               : <span className="px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-500">NOT CHECKED IN</span>}</div>
             </div>);
