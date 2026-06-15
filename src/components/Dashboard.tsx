@@ -35,8 +35,27 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const showOT = canSeeOT(currentUser.id);
   const canSeeAccountRequests = currentUser.id === 'emp-001' || currentUser.id === 'emp-005';
 
-  useEffect(() => { const t = setInterval(() => setCurrentTime(new Date()), 1000); return () => clearInterval(t); }, []);
-  useEffect(() => { syncAll().then(() => { if (canMarkAttendance) checkOfficeStatus(); loadTodayData(); }); }, []);
+  // 1. Clock Timer
+  useEffect(() => { 
+    const t = setInterval(() => setCurrentTime(new Date()), 1000); 
+    return () => clearInterval(t); 
+  }, []);
+
+  // 2. LIVE GLOBAL SYNC FIX (Background Auto-Refresh)
+  useEffect(() => { 
+    // Pehli dafa load hone par WiFi check karega
+    syncAll().then(() => { 
+      if (canMarkAttendance) checkOfficeStatus(); 
+      loadTodayData(); 
+    });
+
+    // Har 5 second baad Supabase se data fetch karega (Bina page refresh kiye)
+    const syncInterval = setInterval(() => {
+      syncAll().then(() => loadTodayData());
+    }, 5000);
+
+    return () => clearInterval(syncInterval);
+  }, [currentUser]);
 
   const showNotif = (type: string, msg: string) => { setNotification({ type, message: msg }); setTimeout(() => setNotification(null), 3000); };
 
