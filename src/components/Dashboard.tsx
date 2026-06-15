@@ -37,6 +37,24 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const showOT = canSeeOT(currentUser.id);
   const canSeeAccountRequests = currentUser.id === 'emp-001' || currentUser.id === 'emp-005';
 
+  // ✅ Time formatter helper (timezone-safe)
+  const formatTime12hr = (isoString: string | null | undefined) => {
+    if (!isoString) return '—';
+    try {
+      const match = isoString.match(/T(\d{2}):(\d{2})/);
+      if (match) {
+        let h = parseInt(match[1]);
+        const m = match[2];
+        const period = h >= 12 ? 'pm' : 'am';
+        if (h === 0) h = 12;
+        else if (h > 12) h -= 12;
+        return `${String(h).padStart(2, '0')}:${m} ${period}`;
+      }
+      return '—';
+    } catch {
+      return '—';
+    }
+  };
   
 
   // 1. Clock Timer
@@ -325,7 +343,8 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                     </div>
                     <div className="bg-slate-50 rounded-xl p-4 space-y-2">
                       <div className="flex justify-between text-sm"><span className="text-slate-500">Location</span><span className="text-blue-600 font-medium">{getLocationFromIP(todayRecord.ipAddress)}</span></div>
-                      <div className="flex justify-between text-sm"><span className="text-slate-500">Check In</span><span className="text-slate-800 font-medium font-mono">{todayRecord.checkIn ? safeFormatDate(todayRecord.checkIn,'hh:mm a') : '—'}</span></div>
+                      <div className="flex justify-between text-sm"><span className="text-slate-500">Check In</span><span className="text-slate-800 font-medium font-mono">{todayRecord.checkIn ? formatTime12hr(todayRecord.checkIn) : '—'}
+</span></div>
                       <div className="flex justify-between text-sm"><span className="text-slate-500">Check Out</span><span className="text-slate-800 font-medium font-mono">{todayRecord.checkOut ? safeFormatDate(todayRecord.checkOut,'hh:mm a') : '—'}</span></div>
                       <div className="flex justify-between text-sm border-t border-slate-200 pt-2"><span className="text-slate-500">Working Time</span><span className="text-blue-600 font-bold font-mono">{getLiveHours()}</span></div>
                       {showOT && getLiveOT() > 0 && <div className="flex justify-between text-sm"><span className="text-slate-500">Overtime</span><span className="text-purple-600 font-bold font-mono">+{getLiveOT()}h</span></div>}
