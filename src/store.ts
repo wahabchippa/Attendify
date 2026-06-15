@@ -13,12 +13,31 @@ const db = {
   }
 };
 
-function getPKTDateString(): string {
+// PKT (Pakistan/Karachi) time helpers
+export function getPKTDate(): Date {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
+  const pktOffset = 5 * 60;
+  const localOffset = now.getTimezoneOffset();
+  return new Date(now.getTime() + (pktOffset + localOffset) * 60 * 1000);
+}
+
+export function getPKTDateString(): string {
+  const pkt = getPKTDate();
+  const year = pkt.getFullYear();
+  const month = String(pkt.getMonth() + 1).padStart(2, '0');
+  const day = String(pkt.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+export function getPKTISOString(): string {
+  const pkt = getPKTDate();
+  const year = pkt.getFullYear();
+  const month = String(pkt.getMonth() + 1).padStart(2, '0');
+  const day = String(pkt.getDate()).padStart(2, '0');
+  const hours = String(pkt.getHours()).padStart(2, '0');
+  const minutes = String(pkt.getMinutes()).padStart(2, '0');
+  const seconds = String(pkt.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000`;
 }
 
 export const LOCATION_MAP: Record<string, string> = {
