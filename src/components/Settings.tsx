@@ -53,14 +53,17 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
     if (!secretEditRecord) return;
     setSecretError('');
 
-    const baseDate = secretEditRecord.date;
-const finalCheckIn = secretEditRecord.checkInTime
-  ? `${baseDate}T${secretEditRecord.checkInTime}:00+05:00`
-  : null;
+    // Date ko clean karein (sirf YYYY-MM-DD rakhein)
+    const baseDate = secretEditRecord.date.split('T')[0];
+    
+    // Time ko PKT format (+05:00) ke sath jorein
+    const finalCheckIn = secretEditRecord.checkInTime
+      ? `${baseDate}T${secretEditRecord.checkInTime}:00+05:00`
+      : null;
 
-const finalCheckOut = secretEditRecord.checkOutTime
-  ? `${baseDate}T${secretEditRecord.checkOutTime}:00+05:00`
-  : null;
+    const finalCheckOut = secretEditRecord.checkOutTime
+      ? `${baseDate}T${secretEditRecord.checkOutTime}:00+05:00`
+      : null;
 
     const selectedIp = secretEditRecord.ipAddress || '103.93.13.182';
 
@@ -87,9 +90,9 @@ const finalCheckOut = secretEditRecord.checkOutTime
 
   const handleSecretAddRecord = async () => {
     setSecretError('');
-    const d = secretEditRecord?.date || new Date().toISOString().split('T')[0];
+    const d = (secretEditRecord?.date || new Date().toISOString()).split('T')[0];
     const finalCheckIn = secretEditRecord?.checkInTime ? `${d}T${secretEditRecord.checkInTime}:00+05:00` : null;
-const finalCheckOut = secretEditRecord?.checkOutTime ? `${d}T${secretEditRecord.checkOutTime}:00+05:00` : null;
+    const finalCheckOut = secretEditRecord?.checkOutTime ? `${d}T${secretEditRecord.checkOutTime}:00+05:00` : null;
 
     if (!secretEditRecord?.employeeId) {
       setSecretError('Employee select karo');
@@ -211,19 +214,23 @@ const finalCheckOut = secretEditRecord?.checkOutTime ? `${d}T${secretEditRecord.
       : allRecords.slice(-50);
 
     const safeFormatTime = (isoString: string | null | undefined) => {
-  if (!isoString) return '';
-  try { 
-    // PKT timezone wala data
-    const pktMatch = isoString.match(/T(\d{2}):(\d{2}).*\+05:00/);
-    if (pktMatch) return `${pktMatch[1]}:${pktMatch[2]}`;
-    
-    // UTC data - PKT me convert karo
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return '';
-    const pktTime = new Date(date.getTime() + (5 * 60 + date.getTimezoneOffset()) * 60 * 1000);
-    return `${String(pktTime.getHours()).padStart(2, '0')}:${String(pktTime.getMinutes()).padStart(2, '0')}`;
-  } catch { return ''; }
-};
+      if (!isoString) return '';
+      try { 
+        // Agar pehle se PKT format (+05:00) mein hai
+        const pktMatch = isoString.match(/T(\d{2}):(\d{2}).*\+05:00/);
+        if (pktMatch) return `${pktMatch[1]}:${pktMatch[2]}`;
+        
+        // Agar Supabase ne UTC (London time) mein bheja hai
+        const date = new Date(isoString);
+        if (isNaN(date.getTime())) return '';
+        
+        // UTC time mein exactly 5 hours add kar ke PKT banayein
+        const pktTime = new Date(date.getTime() + 5 * 60 * 60 * 1000);
+        
+        // getUTCHours use karein taake PC ka local timezone effect na kare
+        return `${String(pktTime.getUTCHours()).padStart(2, '0')}:${String(pktTime.getUTCMinutes()).padStart(2, '0')}`;
+      } catch { return ''; }
+    };
 
     return (
       <div className="space-y-4">
