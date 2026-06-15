@@ -41,15 +41,18 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     return () => clearInterval(t); 
   }, []);
 
-  // 2. LIVE GLOBAL SYNC FIX
+  // 2. LIVE GLOBAL SYNC
   useEffect(() => { 
-    syncAll().then(() => { 
-      if (canMarkAttendance) checkOfficeStatus(); 
+    const initSync = async () => {
+      await syncAll();
+      if (canMarkAttendance) await checkOfficeStatus(); 
       loadTodayData(); 
-    });
+    };
+    initSync();
 
-    const syncInterval = setInterval(() => {
-      syncAll().then(() => loadTodayData());
+    const syncInterval = setInterval(async () => {
+      await syncAll();
+      loadTodayData();
     }, 5000);
 
     return () => clearInterval(syncInterval);
@@ -70,7 +73,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       setTodayWFHRequest(getTodayWFHRequest(currentUser.id) || null);
     }
     if (isAdmin) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toLocaleDateString('en-CA'); // FIX: Local Date format YYYY-MM-DD
       setTodayAllRecords(getAttendanceRecords().filter(r => r.date === today));
       setPendingWFHRequests(getPendingWFHRequests());
       if (canSeeAccountRequests) setPendingAccounts(getPendingAccountRequests());
@@ -83,6 +86,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     const result = await verifyWiFiConnection();
     if (!result.isConnected) { setCheckingIn(false); setOfficeLocation(''); showNotif('error', 'Not in office!'); return; }
     const now = new Date();
+    const localDate = now.toLocaleDateString('en-CA'); // FIX: Local Date (Pakistan Zone)
     const isSunday = now.getDay() === 0;
     const t = getEmployeeTiming(currentUser.id);
     const [sH, sM] = t.officeStartTime.split(':').map(Number);
@@ -91,14 +95,23 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     
     const isLate = isSunday ? false : now > lateThr;
     const loc = getLocationFromIP(result.ipAddress);
+    
+    // FIX: `.toISOString()` ke bajaye local string formatting taake timezone crash na ho
+    const localISOString = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
+
     const record: AttendanceRecord = {
-      id: `${currentUser.id}-${now.toISOString().split('T')[0]}`, employeeId: currentUser.id,
-      date: now.toISOString().split('T')[0], checkIn: now.toISOString(), checkOut: null,
-      status: isLate ? 'late' : 'present', totalHours: 0, wifiVerified: true,
-      ipAddress: result.ipAddress, notes: isSunday ? `SUNDAY OT | ${loc}` : loc,
+      id: `${currentUser.id}-${localDate}`, 
+      employeeId: currentUser.id,
+      date: localDate, 
+      checkIn: localISOString, 
+      checkOut: null,
+      status: isLate ? 'late' : 'present', 
+      totalHours: 0, 
+      wifiVerified: true,
+      ipAddress: result.ipAddress, 
+      notes: isSunday ? `SUNDAY OT | ${loc}` : loc,
     };
     
-    // ZABARDASTI CLOUD SAVE KAREGA
     await addAttendanceRecord(record); 
     await syncAll(); 
     
@@ -124,11 +137,12 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     const loc = getLocationFromIP(todayRecord.ipAddress);
     const notes = isSunday ? `SUNDAY OT: ${otHours}h | ${loc}` : (otHours > 0 ? `OT: ${otHours}h | ${loc}` : loc);
     
-    // ZABARDASTI CLOUD SAVE KAREGA
-    await updateAttendanceRecord(todayRecord.id, { checkOut: now.toISOString(), totalHours, status, notes });
+    const localISOString = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
+
+    await updateAttendanceRecord(todayRecord.id, { checkOut: localISOString, totalHours, status, notes });
     await syncAll();
     
-    setTodayRecord({ ...todayRecord, checkOut: now.toISOString(), totalHours, status, notes });
+    setTodayRecord({ ...todayRecord, checkOut: localISOString, totalHours, status, notes });
     showNotif('success', `Checked out! ${totalHours.toFixed(1)}h${otHours > 0 ? ` (OT: +${otHours}h)` : ''}`);
     loadTodayData();
   };
@@ -215,7 +229,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {/* PENDING ACCOUNT REQUESTS (Only Wahab & Albash) */}
+      {/* PENDING ACCOUNT REQUESTS */}
       {canSeeAccountRequests && pendingAccounts.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <h3 className="text-blue-800 font-medium text-sm mb-3 flex items-center gap-2"><span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>New Account Requests ({pendingAccounts.length})</h3>
@@ -335,7 +349,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
           <h3 className="text-slate-800 font-medium text-sm mb-4">Today's Team</h3>
           <div className="space-y-2">{getAttendanceEmployees().map(emp => {
             const rec = todayAllRecords.find(r => r.employeeId === emp.id);
-            const wfhReq = getWFHRequests().find(r => r.employeeId === emp.id && r.date === new Date().toISOString().split('T')[0]);
+            const wfhReq = getWFHRequests().find(r => r.employeeId === emp.id && r.date === new Date().toLocaleDateString('en-CA'));
             const t = getEmployeeTiming(emp.id);
             const otHrs = rec && rec.totalHours > 0 ? Math.max(0, rec.totalHours - t.minHoursForFullDay) : 0;
             const isSunOT = rec?.notes?.includes('SUNDAY');
