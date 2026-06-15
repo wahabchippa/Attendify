@@ -509,25 +509,42 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
         </div>
       )}
 
-      {/* SECURITY */}
+            {/* SECURITY */}
       {activeTab === 'security' && canChangePins && (
         <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
           <h3 className="text-slate-700 font-medium">Change Employee PINs</h3>
           <div className="space-y-3">
-            {employees.map(emp => (
-              <div key={emp.id} className="flex items-center gap-4 bg-slate-50 rounded-xl p-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-sm font-bold text-blue-600">{emp.avatar}</div>
-                <div className="flex-1"><p className="text-slate-800 font-medium text-sm">{emp.name}</p><p className="text-slate-400 text-xs capitalize">{emp.role}</p></div>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400 text-xs">Current: {emp.pin}</span>
-                  <input type="text" maxLength={4} placeholder="New" value={pinChanges[emp.id] || ''}
-                    onChange={e => setPinChanges(p => ({ ...p, [emp.id]: e.target.value.replace(/\D/g,'').slice(0,4) }))}
-                    className="w-20 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            {employees.map(emp => {
+              // 🔒 Security Rule: Agar login Manager (Albash) ka hai, toh usay Admin (Wahab) ka PIN nahi dikhega
+              if (currentUser.role !== 'admin' && emp.role === 'admin') {
+                return null; 
+              }
+
+              return (
+                <div key={emp.id} className="flex items-center gap-4 bg-slate-50 rounded-xl p-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-sm font-bold text-blue-600">{emp.avatar}</div>
+                  <div className="flex-1">
+                    <p className="text-slate-800 font-medium text-sm">{emp.name}</p>
+                    <p className="text-slate-400 text-xs capitalize">{emp.role}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-400 text-xs">Current: {emp.pin}</span>
+                    <input 
+                      type="text" 
+                      maxLength={4} 
+                      placeholder="New" 
+                      value={pinChanges[emp.id] || ''}
+                      onChange={e => setPinChanges(p => ({ ...p, [emp.id]: e.target.value.replace(/\D/g,'').slice(0,4) }))}
+                      className="w-20 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <button onClick={handleSavePins} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium text-sm">{pinSaved ? '✓ Updated!' : 'Save PINs'}</button>
+          <button onClick={handleSavePins} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium text-sm">
+            {pinSaved ? '✓ Updated!' : 'Save PINs'}
+          </button>
         </div>
       )}
 
