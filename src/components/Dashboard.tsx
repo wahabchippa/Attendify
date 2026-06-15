@@ -36,23 +36,35 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const showOT = canSeeOT(currentUser.id);
   const canSeeAccountRequests = currentUser.id === 'emp-001' || currentUser.id === 'emp-005';
 
-  const formatTime12hr = (isoString: string | null | undefined) => {
-    if (!isoString) return '—';
-    try {
-      const match = isoString.match(/T(\d{2}):(\d{2})/);
-      if (match) {
-        let h = parseInt(match[1]);
-        const m = match[2];
-        const period = h >= 12 ? 'pm' : 'am';
-        if (h === 0) h = 12;
-        else if (h > 12) h -= 12;
-        return `${String(h).padStart(2, '0')}:${m} ${period}`;
-      }
-      return '—';
-    } catch {
-      return '—';
+ const formatTime12hr = (isoString: string | null | undefined) => {
+  if (!isoString) return '—';
+  try {
+    // Agar +05:00 timezone hai to PKT time return karo
+    // Agar UTC (+00) hai to PKT me convert karo (+5 hours)
+    const pktMatch = isoString.match(/T(\d{2}):(\d{2}).*\+05:00/);
+    if (pktMatch) {
+      let h = parseInt(pktMatch[1]);
+      const m = pktMatch[2];
+      const period = h >= 12 ? 'pm' : 'am';
+      if (h === 0) h = 12;
+      else if (h > 12) h -= 12;
+      return `${String(h).padStart(2, '0')}:${m} ${period}`;
     }
-  };
+    
+    // UTC ya purana data - convert to PKT
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '—';
+    const pktTime = new Date(date.getTime() + (5 * 60 + date.getTimezoneOffset()) * 60 * 1000);
+    let h = pktTime.getHours();
+    const m = String(pktTime.getMinutes()).padStart(2, '0');
+    const period = h >= 12 ? 'pm' : 'am';
+    if (h === 0) h = 12;
+    else if (h > 12) h -= 12;
+    return `${String(h).padStart(2, '0')}:${m} ${period}`;
+  } catch {
+    return '—';
+  }
+};
 
   useEffect(() => { 
     const t = setInterval(() => setCurrentTime(getPKTDate()), 1000); 
