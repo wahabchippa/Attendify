@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Employee, AttendanceRecord, WFHRequest } from '../types';
 import { 
+  import { 
   getEmployees, getAttendanceEmployees, getAttendanceRecords, 
   getTodayRecord, addAttendanceRecord, updateAttendanceRecord, 
   getEmployeeTiming, getLocationFromIP, canSeeOT,
   getWFHRequests, addWFHRequest, updateWFHRequest,
   getTodayWFHRequest, getPendingWFHRequests,
-  getPendingAccountRequests, updateAccountRequest, addEmployee, syncAll
+  getPendingAccountRequests, updateAccountRequest, addEmployee, syncAll,
+  getPKTDate, getPKTDateString, getPKTISOString
 } from '../store';
 import { verifyWiFiConnection } from '../wifiService';
 import { format, parseISO } from 'date-fns';
@@ -18,7 +20,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
   const [officeLocation, setOfficeLocation] = useState<string | null>(null);
   const [detectedIP, setDetectedIP] = useState('');
-  const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState(getPKTDate());
   const [checkingIn, setCheckingIn] = useState(false);
   const [notification, setNotification] = useState<any>(null);
   const [todayAllRecords, setTodayAllRecords] = useState<AttendanceRecord[]>([]);
@@ -35,27 +37,11 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const showOT = canSeeOT(currentUser.id);
   const canSeeAccountRequests = currentUser.id === 'emp-001' || currentUser.id === 'emp-005';
 
-  // HELPER FUNCTION: Local Time Conversion string generator
-  const getPKTISOString = (dateObj: Date) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const hours = String(dateObj.getHours()).padStart(2, '0');
-    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-    const seconds = String(dateObj.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000`;
-  };
-
-  const getPKTDateString = (dateObj: Date) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  
 
   // 1. Clock Timer
-  useEffect(() => { 
-    const t = setInterval(() => setCurrentTime(new Date()), 1000); 
+    useEffect(() => { 
+    const t = setInterval(() => setCurrentTime(getPKTDate()), 1000); 
     return () => clearInterval(t); 
   }, []);
 
@@ -91,7 +77,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       setTodayWFHRequest(getTodayWFHRequest(currentUser.id) || null);
     }
     if (isAdmin) {
-      const today = getPKTDateString(new Date());
+      const today = getPKTDateString();
       setTodayAllRecords(getAttendanceRecords().filter(r => r.date === today));
       setPendingWFHRequests(getPendingWFHRequests());
       if (canSeeAccountRequests) setPendingAccounts(getPendingAccountRequests());
@@ -104,8 +90,8 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     const result = await verifyWiFiConnection();
     if (!result.isConnected) { setCheckingIn(false); setOfficeLocation(''); showNotif('error', 'Not in office!'); return; }
     
-    const now = new Date();
-    const localDate = getPKTDateString(now);
+        const now = getPKTDate();
+    const localDate = getPKTDateString();
     const isSunday = now.getDay() === 0;
     const t = getEmployeeTiming(currentUser.id);
     const [sH, sM] = t.officeStartTime.split(':').map(Number);
@@ -114,7 +100,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     
     const isLate = isSunday ? false : now > lateThr;
     const loc = getLocationFromIP(result.ipAddress);
-    const localISOString = getPKTISOString(now);
+    const localISOString = getPKTISOString();
 
     const record: AttendanceRecord = {
       id: `${currentUser.id}-${localDate}`, 
@@ -141,7 +127,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
   const handleCheckOut = async () => {
     if (!todayRecord) return;
-    const now = new Date();
+    const now = getPKTDate();
     const isSunday = new Date(todayRecord.date).getDay() === 0;
     const start = todayRecord.checkIn ? new Date(todayRecord.checkIn) : now;
     const totalHours = Math.round((now.getTime() - start.getTime()) / 3600000 * 100) / 100;
@@ -154,7 +140,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     const loc = getLocationFromIP(todayRecord.ipAddress);
     const notes = isSunday ? `SUNDAY OT: ${otHours}h | ${loc}` : (otHours > 0 ? `OT: ${otHours}h | ${loc}` : loc);
     
-    const localISOString = getPKTISOString(now);
+    const localISOString = getPKTISOString();
 
     await updateAttendanceRecord(todayRecord.id, { checkOut: localISOString, totalHours, status, notes });
     await syncAll();
@@ -166,9 +152,8 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
   const handleWFHRequest = () => {
     if (!wfhReason.trim()) { showNotif('error', 'Enter reason'); return; }
-    const now = new Date();
-    const localDate = getPKTDateString(now);
-    const localISOString = getPKTISOString(now);
+    const localDate = getPKTDateString();
+    const localISOString = getPKTISOString();
 
     addWFHRequest({ id: `wfh-${currentUser.id}-${localDate}`, employeeId: currentUser.id,
       date: localDate, reason: wfhReason, status: 'pending', requestedAt: localISOString, reviewedBy: null, reviewedAt: null });
@@ -177,13 +162,13 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   };
 
   const handleApproveWFH = (req: WFHRequest) => {
-    const nowISO = getPKTISOString(new Date());
+    const nowISO = getPKTISOString();
     updateWFHRequest(req.id, { status: 'approved', reviewedBy: currentUser.id, reviewedAt: nowISO });
     addAttendanceRecord({ id: `${req.employeeId}-${req.date}`, employeeId: req.employeeId, date: req.date,
       checkIn: nowISO, checkOut: null, status: 'work-from-home', totalHours: 0, wifiVerified: false, ipAddress: 'WFH', notes: `WFH: ${req.reason}` });
     loadTodayData(); showNotif('success', `WFH approved`);
   };
-  const handleRejectWFH = (req: WFHRequest) => { updateWFHRequest(req.id, { status: 'rejected', reviewedBy: currentUser.id, reviewedAt: getPKTISOString(new Date()) }); loadTodayData(); showNotif('warning', 'WFH rejected'); };
+  const handleRejectWFH = (req: WFHRequest) => { updateWFHRequest(req.id, { status: 'rejected', reviewedBy: currentUser.id, reviewedAt: getPKTISOString() }); loadTodayData(); showNotif('warning', 'WFH rejected'); };
 
   const handleApproveAccount = (req: any, role: string) => {
     const avatar = req.name.trim().split(' ').map((w:string) => w[0]).join('').toUpperCase().slice(0, 2);
@@ -392,7 +377,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
           <h3 className="text-slate-800 font-medium text-sm mb-4">Today's Team</h3>
           <div className="space-y-2">{getAttendanceEmployees().map(emp => {
             const rec = todayAllRecords.find(r => r.employeeId === emp.id);
-            const wfhReq = getWFHRequests().find(r => r.employeeId === emp.id && r.date === getPKTDateString(new Date()));
+            const wfhReq = getWFHRequests().find(r => r.employeeId === emp.id && r.date === getPKTDateString());
             const t = getEmployeeTiming(emp.id);
             const otHrs = rec && typeof rec.totalHours === 'number' && rec.totalHours > 0 ? Math.max(0, rec.totalHours - t.minHoursForFullDay) : 0;
             const isSunOT = rec?.notes?.includes('SUNDAY');
