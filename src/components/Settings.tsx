@@ -212,7 +212,12 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
 
     const safeFormatTime = (isoString: string | null | undefined) => {
       if (!isoString) return '';
-      try { return format(parseISO(isoString), 'HH:mm'); } catch { return ''; }
+      try { 
+        // Direct string se time nikalo, parseISO use mat karo (timezone conversion avoid)
+        const match = isoString.match(/T(\d{2}):(\d{2})/);
+        if (match) return `${match[1]}:${match[2]}`;
+        return format(parseISO(isoString), 'HH:mm'); 
+      } catch { return ''; }
     };
 
     return (
