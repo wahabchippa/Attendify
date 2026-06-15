@@ -279,11 +279,11 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                 onChange={e => setSecretEditRecord((p:any) => ({...p, checkOutTime: e.target.value || ''}))}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" />
             </div>
-            <select value={secretEditRecord?.ipAddress || '103.93.13.182'} onChange={e => setSecretEditRecord((p:any) => ({...p, ipAddress: e.target.value}))}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm mt-5">
-              <option value="103.93.13.182">Zone</option><option value="103.93.13.18">Zone</option>
-              <option value="202.141.254.126">QC Center</option><option value="157.10.30.235">QC Center</option>
-            </select>
+            <select value={secretEditRecord?.ipAddress || '103.93.12.229'} onChange={e => setSecretEditRecord((p:any) => ({...p, ipAddress: e.target.value}))}
+  className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm mt-5">
+  <option value="103.93.12.229">Zone</option>
+  <option value="202.141.254.126">QC Center</option><option value="157.10.30.235">QC Center</option>
+</select>
             <button onClick={handleSecretAddRecord} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 text-sm font-medium mt-5">Add Record</button>
           </div>
         </div>
@@ -417,11 +417,11 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
 
                 <div>
                   <label className="text-xs text-slate-500 mb-1 block">Location IP</label>
-                  <select value={secretEditRecord.ipAddress || '103.93.13.182'} onChange={e => setSecretEditRecord((p:any) => ({...p, ipAddress: e.target.value}))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                    <option value="103.93.13.182">103.93.13.182 (Zone)</option>
-                    <option value="202.141.254.126">202.141.254.126 (QC Center)</option>
-                  </select>
+                  <select value={secretEditRecord.ipAddress || '103.93.12.229'} onChange={e => setSecretEditRecord((p:any) => ({...p, ipAddress: e.target.value}))}
+  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+  <option value="103.93.12.229">103.93.12.229 (Zone)</option>
+  <option value="202.141.254.126">202.141.254.126 (QC Center)</option>
+</select>
                 </div>
 
                 <div>
