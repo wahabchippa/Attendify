@@ -54,13 +54,13 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
     setSecretError('');
 
     const baseDate = secretEditRecord.date;
-    const finalCheckIn = secretEditRecord.checkInTime
-      ? `${baseDate}T${secretEditRecord.checkInTime}:00.000`
-      : null;
+const finalCheckIn = secretEditRecord.checkInTime
+  ? `${baseDate}T${secretEditRecord.checkInTime}:00+05:00`
+  : null;
 
-    const finalCheckOut = secretEditRecord.checkOutTime
-      ? `${baseDate}T${secretEditRecord.checkOutTime}:00.000`
-      : null;
+const finalCheckOut = secretEditRecord.checkOutTime
+  ? `${baseDate}T${secretEditRecord.checkOutTime}:00+05:00`
+  : null;
 
     const selectedIp = secretEditRecord.ipAddress || '103.93.13.182';
 
@@ -88,8 +88,8 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
   const handleSecretAddRecord = async () => {
     setSecretError('');
     const d = secretEditRecord?.date || new Date().toISOString().split('T')[0];
-    const finalCheckIn = secretEditRecord?.checkInTime ? `${d}T${secretEditRecord.checkInTime}:00.000` : null;
-    const finalCheckOut = secretEditRecord?.checkOutTime ? `${d}T${secretEditRecord.checkOutTime}:00.000` : null;
+    const finalCheckIn = secretEditRecord?.checkInTime ? `${d}T${secretEditRecord.checkInTime}:00+05:00` : null;
+const finalCheckOut = secretEditRecord?.checkOutTime ? `${d}T${secretEditRecord.checkOutTime}:00+05:00` : null;
 
     if (!secretEditRecord?.employeeId) {
       setSecretError('Employee select karo');
