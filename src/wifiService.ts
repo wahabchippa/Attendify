@@ -1,36 +1,25 @@
-interface WiFiCheckResult {
+import { getOfficeLocations } from './store';
+
+export interface WiFiCheckResult {
   isConnected: boolean;
   ipAddress: string;
   method: string;
   details: string;
 }
 
-// Final allowed Public IPs - ONLY THESE WILL WORK
-const OFFICE_PUBLIC_IPS = [
-  '202.141.254.126', // QC Center
-  '157.10.30.235',   // QC Center
-  '103.93.12.229',   // Zone (New IP)
-];
-
-// Method: Fetch from public IP API
 async function getPublicIP(): Promise<string | null> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch('https://api.ipify.org?format=json', {
-      signal: controller.signal,
-    });
+    const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
     clearTimeout(timeoutId);
     const data = await res.json();
     return data.ip;
   } catch {
-    // Try backup API
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch('https://api.my-ip.io/v2/ip.json', {
-        signal: controller.signal,
-      });
+      const res = await fetch('https://api.my-ip.io/v2/ip.json', { signal: controller.signal });
       clearTimeout(timeoutId);
       const data = await res.json();
       return data.ip;
@@ -40,28 +29,27 @@ async function getPublicIP(): Promise<string | null> {
   }
 }
 
-// Main WiFi verification function - checks PUBLIC IP only
 export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
-  // Get public IP and verify against allowed list
   const publicIP = await getPublicIP();
+  const locations = getOfficeLocations();
+  const allowedIPs = locations.map(loc => loc.ip_address);
   
   if (publicIP) {
-    const isAllowed = OFFICE_PUBLIC_IPS.includes(publicIP);
-    
+    const isAllowed = allowedIPs.includes(publicIP);
     if (isAllowed) {
+      const matchedLocation = locations.find(loc => loc.ip_address === publicIP);
       return {
         isConnected: true,
         ipAddress: publicIP,
         method: 'public-ip-match',
-        details: `✅ Public IP ${publicIP} is verified as Office WiFi`,
+        details: `✅ Public IP ${publicIP} is verified as ${matchedLocation?.name || 'Office'}`,
       };
     }
-    
     return {
       isConnected: false,
       ipAddress: publicIP,
       method: 'public-ip-mismatch',
-      details: `❌ Public IP ${publicIP} is NOT from Office WiFi. Allowed IPs: ${OFFICE_PUBLIC_IPS.join(', ')}`,
+      details: `❌ Public IP ${publicIP} is NOT from Office WiFi.`,
     };
   }
 
@@ -73,12 +61,12 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
   };
 }
 
-// Quick connectivity check
 export async function quickWiFiCheck(): Promise<boolean> {
   try {
     const publicIP = await getPublicIP();
     if (publicIP) {
-      return OFFICE_PUBLIC_IPS.includes(publicIP);
+      const locations = getOfficeLocations();
+      return locations.map(loc => loc.ip_address).includes(publicIP);
     }
     return false;
   } catch {
@@ -86,21 +74,18 @@ export async function quickWiFiCheck(): Promise<boolean> {
   }
 }
 
-// For demo/testing - simulate WiFi check
 export function simulateWiFiCheck(forceResult?: boolean): WiFiCheckResult {
+  const locations = getOfficeLocations();
   const isConnected = forceResult !== undefined ? forceResult : Math.random() > 0.2;
-  const randomIP = OFFICE_PUBLIC_IPS[Math.floor(Math.random() * OFFICE_PUBLIC_IPS.length)];
+  const randomIP = locations.length > 0 ? locations[Math.floor(Math.random() * locations.length)].ip_address : '10.0.0.1';
   return {
     isConnected,
     ipAddress: isConnected ? randomIP : '10.0.0.1',
     method: 'simulation',
-    details: isConnected 
-      ? `Simulated: Connected via ${randomIP}` 
-      : 'Simulated: Not on office network',
+    details: isConnected ? `Simulated: Connected via ${randomIP}` : 'Simulated: Not on office network',
   };
 }
 
-// Get all allowed IPs for display
 export function getAllowedIPs(): string[] {
-  return OFFICE_PUBLIC_IPS;
+  return getOfficeLocations().map(loc => loc.ip_address);
 }
