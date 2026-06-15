@@ -9,6 +9,15 @@ const db = {
   }
 };
 
+// ========== PAKISTAN LOCAL DATE HELPER (FIXES SYNC BUG) ==========
+function getPKTDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // ========== LOCATION MAPPING ==========
 export const LOCATION_MAP: Record<string, string> = {
   '103.93.13.182': 'Zone', '103.93.13.18': 'Zone',
@@ -104,8 +113,10 @@ export async function updateAttendanceRecord(id: string, updates: Partial<Attend
   } catch {}
 }
 
+// FIX: Pure Pakistan Local Date Matcher
 export function getTodayRecord(empId: string): AttendanceRecord | undefined {
-  return getAttendanceRecords().find(r => r.employeeId === empId && r.date === new Date().toISOString().split('T')[0]);
+  const todayStr = getPKTDateString();
+  return getAttendanceRecords().find(r => r.employeeId === empId && r.date === todayStr);
 }
 
 // ========== WFH REQUESTS ==========
@@ -143,8 +154,10 @@ export async function updateWFHRequest(id: string, updates: Partial<WFHRequest>)
   } catch {}
 }
 
+// FIX: Pure Pakistan Local Date Matcher
 export function getTodayWFHRequest(empId: string): WFHRequest | undefined {
-  return getWFHRequests().find(r => r.employeeId === empId && r.date === new Date().toISOString().split('T')[0]);
+  const todayStr = getPKTDateString();
+  return getWFHRequests().find(r => r.employeeId === empId && r.date === todayStr);
 }
 export function getPendingWFHRequests(): WFHRequest[] { return getWFHRequests().filter(r => r.status === 'pending'); }
 
