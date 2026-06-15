@@ -5,8 +5,23 @@ interface AnalogClockProps {
   size?: number;
 }
 
+// ✅ Vercel ke liye Types define kiye hain
+interface Tick {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  isHour: boolean;
+}
+
+interface ClockNumber {
+  x: number;
+  y: number;
+  num: number;
+}
+
 export default function AnalogClock({ size = 180 }: AnalogClockProps) {
-  const [time, setTime] = useState(getPKTDate());
+  const [time, setTime] = useState<Date>(getPKTDate());
 
   useEffect(() => {
     const timer = setInterval(() => setTime(getPKTDate()), 1000);
@@ -31,7 +46,7 @@ export default function AnalogClock({ size = 180 }: AnalogClockProps) {
   const minuteLen = r * 0.7;
   const secondLen = r * 0.82;
 
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const toRad = (deg: number): number => (deg * Math.PI) / 180;
 
   const hourX = cx + hourLen * Math.cos(toRad(hourAngle));
   const hourY = cy + hourLen * Math.sin(toRad(hourAngle));
@@ -40,8 +55,8 @@ export default function AnalogClock({ size = 180 }: AnalogClockProps) {
   const secondX = cx + secondLen * Math.cos(toRad(secondAngle));
   const secondY = cy + secondLen * Math.sin(toRad(secondAngle));
 
-  // Tick marks
-  const ticks = [];
+  // ✅ Array ko type diya hai
+  const ticks: Tick[] = [];
   for (let i = 0; i < 60; i++) {
     const angle = i * 6 - 90;
     const isHour = i % 5 === 0;
@@ -56,8 +71,8 @@ export default function AnalogClock({ size = 180 }: AnalogClockProps) {
     });
   }
 
-  // Hour numbers
-  const numbers = [];
+  // ✅ Array ko type diya hai
+  const numbers: ClockNumber[] = [];
   for (let i = 1; i <= 12; i++) {
     const angle = i * 30 - 90;
     const numR = r - 24;
@@ -70,6 +85,14 @@ export default function AnalogClock({ size = 180 }: AnalogClockProps) {
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="drop-shadow-sm">
+      {/* ✅ Defs ko sab se upar move kar diya hai */}
+      <defs>
+        <radialGradient id="clockGradient">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#f8fafc" />
+        </radialGradient>
+      </defs>
+
       {/* Outer ring */}
       <circle cx={cx} cy={cy} r={r + 4} fill="none" stroke="#e2e8f0" strokeWidth="1" />
       
@@ -78,15 +101,9 @@ export default function AnalogClock({ size = 180 }: AnalogClockProps) {
       
       {/* Inner subtle gradient circle */}
       <circle cx={cx} cy={cy} r={r - 1} fill="url(#clockGradient)" />
-      <defs>
-        <radialGradient id="clockGradient">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#f8fafc" />
-        </radialGradient>
-      </defs>
 
       {/* Tick marks */}
-      {ticks.map((tick, i) => (
+      {ticks.map((tick: Tick, i: number) => (
         <line
           key={i}
           x1={tick.x1}
@@ -100,7 +117,7 @@ export default function AnalogClock({ size = 180 }: AnalogClockProps) {
       ))}
 
       {/* Hour numbers */}
-      {numbers.map(n => (
+      {numbers.map((n: ClockNumber) => (
         <text
           key={n.num}
           x={n.x}
