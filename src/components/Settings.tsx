@@ -215,20 +215,26 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
 
     const safeFormatTime = (isoString: string | null | undefined) => {
       if (!isoString) return '';
-      try { 
-        // Agar pehle se PKT format (+05:00) mein hai
+      try {
+        // 1. Agar pehle se PKT (+05:00) format mein hai
         const pktMatch = isoString.match(/T(\d{2}):(\d{2}).*\+05:00/);
         if (pktMatch) return `${pktMatch[1]}:${pktMatch[2]}`;
-        
-        // Agar Supabase ne UTC (London time) mein bheja hai
+
+        // 2. Agar Supabase ne UTC (Z ya +00:00) mein bheja hai (String se direct math)
+        const utcMatch = isoString.match(/T(\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|\+00:00)?/);
+        if (utcMatch) {
+          let h = parseInt(utcMatch[1], 10) + 5; // UTC hours mein 5 add karein
+          if (h >= 24) h -= 24; // Agar 24 se barh jaye toh adjust karein
+          return `${String(h).padStart(2, '0')}:${utcMatch[2]}`;
+        }
+
+        // 3. Fallback (Agar format kuch aur ho)
         const date = new Date(isoString);
         if (isNaN(date.getTime())) return '';
-        
-        // UTC time mein exactly 5 hours add kar ke PKT banayein
-        const pktTime = new Date(date.getTime() + 5 * 60 * 60 * 1000);
-        
-        // getUTCHours use karein taake PC ka local timezone effect na kare
-        return `${String(pktTime.getUTCHours()).padStart(2, '0')}:${String(pktTime.getUTCMinutes()).padStart(2, '0')}`;
+        let h = date.getUTCHours() + 5;
+        if (h >= 24) h -= 24;
+        const m = String(date.getUTCMinutes()).padStart(2, '0');
+        return `${String(h).padStart(2, '0')}:${m}`;
       } catch { return ''; }
     };
 
