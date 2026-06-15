@@ -40,13 +40,36 @@ export function getPKTISOString(): string {
   return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+05:00`;
 }
 
-export const LOCATION_MAP: Record<string, string> = {
-  '103.93.12.229': 'Zone',
-  '202.141.254.126': 'QC Center', 
-  '157.10.30.235': 'QC Center',
-};
-export const ALL_ALLOWED_IPS = ['202.141.254.126', '157.10.30.235', '103.93.12.229'];
-export function getLocationFromIP(ip: string): string { return LOCATION_MAP[ip] || 'Office'; }
+export interface OfficeLocation {
+  id: number;
+  name: string;
+  ip_address: string;
+  is_active: boolean;
+}
+
+const DEFAULT_LOCATIONS: OfficeLocation[] = [
+  { id: 1, name: 'Zone', ip_address: '103.93.12.229', is_active: true },
+  { id: 2, name: 'QC Center', ip_address: '202.141.254.126', is_active: true },
+  { id: 3, name: 'QC Center', ip_address: '157.10.30.235', is_active: true }
+];
+
+export function getOfficeLocations(): OfficeLocation[] { 
+  return cacheGet('c_locations', DEFAULT_LOCATIONS); 
+}
+
+export function getLocationFromIP(ip: string): string { 
+  const locs = getOfficeLocations();
+  const found = locs.find(l => l.ip_address === ip);
+  return found ? found.name : 'Office'; 
+}
+
+async function syncLocations() {
+  try {
+    const q = db.from('office_locations'); if (!q) return;
+    const { data } = await q.select('*').eq('is_active', true);
+    if (data && data.length > 0) cacheSet('c_locations', data);
+  } catch {}
+}
 
 function cacheSet(key: string, data: any) { try { localStorage.setItem(key, JSON.stringify(data)); } catch {} }
 function cacheGet<T>(key: string, fallback: T): T { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : fallback; } catch { return fallback; } }
@@ -394,7 +417,7 @@ export function canSeeOT(empId: string): boolean { return hasAccess(empId, 'ot')
 
 export async function syncAll() {
   try {
-    await Promise.all([syncEmployees(), syncRecords(), syncWFH(), syncAccountRequests(), syncTimings(), syncAccess()]);
+    await Promise.all([syncEmployees(), syncRecords(), syncWFH(), syncAccountRequests(), syncTimings(), syncAccess(), syncLocations()]);
   } catch {}
 }
 
