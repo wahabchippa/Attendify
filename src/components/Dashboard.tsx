@@ -41,15 +41,13 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     return () => clearInterval(t); 
   }, []);
 
-  // 2. LIVE GLOBAL SYNC FIX (Background Auto-Refresh)
+  // 2. LIVE GLOBAL SYNC FIX
   useEffect(() => { 
-    // Pehli dafa load hone par WiFi check karega
     syncAll().then(() => { 
       if (canMarkAttendance) checkOfficeStatus(); 
       loadTodayData(); 
     });
 
-    // Har 5 second baad Supabase se data fetch karega (Bina page refresh kiye)
     const syncInterval = setInterval(() => {
       syncAll().then(() => loadTodayData());
     }, 5000);
@@ -90,7 +88,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     const [sH, sM] = t.officeStartTime.split(':').map(Number);
     const offStart = new Date(now); offStart.setHours(sH, sM, 0, 0);
     const lateThr = new Date(offStart); lateThr.setMinutes(lateThr.getMinutes() + t.lateThresholdMinutes);
-    // Sunday = no late, it's all OT
+    
     const isLate = isSunday ? false : now > lateThr;
     const loc = getLocationFromIP(result.ipAddress);
     const record: AttendanceRecord = {
@@ -99,12 +97,19 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       status: isLate ? 'late' : 'present', totalHours: 0, wifiVerified: true,
       ipAddress: result.ipAddress, notes: isSunday ? `SUNDAY OT | ${loc}` : loc,
     };
-    addAttendanceRecord(record); setTodayRecord(record); setCheckingIn(false);
+    
+    // ZABARDASTI CLOUD SAVE KAREGA
+    await addAttendanceRecord(record); 
+    await syncAll(); 
+    
+    setTodayRecord(record); 
+    setCheckingIn(false);
     const msg = isSunday ? `Sunday OT Check-in at ${loc}` : isLate ? `Checked in LATE at ${loc}` : `Checked in at ${loc}`;
-    showNotif(isLate ? 'warning' : 'success', msg); loadTodayData();
+    showNotif(isLate ? 'warning' : 'success', msg); 
+    loadTodayData();
   };
 
-  const handleCheckOut = () => {
+  const handleCheckOut = async () => {
     if (!todayRecord) return;
     const now = new Date();
     const isSunday = new Date(todayRecord.date).getDay() === 0;
@@ -114,13 +119,18 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     let status = todayRecord.status;
     if (!isSunday && totalHours < t.minHoursForHalfDay) status = 'half-day';
     else if (todayRecord.status === 'late') status = 'late';
-    // OT
+    
     const otHours = isSunday ? totalHours : (totalHours > t.minHoursForFullDay ? Math.round((totalHours - t.minHoursForFullDay)*100)/100 : 0);
     const loc = getLocationFromIP(todayRecord.ipAddress);
     const notes = isSunday ? `SUNDAY OT: ${otHours}h | ${loc}` : (otHours > 0 ? `OT: ${otHours}h | ${loc}` : loc);
-    updateAttendanceRecord(todayRecord.id, { checkOut: now.toISOString(), totalHours, status, notes });
+    
+    // ZABARDASTI CLOUD SAVE KAREGA
+    await updateAttendanceRecord(todayRecord.id, { checkOut: now.toISOString(), totalHours, status, notes });
+    await syncAll();
+    
     setTodayRecord({ ...todayRecord, checkOut: now.toISOString(), totalHours, status, notes });
     showNotif('success', `Checked out! ${totalHours.toFixed(1)}h${otHours > 0 ? ` (OT: +${otHours}h)` : ''}`);
+    loadTodayData();
   };
 
   const handleWFHRequest = () => {
