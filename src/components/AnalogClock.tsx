@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
+import { getPKTDate } from '../store';
 
 interface AnalogClockProps {
   size?: number;
 }
 
 export default function AnalogClock({ size = 180 }: AnalogClockProps) {
-  const [time, setTime] = useState(new Date());
+  const [time, setTime] = useState(getPKTDate());
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const timer = setInterval(() => setTime(getPKTDate()), 1000);
     return () => clearInterval(timer);
   }, []);
 
