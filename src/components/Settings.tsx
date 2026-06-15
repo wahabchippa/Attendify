@@ -186,21 +186,31 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
               className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
-            <div><label className="text-xs text-slate-500 mb-1 block">Check In</label>
-                  <input type="time" value={secretEditRecord.checkInTime||''} 
-                    onChange={e => setSecretEditRecord((p:any) => ({...p, checkInTime: e.target.value, checkIn: new Date(`${p.date}T${e.target.value}:00`).toISOString()}))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
-                    
-                <div><label className="text-xs text-slate-500 mb-1 block">Check Out</label>
-                  <input type="time" value={secretEditRecord.checkOutTime||''} 
-                    onChange={e => setSecretEditRecord((p:any) => ({...p, checkOutTime: e.target.value, checkOut: new Date(`${p.date}T${e.target.value}:00`).toISOString()}))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">Check In</label>
+              <input type="time" value={secretEditRecord?.checkInTime || ''} 
+                onChange={e => {
+                  const d = secretEditRecord?.date || new Date().toISOString().split('T')[0];
+                  setSecretEditRecord((p:any) => ({...p, checkInTime: e.target.value, checkIn: new Date(`${d}T${e.target.value}:00`).toISOString()}));
+                }}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+            </div>
+                        
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">Check Out</label>
+              <input type="time" value={secretEditRecord?.checkOutTime || ''} 
+                onChange={e => {
+                  const d = secretEditRecord?.date || new Date().toISOString().split('T')[0];
+                  setSecretEditRecord((p:any) => ({...p, checkOutTime: e.target.value, checkOut: new Date(`${d}T${e.target.value}:00`).toISOString()}));
+                }}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+            </div>
             <select value={secretEditRecord?.ipAddress || '103.93.13.182'} onChange={e => setSecretEditRecord((p:any) => ({...p, ipAddress: e.target.value}))}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm mt-5">
               <option value="103.93.13.182">Zone</option><option value="103.93.13.18">Zone</option>
               <option value="202.141.254.126">QC Center</option><option value="157.10.30.235">QC Center</option>
             </select>
-            <button onClick={handleSecretAddRecord} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 text-sm font-medium">Add Record</button>
+            <button onClick={handleSecretAddRecord} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 text-sm font-medium mt-5">Add Record</button>
           </div>
         </div>
 
@@ -239,7 +249,6 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
           </div>
         </div>
 
-        {/* Edit modal */}
         {/* ACCESS CONTROL inside override */}
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <h3 className="text-slate-700 font-medium text-sm mb-3">Access Control</h3>
@@ -273,6 +282,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
           })()}
         </div>
 
+        {/* Edit modal */}
         {secretEditRecord?._editing && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30">
             <div className="bg-white rounded-xl shadow-xl p-5 w-full max-w-lg">
@@ -288,10 +298,12 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   <input type="number" step="0.5" value={secretEditRecord.totalHours} onChange={e => setSecretEditRecord((p:any) => ({...p, totalHours: parseFloat(e.target.value)||0}))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
                 <div><label className="text-xs text-slate-500 mb-1 block">Check In</label>
-                  <input type="time" value={secretEditRecord.checkInTime||''} onChange={e => setSecretEditRecord((p:any) => ({...p, checkInTime: e.target.value, checkIn: `${p.date}T${e.target.value}:00.000Z`}))}
+                  <input type="time" value={secretEditRecord.checkInTime||''} 
+                    onChange={e => setSecretEditRecord((p:any) => ({...p, checkInTime: e.target.value, checkIn: new Date(`${secretEditRecord.date}T${e.target.value}:00`).toISOString()}))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
                 <div><label className="text-xs text-slate-500 mb-1 block">Check Out</label>
-                  <input type="time" value={secretEditRecord.checkOutTime||''} onChange={e => setSecretEditRecord((p:any) => ({...p, checkOutTime: e.target.value, checkOut: `${p.date}T${e.target.value}:00.000Z`}))}
+                  <input type="time" value={secretEditRecord.checkOutTime||''} 
+                    onChange={e => setSecretEditRecord((p:any) => ({...p, checkOutTime: e.target.value, checkOut: new Date(`${secretEditRecord.date}T${e.target.value}:00`).toISOString()}))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
                 <div><label className="text-xs text-slate-500 mb-1 block">Location</label>
                   <select value={secretEditRecord.ipAddress} onChange={e => setSecretEditRecord((p:any) => ({...p, ipAddress: e.target.value}))}
@@ -335,7 +347,6 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
           { key: 'timings', label: 'Employee Timings', show: canEdit },
           { key: 'security', label: 'Security', show: canChangePins },
           { key: 'employees', label: 'Employees', show: canViewAll },
-
           { key: 'about', label: 'About', show: true },
         ].filter(t => t.show).map(t => (
           <button key={t.key} onClick={() => setActiveTab(t.key as any)}
@@ -441,8 +452,6 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
           </div>
         </div>
       )}
-
-
 
       {/* ABOUT - with secret tap on version */}
       {activeTab === 'about' && (
