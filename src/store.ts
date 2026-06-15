@@ -77,15 +77,15 @@ async function syncRecords() {
     const { data } = await q.select('*');
     if (data) {
       cacheSet('c_rec', data.map((r: any) => ({
-        id: String(r.id), 
-        employeeId: r.user_id ? `emp-00${r.user_id}` : 'emp-001', 
-        date: r.date, 
-        checkIn: r.login_time, 
-        checkOut: (r.logout_time && r.logout_time !== r.login_time) ? r.logout_time : null, 
-        status: r.status || 'present', 
-        totalHours: r.total_hours || 0, 
-        wifiVerified: r.wifi_connected === 'true' || r.wifi_connected === true, 
-        ipAddress: r.notes && r.notes.includes('QC') ? '202.141.254.126' : '103.93.13.182', 
+        id: String(r.id),
+        employeeId: r.user_id ? `emp-${String(r.user_id).padStart(3, '0')}` : 'emp-001',
+        date: r.date,
+        checkIn: r.login_time,
+        checkOut: (r.logout_time && r.logout_time !== r.login_time) ? r.logout_time : null,
+        status: r.status || 'present',
+        totalHours: r.total_hours || 0,
+        wifiVerified: r.wifi_connected === 'true' || r.wifi_connected === true,
+        ipAddress: r.notes && r.notes.includes('QC') ? '202.141.254.126' : '103.93.13.182',
         notes: r.notes || '',
       })));
     }
@@ -101,59 +101,121 @@ export async function addAttendanceRecord(record: AttendanceRecord) {
   const records = getAttendanceRecords();
   if (records.find(r => r.employeeId === record.employeeId && r.date === record.date)) return;
   records.push(record); cacheSet('c_rec', records);
-  
+
   const numericUserId = parseInt(record.employeeId.replace(/^\D+/g, ''), 10) || 1;
   const employees = getEmployees();
   const currentEmp = employees.find(e => e.id === record.employeeId);
 
-  try { 
-    const q = db.from('attendance_logs'); 
+  try {
+    const q = db.from('attendance_logs');
     if (q) await q.upsert({
       user_id: numericUserId,
-      user_name: currentEmp ? currentEmp.name : 'Abdul Wahab',
+      user_name: currentEmp ? currentEmp.name : 'Unknown',
       date: record.date,
       status: record.status,
       login_time: record.checkIn,
       logout_time: record.checkOut,
       total_hours: record.totalHours,
-      wifi_connected: record.wifiVerified ? 'true' : 'false'
-    }); 
-    await syncRecords(); 
+      wifi_connected: record.wifiVerified ? 'true' : 'false',
+      notes: record.notes || getLocationFromIP(record.ipAddress),
+    });
+    await syncRecords();
   } catch {}
 }
 
-// 🚨 OVERHAULED STORE HANDLER: Sab kuch database columns ke mutabiq map karega
+// ✅ FIXED: Override save with proper id/date handling
 export async function updateAttendanceRecord(id: string, updates: Partial<AttendanceRecord>) {
-  const records = getAttendanceRecords(); 
-  const idx = records.findIndex(r => r.id === id);
-  if (idx !== -1) { 
-    records[idx] = { ...records[idx], ...updates }; 
-    cacheSet('c_rec', records); 
+  const records = getAttendanceRecords();
+  const idx = records.findIndex(r => String(r.id) === String(id));
+
+  if (idx === -1) {
+    console.error('updateAttendanceRecord: record not found', id);
+    return false;
   }
-  
-  const targetRecord = records.find(r => r.id === id);
-  if (!targetRecord) return;
-  const numericUserId = parseInt(targetRecord.employeeId.replace(/^\D+/g, ''), 10) || 1;
+
+  const oldRecord = { ...records[idx] };
+  const updatedRecord: AttendanceRecord = { ...oldRecord, ...updates };
+
+  // local cache update
+  records[idx] = updatedRecord;
+  cacheSet('c_rec', records);
+
+  const numericUserId =
+    parseInt(updatedRecord.employeeId.replace(/^\D+/g, ''), 10) || 1;
 
   try {
-    const q = db.from('attendance_logs'); if (!q) return;
-    const d: any = {};
-    
-    if (updates.status !== undefined) d.status = updates.status;
-    if (updates.checkIn !== undefined) d.login_time = updates.checkIn;
-    if (updates.checkOut !== undefined) d.logout_time = updates.checkOut;
-    if (updates.totalHours !== undefined) d.total_hours = updates.totalHours;
-    if (updates.date !== undefined) d.date = updates.date;
-    
-    // Location aur mapping ko automatically dynamically update karna notes column mein
-    if (updates.ipAddress !== undefined) {
-      d.notes = updates.ipAddress.includes('202') || updates.ipAddress.includes('157') ? 'QC Center' : 'Zone';
+    const q = db.from('attendance_logs');
+    if (!q) throw new Error('Supabase table not available');
+
+    const payload: any = {};
+
+    if (updates.status !== undefined) payload.status = updatedRecord.status;
+    if (updates.checkIn !== undefined) payload.login_time = updatedRecord.checkIn;
+    if (updates.checkOut !== undefined) payload.logout_time = updatedRecord.checkOut;
+    if (updates.totalHours !== undefined) payload.total_hours = updatedRecord.totalHours;
+    if (updates.date !== undefined) payload.date = updatedRecord.date;
+    if (updates.wifiVerified !== undefined) {
+      payload.wifi_connected = updatedRecord.wifiVerified ? 'true' : 'false';
     }
 
-    // Pehle local array filters check karein, phir database direct touch karein
-    await q.update(d).eq('user_id', numericUserId).eq('date', targetRecord.date);
+    if (updates.notes !== undefined) {
+      payload.notes = updates.notes;
+    } else if (updates.ipAddress !== undefined) {
+      payload.notes = getLocationFromIP(updates.ipAddress);
+    }
+
+    let result: any = null;
+
+    // 1) Pehle exact DB row ko id se update karne ki koshish
+    if (/^\d+$/.test(String(oldRecord.id))) {
+      result = await q
+        .update(payload)
+        .eq('id', Number(oldRecord.id))
+        .select('*');
+    } else {
+      // 2) Fallback: old date use karo, new date nahi
+      result = await q
+        .update(payload)
+        .eq('user_id', numericUserId)
+        .eq('date', oldRecord.date)
+        .select('*');
+    }
+
+    if (result?.error) {
+      throw result.error;
+    }
+
+    // Agar koi row update na hui to upsert kar do
+    if (!result?.data || result.data.length === 0) {
+      const employees = getEmployees();
+      const currentEmp = employees.find(e => e.id === updatedRecord.employeeId);
+
+      const upsertResult = await q.upsert({
+        user_id: numericUserId,
+        user_name: currentEmp?.name || 'Unknown',
+        date: updatedRecord.date,
+        status: updatedRecord.status,
+        login_time: updatedRecord.checkIn,
+        logout_time: updatedRecord.checkOut,
+        total_hours: updatedRecord.totalHours,
+        wifi_connected: updatedRecord.wifiVerified ? 'true' : 'false',
+        notes: payload.notes || getLocationFromIP(updatedRecord.ipAddress),
+      });
+
+      if (upsertResult?.error) throw upsertResult.error;
+    }
+
     await syncRecords();
-  } catch {}
+    return true;
+  } catch (error) {
+    console.error('updateAttendanceRecord failed:', error);
+
+    // rollback
+    records[idx] = oldRecord;
+    cacheSet('c_rec', records);
+
+    return false;
+  }
 }
 
 export function getWFHRequests(): WFHRequest[] { return cacheGet('c_wfh', []); }
@@ -256,12 +318,12 @@ export async function saveAllEmployeeTimings(t: Record<string, EmployeeTiming>) 
   cacheSet('c_timings', t);
   try {
     const q = db.from('employee_timings'); if (!q) return;
-    const rows = Object.values(t).map(v => ({ 
-      employee_id: v.employeeId, 
-      office_start_time: v.officeStartTime, 
-      late_threshold_minutes: v.lateThresholdMinutes, 
-      min_hours_full_day: v.minHoursForFullDay, 
-      min_hours_half_day: v.minHoursForHalfDay 
+    const rows = Object.values(t).map(v => ({
+      employee_id: v.employeeId,
+      office_start_time: v.officeStartTime,
+      late_threshold_minutes: v.lateThresholdMinutes,
+      min_hours_full_day: v.minHoursForFullDay,
+      min_hours_half_day: v.minHoursForHalfDay
     }));
     await q.upsert(rows);
   } catch {}
