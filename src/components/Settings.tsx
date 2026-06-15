@@ -211,14 +211,19 @@ const finalCheckOut = secretEditRecord?.checkOutTime ? `${d}T${secretEditRecord.
       : allRecords.slice(-50);
 
     const safeFormatTime = (isoString: string | null | undefined) => {
-      if (!isoString) return '';
-      try { 
-        // Direct string se time nikalo, parseISO use mat karo (timezone conversion avoid)
-        const match = isoString.match(/T(\d{2}):(\d{2})/);
-        if (match) return `${match[1]}:${match[2]}`;
-        return format(parseISO(isoString), 'HH:mm'); 
-      } catch { return ''; }
-    };
+  if (!isoString) return '';
+  try { 
+    // PKT timezone wala data
+    const pktMatch = isoString.match(/T(\d{2}):(\d{2}).*\+05:00/);
+    if (pktMatch) return `${pktMatch[1]}:${pktMatch[2]}`;
+    
+    // UTC data - PKT me convert karo
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+    const pktTime = new Date(date.getTime() + (5 * 60 + date.getTimezoneOffset()) * 60 * 1000);
+    return `${String(pktTime.getHours()).padStart(2, '0')}:${String(pktTime.getMinutes()).padStart(2, '0')}`;
+  } catch { return ''; }
+};
 
     return (
       <div className="space-y-4">
