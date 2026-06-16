@@ -4,7 +4,8 @@ import {
   getEmployees, getAttendanceEmployees,
   getAllEmployeeTimings, saveAllEmployeeTimings, EmployeeTiming,
   updateEmployeePin, addEmployee, removeEmployee, getAttendanceRecords, saveAttendanceRecords, updateAttendanceRecord, getLocationFromIP,
-  hasAccess, getAccessControl, grantAccess, revokeAccess, getOfficeLocations
+  hasAccess, getAccessControl, grantAccess, revokeAccess, getOfficeLocations,
+  bindEmployeeDevice // <-- Yeh add karein
 } from '../store';
 import { format, parseISO } from 'date-fns';
 
@@ -27,6 +28,16 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
   const [newPin, setNewPin] = useState('');
   const [newRole, setNewRole] = useState<'employee'|'admin'|'manager'>('employee');
   const [addMsg, setAddMsg] = useState('');
+  const [deviceResetMsg, setDeviceResetMsg] = useState(''); // 📱 Device Reset Message
+
+  // 📱 Device Reset Handler
+  const handleResetDevice = async (empId: string, empName: string) => {
+    if (!confirm(`Are you sure you want to reset the device lock for ${empName}?`)) return;
+    await bindEmployeeDevice(empId, null);
+    refreshEmps(); // List refresh karein
+    setDeviceResetMsg(`Device lock removed for ${empName}!`);
+    setTimeout(() => setDeviceResetMsg(''), 3000); // 3 second baad message hide
+  };
 
   // ======= SECRET PANEL =======
   const [secretUnlocked, setSecretUnlocked] = useState(false);
@@ -565,6 +576,8 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                 <button onClick={handleAddEmployee} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2.5 font-medium text-sm">Add</button>
               </div>
               {addMsg && <p className="text-emerald-600 text-sm mt-2">{addMsg}</p>}
+              {/* 📱 Device Reset Success Message */}
+              {deviceResetMsg && <p className="text-amber-600 text-sm mt-2 font-medium flex items-center gap-1">🔓 {deviceResetMsg}</p>}
             </div>
           )}
           <div className="bg-white rounded-xl border border-slate-200 p-5">
@@ -576,13 +589,24 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                     <div className="w-10 h-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-sm font-semibold text-slate-600">{emp.avatar}</div>
                     <div><p className="text-slate-700 font-medium text-sm">{emp.name}</p><p className="text-slate-400 text-xs capitalize">{emp.role}</p></div>
                   </div>
-                   <div className="flex items-center gap-2">
+                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${emp.role === 'admin' ? 'bg-purple-50 text-purple-600' : emp.role === 'manager' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>{emp.role.toUpperCase()}</span>
+                    
+                    {/* 📱 Reset Device Button - Sirf tab dikhega jab device_id maujood ho */}
+                    {(emp as any).device_id && (
+                      <button 
+                        onClick={() => handleResetDevice(emp.id, emp.name)}
+                        className="px-2 py-1 bg-amber-50 text-amber-600 rounded text-xs font-medium hover:bg-amber-100 border border-amber-200 flex items-center gap-1 transition-colors"
+                      >
+                        🔄 Reset Device
+                      </button>
+                    )}
+
                     {canRemoveEmp && (
                       ((currentUser.id === 'emp-001' && emp.id !== currentUser.id) ||
                         (currentUser.id === 'emp-005' && emp.role === 'employee')) && (
                         <button onClick={() => { if(confirm(`Remove ${emp.name}?`)) { removeEmployee(emp.id); refreshEmps(); } }}
-                          className="px-2 py-1 bg-red-50 text-red-500 rounded text-xs font-medium hover:bg-red-100 border border-red-200">Remove</button>
+                          className="px-2 py-1 bg-red-50 text-red-500 rounded text-xs font-medium hover:bg-red-100 border border-red-200 transition-colors">Remove</button>
                       )
                     )}
                   </div>
