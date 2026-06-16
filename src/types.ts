@@ -4,7 +4,7 @@ export interface Employee {
   role: 'admin' | 'manager' | 'employee';
   pin: string;
   avatar: string;
-  device_id?: string | null; // 📱 Yeh line add karein
+  device_id?: string | null; // 📱 Yeh line add karni hai
 }
 
 export interface AttendanceRecord {
