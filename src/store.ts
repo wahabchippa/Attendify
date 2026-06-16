@@ -111,6 +111,29 @@ export async function removeEmployee(empId: string) {
   try { const q = db.from('employees'); if (q) { await q.delete().eq('id', empId); await syncEmployees(); } } catch {}
 }
 
+// 👇 YEH NAYA FUNCTION HAI JO DEVICE KO LOCK/RESET KAREGA 👇
+export async function bindEmployeeDevice(empId: string, deviceId: string | null) {
+  const all = getEmployees(); 
+  const idx = all.findIndex(e => e.id === empId);
+  
+  // Local cache update
+  if (idx !== -1) { 
+    (all[idx] as any).device_id = deviceId; 
+    cacheSet('c_emp', all); 
+  }
+  
+  // Supabase database update
+  try { 
+    const q = db.from('employees'); 
+    if (q) { 
+      await q.update({ device_id: deviceId }).eq('id', empId); 
+      await syncEmployees(); 
+    } 
+  } catch (e) {
+    console.error('bindEmployeeDevice failed:', e);
+  }
+}
+
 export function getAttendanceRecords(): AttendanceRecord[] { return cacheGet('c_rec', []); }
 export function saveAttendanceRecords(r: AttendanceRecord[]) { cacheSet('c_rec', r); }
 
