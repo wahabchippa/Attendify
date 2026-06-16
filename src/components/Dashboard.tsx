@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Employee, AttendanceRecord, WFHRequest } from '../types';
 import { 
+  import { 
   getEmployees, getAttendanceEmployees, getAttendanceRecords, 
-  getTodayRecord, addAttendanceRecord, updateAttendanceRecord, 
+  getTodayRecord, getActiveRecord, addAttendanceRecord, updateAttendanceRecord,  
   getEmployeeTiming, getLocationFromIP, canSeeOT,
   getWFHRequests, addWFHRequest, updateWFHRequest,
   getTodayWFHRequest, getPendingWFHRequests,
@@ -99,7 +100,12 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
   const loadTodayData = () => {
     if (canMarkAttendance) {
-      setTodayRecord(getTodayRecord(currentUser.id) || null);
+      // Pehle active (bina check-out wala) record dhundain, chahe wo kal ka hi kyun na ho
+      const active = getActiveRecord(currentUser.id);
+      const today = getTodayRecord(currentUser.id);
+      
+      // Agar active session chal raha hai toh wo dikhayen, warna aaj ka record dikhayen
+      setTodayRecord(active || today || null);
       setTodayWFHRequest(getTodayWFHRequest(currentUser.id) || null);
     }
     if (isAdmin) {
