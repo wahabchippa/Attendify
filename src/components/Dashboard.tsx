@@ -316,7 +316,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
             </div>
             <h3 className="text-xl font-bold text-red-600 text-center mb-3">Security Violation Detected</h3>
             <p className="text-slate-700 text-sm text-center mb-6 leading-relaxed bg-red-50 p-3 rounded-lg border border-red-100">
-              ⚠️ Warning: Aap office ke WiFi se connect nahi hain. Aapka yeh check-out 'Unverified / Outside Office' mark ho gaya hai aur Admin ko notification chali gayi hai.
+              ⚠️ Warning: You are not connected to the office WiFi. Your check-out has been marked as 'Unverified / Outside Office' and an alert has been sent to the Admin.
             </p>
             <button 
               onClick={() => setShowWarningModal(false)} 
