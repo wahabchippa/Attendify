@@ -28,8 +28,9 @@ jobs:
         run: |
           npm run build --if-present
 
-      - name: Sync Capacitor Android
+      - name: Add Android Platform if missing
         run: |
+          npx cap add android || true
           npx cap sync android
 
       - name: Set up JDK 17
