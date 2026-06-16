@@ -23,6 +23,7 @@ jobs:
         run: |
           npm install
           npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install -g @capacitor/assets
 
       - name: Build Web Project
         run: npm run build --if-present
@@ -31,6 +32,16 @@ jobs:
         run: |
           npx cap add android || true
           npx cap sync android
+
+      - name: Create and Generate App Icon Automatically
+        run: |
+          mkdir -p assets
+          # Yeh command khud hi ek default naya icon background mein create kar degi
+          curl -s "https://dummyimage.com/512x512/0066cc/ffffff.png&text=Attendify" -o assets/icon-only.png
+          cp assets/icon-only.png assets/icon.png
+          cp assets/icon-only.png assets/splash.png
+          cp assets/icon-only.png assets/splash-dark.png
+          npx capacitor-assets generate --android
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
