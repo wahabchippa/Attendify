@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Employee, AttendanceRecord, WFHRequest } from '../types';
-import { 
-  import { 
+import {  
   getEmployees, getAttendanceEmployees, getAttendanceRecords, 
   getTodayRecord, getActiveRecord, addAttendanceRecord, updateAttendanceRecord, 
   getEmployeeTiming, getLocationFromIP, canSeeOT,
