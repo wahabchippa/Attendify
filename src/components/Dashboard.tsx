@@ -29,6 +29,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const [pendingWFHRequests, setPendingWFHRequests] = useState<WFHRequest[]>([]);
   const [pendingAccounts, setPendingAccounts] = useState<any[]>([]);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false); // 🚨 Silent Trap State
   
   const isAdmin = currentUser.role === 'admin' || currentUser.role === 'manager';
   const isManagerOnly = currentUser.role === 'manager';
@@ -151,22 +152,54 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
   const handleCheckOut = async () => {
     if (!todayRecord) return;
+    
+    // 1. Silent Trap: Background mein current network check karein
+    const networkStatus = await verifyWiFiConnection();
+    const isInsideOffice = networkStatus.isConnected;
+
     const now = getPKTDate();
     const isSunday = new Date(todayRecord.date).getDay() === 0;
     const start = todayRecord.checkIn ? new Date(todayRecord.checkIn) : now;
     const totalHours = Math.round((now.getTime() - start.getTime()) / 3600000 * 100) / 100;
     const t = getEmployeeTiming(currentUser.id);
+    
     let status = todayRecord.status;
     if (!isSunday && totalHours < t.minHoursForHalfDay) status = 'half-day';
     else if (todayRecord.status === 'late') status = 'late';
+    
     const otHours = isSunday ? totalHours : (totalHours > t.minHoursForFullDay ? Math.round((totalHours - t.minHoursForFullDay)*100)/100 : 0);
     const loc = getLocationFromIP(todayRecord.ipAddress);
-    const notes = isSunday ? `SUNDAY OT: ${otHours}h | ${loc}` : (otHours > 0 ? `OT: ${otHours}h | ${loc}` : loc);
+    
+    // 2. Trap Logic: Notes aur wifiVerified ko update karein
+    let notes = isSunday ? `SUNDAY OT: ${otHours}h | ${loc}` : (otHours > 0 ? `OT: ${otHours}h | ${loc}` : loc);
+    let wifiVerified = true;
+
+    if (!isInsideOffice) {
+      wifiVerified = false; // Unverified mark karein
+      notes += ' | ⚠️ OUTSIDE OFFICE (Unverified)'; // Admin ke liye flag
+    }
+
     const localISOString = getPKTISOString();
-    await updateAttendanceRecord(todayRecord.id, { checkOut: localISOString, totalHours, status, notes });
+    
+    // 3. Database mein save karein (Check-out allow hoga)
+    await updateAttendanceRecord(todayRecord.id, { 
+      checkOut: localISOString, 
+      totalHours, 
+      status, 
+      notes,
+      wifiVerified // Yeh status store ko bhej diya
+    });
     await syncAll();
-    setTodayRecord({ ...todayRecord, checkOut: localISOString, totalHours, status, notes });
-    showNotif('success', `Checked out! ${totalHours.toFixed(1)}h${otHours > 0 ? ` (OT: +${otHours}h)` : ''}`);
+    
+    setTodayRecord({ ...todayRecord, checkOut: localISOString, totalHours, status, notes, wifiVerified });
+    
+    // 4. UI Feedback: Agar office mein nahi hai toh Warning Modal dikhayen
+    if (!isInsideOffice) {
+      setShowWarningModal(true); // 🚨 Silent Trap Triggered!
+    } else {
+      showNotif('success', `Checked out! ${totalHours.toFixed(1)}h${otHours > 0 ? ` (OT: +${otHours}h)` : ''}`);
+    }
+    
     loadTodayData();
   };
 
@@ -274,7 +307,26 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
           </div>
         </div>
       )}
-
+      {/* 🚨 SILENT TRAP WARNING MODAL */}
+      {showWarningModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md animate-fade-in border-2 border-red-500">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
+              <span className="text-3xl">🚨</span>
+            </div>
+            <h3 className="text-xl font-bold text-red-600 text-center mb-3">Security Violation Detected</h3>
+            <p className="text-slate-700 text-sm text-center mb-6 leading-relaxed bg-red-50 p-3 rounded-lg border border-red-100">
+              ⚠️ Warning: Aap office ke WiFi se connect nahi hain. Aapka yeh check-out 'Unverified / Outside Office' mark ho gaya hai aur Admin ko notification chali gayi hai.
+            </p>
+            <button 
+              onClick={() => setShowWarningModal(false)} 
+              className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-semibold text-sm transition-all shadow-lg shadow-red-600/20"
+            >
+              I Understand / Close
+            </button>
+          </div>
+        </div>
+      )}
       {canSeeAccountRequests && pendingAccounts.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <h3 className="text-blue-800 font-medium text-sm mb-3 flex items-center gap-2"><span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>New Account Requests ({pendingAccounts.length})</h3>
