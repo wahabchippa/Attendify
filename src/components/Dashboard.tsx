@@ -39,10 +39,9 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
  const formatTime12hr = (isoString: string | null | undefined) => {
   if (!isoString) return '—';
   try {
-    // Agar pehle se +05:00 timezone hai
     const pktMatch = isoString.match(/T(\d{2}):(\d{2}).*\+05:00/);
     if (pktMatch) {
-      let h = parseInt(pktMatch[1]);
+      let h = parseInt(pktMatch[1], 10);
       const m = pktMatch[2];
       const period = h >= 12 ? 'pm' : 'am';
       if (h === 0) h = 12;
@@ -50,16 +49,22 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       return `${String(h).padStart(2, '0')}:${m} ${period}`;
     }
     
-    // Agar Supabase se UTC time aaya hai
+    const utcMatch = isoString.match(/T(\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|\+00:00)?/);
+    if (utcMatch) {
+      let h = parseInt(utcMatch[1], 10) + 5;
+      if (h >= 24) h -= 24;
+      const m = utcMatch[2];
+      const period = h >= 12 ? 'pm' : 'am';
+      if (h === 0) h = 12;
+      else if (h > 12) h -= 12;
+      return `${String(h).padStart(2, '0')}:${m} ${period}`;
+    }
+
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return '—';
-    
-    // UTC time mein 5 hours add karein
-    const pktTime = new Date(date.getTime() + 5 * 60 * 60 * 1000);
-    
-    // getUTCHours use karein taake PC ka timezone effect na kare
-    let h = pktTime.getUTCHours();
-    const m = String(pktTime.getUTCMinutes()).padStart(2, '0');
+    let h = date.getUTCHours() + 5;
+    if (h >= 24) h -= 24;
+    const m = String(date.getUTCMinutes()).padStart(2, '0');
     const period = h >= 12 ? 'pm' : 'am';
     if (h === 0) h = 12;
     else if (h > 12) h -= 12;
