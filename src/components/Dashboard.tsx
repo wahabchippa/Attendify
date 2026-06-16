@@ -448,7 +448,16 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
             const isSunOT = rec?.notes?.includes('SUNDAY');
             return (<div key={emp.id} className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-lg">
               <div className="flex items-center gap-3"><div className="w-9 h-9 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-xs font-semibold text-slate-600">{emp.avatar}</div>
-              <div><p className="text-slate-800 text-sm font-medium">{emp.name}</p><p className="text-slate-400 text-xs">{rec ? getLocationFromIP(rec.ipAddress) : ''}{isSunOT ? ' • Sunday OT' : ''}</p></div></div>
+              <div>
+                <p className="text-slate-800 text-sm font-medium">{emp.name}</p>
+                <p className="text-slate-400 text-xs flex flex-wrap items-center gap-1">
+                  <span>{rec ? getLocationFromIP(rec.ipAddress) : ''}</span>
+                  {isSunOT && <span>• Sunday OT</span>}
+                  {/* 🚨 Agar employee ne bahar se check out kiya hai, toh Albash ko yeh red warning dikhegi */}
+                  {rec?.notes?.includes('OUTSIDE OFFICE') && <span className="text-red-600 font-bold animate-pulse">• ⚠️ Outside Office</span>}
+                </p>
+              </div>
+              </div>
               <div className="text-right">{rec ? (<>
                 <span className={`px-2 py-1 rounded text-xs font-medium border ${ss(rec.status)}`}>{rec.status === 'work-from-home' ? 'WFH' : rec.status.toUpperCase()}</span>
                 <p className="text-slate-400 text-xs mt-1">{rec.checkIn ? formatTime12hr(rec.checkIn) : ''}{showOT && otHrs > 0 ? ` • OT:+${otHrs.toFixed(1)}h` : ''}</p>
