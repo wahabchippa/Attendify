@@ -139,7 +139,18 @@ export function getTodayRecord(empId: string): AttendanceRecord | undefined {
   const todayStr = getPKTDateString();
   return getAttendanceRecords().find(r => r.employeeId === empId && r.date === todayStr);
 }
-
+export function getActiveRecord(empId: string): AttendanceRecord | undefined {
+  // Employee ke saare records nikalein aur latest ko upar layein
+  const records = getAttendanceRecords()
+    .filter(r => r.employeeId === empId)
+    .sort((a, b) => new Date(b.checkIn || 0).getTime() - new Date(a.checkIn || 0).getTime());
+  
+  // Agar sab se latest record mein checkOut nahi hai, toh wo abhi bhi active hai
+  if (records.length > 0 && !records[0].checkOut) {
+    return records[0];
+  }
+  return undefined;
+}
 export async function addAttendanceRecord(record: AttendanceRecord) {
   const records = getAttendanceRecords();
   if (records.find(r => r.employeeId === record.employeeId && r.date === record.date)) return;
