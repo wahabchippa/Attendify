@@ -3,7 +3,7 @@ import { Employee, AttendanceRecord, WFHRequest } from '../types';
 import { 
   import { 
   getEmployees, getAttendanceEmployees, getAttendanceRecords, 
-  getTodayRecord, getActiveRecord, addAttendanceRecord, updateAttendanceRecord,  
+  getTodayRecord, getActiveRecord, addAttendanceRecord, updateAttendanceRecord, 
   getEmployeeTiming, getLocationFromIP, canSeeOT,
   getWFHRequests, addWFHRequest, updateWFHRequest,
   getTodayWFHRequest, getPendingWFHRequests,
