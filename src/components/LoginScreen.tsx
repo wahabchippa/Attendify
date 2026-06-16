@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Employee } from '../types';
-import { getEmployees, addAccountRequest } from '../store';
+import { getEmployees, addAccountRequest, bindEmployeeDevice } from '../store';
 
 interface LoginScreenProps { onLogin: (employee: Employee) => void; }
 
@@ -28,11 +28,61 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     setTimeout(() => setPhase('pin'), 50);
   };
 
-  const handleLogin = () => {
+  // 📱 Helper: Device ka unique hardware fingerprint (UUID) generate ya fetch karein
+  const getDeviceUUID = () => {
+    let uuid = localStorage.getItem('attendify_device_uuid');
+    if (!uuid) {
+      uuid = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('attendify_device_uuid', uuid);
+    }
+    return uuid;
+  };
+
+  // 🔒 Main Login Logic with Device Binding
+  const handleLogin = async () => {
     if (!selectedEmployee) return;
     const latest = getEmployees().find(e => e.id === selectedEmployee.id);
-    if (latest && pin === latest.pin) onLogin(latest);
-    else { setError('Incorrect PIN'); setPin(''); }
+    
+    // PIN Check
+    if (!latest || pin !== latest.pin) {
+      setError('Incorrect PIN'); 
+      setPin(''); 
+      return;
+    }
+
+    // 1. Check karein ke yeh Mobile/Tablet hai ya Desktop/Laptop
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    // Agar Desktop/Laptop hai, toh device lock bypass karein aur seedha login karwayein
+    if (!isMobile) {
+      onLogin(latest);
+      return;
+    }
+
+    // 2. Mobile Device: UUID fetch karein
+    const currentDeviceUUID = getDeviceUUID();
+
+    // 3. Device Binding Logic (Cases A, B, C)
+    if (!latest.device_id) {
+      // Case A: First Time Login - Device ko database mein hamesha ke liye bind karein
+      try {
+        await bindEmployeeDevice(latest.id, currentDeviceUUID);
+        const updatedEmployee = { ...latest, device_id: currentDeviceUUID };
+        onLogin(updatedEmployee); // Dashboard par bhej dein
+      } catch (err) {
+        setError('Device binding failed. Please try again.');
+        setPin('');
+      }
+    } else if (latest.device_id === currentDeviceUUID) {
+      // Case B: Matched Device - Login allow karein
+      onLogin(latest);
+    } else {
+      // Case C: Wrong Device / Fraud - Login BLOCK karein
+      setError("🚫 Access Denied! Aap kisi doosre mobile se login kar rahe hain. Kripya apne registered device ka istemal karein ya Admin se device reset karwayein.");
+      setPin('');
+    }
   };
 
   const handlePinInput = (d: string) => { if (pin.length < 4) { setPin(pin + d); setError(''); } };
@@ -192,7 +242,15 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                   {showPin ? 'Hide' : 'Show'} PIN
                 </button>
 
-                {error && <div className="text-red-500 text-xs text-center mb-3 bg-red-50/80 py-2.5 rounded-2xl animate-fade-in">{error}</div>}
+                {error && (
+  <div className={`text-xs text-center mb-3 py-3 px-4 rounded-2xl animate-fade-in border ${
+    error.includes('Access Denied') 
+      ? 'bg-red-100 text-red-700 border-red-300 font-semibold' 
+      : 'bg-red-50/80 text-red-500 border-transparent'
+  }`}>
+    {error}
+  </div>
+)}
 
                 {/* Numpad */}
                 <div className="grid grid-cols-3 gap-2.5">
