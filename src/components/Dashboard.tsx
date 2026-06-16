@@ -100,12 +100,11 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
   const loadTodayData = () => {
     if (canMarkAttendance) {
-      // Pehle active (bina check-out wala) record dhundain, chahe wo kal ka hi kyun na ho
       const active = getActiveRecord(currentUser.id);
       const today = getTodayRecord(currentUser.id);
       
-      // Agar active session chal raha hai toh wo dikhayen, warna aaj ka record dikhayen
-      setTodayRecord(active || today || null);
+      // TypeScript error fix: undefined ko null mein convert kiya hai
+      setTodayRecord((active || today) ?? null);
       setTodayWFHRequest(getTodayWFHRequest(currentUser.id) || null);
     }
     if (isAdmin) {
