@@ -4,8 +4,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // 👈 Yeh 8.5.0 hai (8.13.0 nahi)
-        classpath 'com.android.tools.build:gradle:8.5.0'
+        // 🚀 FIX: Isko 8.5.0 se badal kar 8.9.1 kar diya hai taake dependency check fail na ho
+        classpath 'com.android.tools.build:gradle:8.9.1'
         classpath 'com.google.gms:google-services:4.4.4'
     }
 }
