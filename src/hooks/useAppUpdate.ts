@@ -1,9 +1,11 @@
+// src/hooks/useAppUpdate.ts
+
 import { useEffect, useState } from 'react';
 import { App } from '@capacitor/app';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { Capacitor } from '@capacitor/core';
-import { supabase } from '../store'; // ensure this exports a configured Supabase client
+import { supabase } from '../store';
 
 interface UpdateInfo {
   version_code: number;
@@ -12,7 +14,7 @@ interface UpdateInfo {
   force_update: boolean;
 }
 
-// Debug ke liye web par test karna ho to true kar do (default false rakho)
+// Web par test ke liye isko true kar sakte hain
 const ALLOW_WEB_TEST = false;
 
 export function useAppUpdate() {
@@ -22,85 +24,95 @@ export function useAppUpdate() {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [error, setError] = useState('');
 
+  // IMPORTANT: Sirf ek baar app start hone par check karein
   useEffect(() => {
-    const canRun = Capacitor.isNativePlatform() || ALLOW_WEB_TEST;
-    if (!canRun) {
-      console.log('[Update] Skipping check (not native platform)');
-      return;
-    }
-    checkForUpdate();
+    const check = async () => {
+      // Platform check
+      const isNative = Capacitor.isNativePlatform();
+      if (!isNative && !ALLOW_WEB_TEST) {
+        console.log('[Update] Skipping check: Not a native platform.');
+        return;
+      }
+
+      // App ke resume hone par baar baar check na ho, isliye event listener lagayein
+      // Taa ke user app update kar ke wapas aaye toh modal chala jaye
+      App.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) {
+          console.log('[Update] App resumed, re-checking for update status...');
+          checkForUpdate();
+        }
+      });
+
+      // Initial check
+      await checkForUpdate();
+    };
+
+    check();
+
+    // Cleanup listener on component unmount
+    return () => {
+      App.removeAllListeners();
+    };
   }, []);
 
-  // Local app build code nikaalne ka reliable tareeqa
+  // ✅ **IMPROVED: Local app build code nikaalne ka reliable tareeqa**
   const getLocalBuildCode = async (): Promise<number> => {
+    if (!Capacitor.isNativePlatform()) {
+        // Web ke liye dummy version code
+        console.log('[Update] Running on web, returning dummy version code 1');
+        return 1;
+    }
     try {
       const info = await App.getInfo();
-      console.log('[Update] AppInfo:', info);
+      console.log('[Update] AppInfo from device:', info);
 
-      // Capacitor (>= v3/v5) on Android → info.build (number)
-      if (typeof info.build === 'number' && !Number.isNaN(info.build)) {
-        return info.build;
-      }
-
-      // Kuch setups me versionCode milta hai
-      const vc: unknown = (info as any).versionCode;
-      if (typeof vc === 'number' && !Number.isNaN(vc)) return vc;
-      if (typeof vc === 'string' && vc.trim()) {
-        const n = Number(vc);
-        if (!Number.isNaN(n)) return n;
-      }
-
-      // Fallback: "1.0.20" ko numeric code me convert karo
-      if (info.version) {
-        const parts = info.version.split('.').map(p => parseInt(p, 10) || 0);
-        // major.minor.patch → major*10000 + minor*100 + patch
-        const code = (parts[0] || 0) * 10000 + (parts[1] || 0) * 100 + (parts[2] || 0);
-        return code;
+      // Sabse reliable: `info.build` jo ke `versionCode` hota hai Android par
+      // Yeh ek string ho sakti hai, isliye isko number mein convert karein
+      const buildNumber = parseInt(info.build, 10);
+      if (!isNaN(buildNumber) && buildNumber > 0) {
+        console.log(`[Update] Got build number: ${buildNumber}`);
+        return buildNumber;
       }
     } catch (e) {
-      console.warn('[Update] getLocalBuildCode error:', e);
+      console.error('[Update] Could not get AppInfo:', e);
     }
-    // Last resort
+    // Agar sab kuch fail ho jaye
+    console.warn('[Update] Could not determine build number. Falling back to 1.');
     return 1;
   };
 
   const checkForUpdate = async () => {
     try {
       console.log('===== UPDATE CHECK STARTED =====');
-
       const currentVersionCode = await getLocalBuildCode();
-      console.log('[Update] Local build code:', currentVersionCode);
+      
+      // Agar version code 1 hai (fallback), toh shayad error hai, isliye check skip karein
+      if (currentVersionCode === 1 && Capacitor.isNativePlatform()) {
+          console.warn('[Update] Local version code is fallback value (1). Skipping check to avoid update loop.');
+          return;
+      }
 
-      const { data, error } = await supabase
+      console.log(`[Update] Local version code: ${currentVersionCode}`);
+
+      const { data, error: dbError } = await supabase
         .from('app_version')
         .select('version_code, version_name, apk_url, force_update')
-        .eq('id', 1)
+        .eq('id', 1) // Maan rahe hain ke aap hamesha id=1 wali row update karte hain
         .single();
 
-      if (error) {
-        console.error('[Update] Supabase error:', error);
-        return;
-      }
-      if (!data) {
-        console.error('[Update] No data in app_version (id=1)');
-        return;
-      }
+      if (dbError) throw new Error(dbError.message);
+      if (!data) throw new Error('No update data found in Supabase.');
 
-      const serverCode = Number(data.version_code || 0);
-      const mustForce = Boolean(data.force_update);
+      const serverCode = Number(data.version_code);
+      console.log(`[Update] Server version code: ${serverCode}`);
 
-      console.log('[Update] Server code:', serverCode, 'Force:', mustForce);
-
-      const shouldUpdate = serverCode > currentVersionCode;
-
-
-      if (shouldUpdate) {
+      if (serverCode > currentVersionCode) {
         console.log('[Update] UPDATE REQUIRED ✅');
         setUpdateInfo({
           version_code: serverCode,
           version_name: data.version_name,
           apk_url: data.apk_url,
-          force_update: mustForce,
+          force_update: data.force_update,
         });
         setUpdateRequired(true);
       } else {
@@ -109,68 +121,91 @@ export function useAppUpdate() {
         setUpdateInfo(null);
       }
     } catch (err) {
-      console.error('[Update] Update check failed:', err);
+      console.error('[Update] Check failed:', err);
+      setError('Could not check for updates.');
+      setUpdateRequired(false);
     }
   };
 
-  // Optional in-app downloader (aap browser open kar rahe ho to iski zarurat nahi; backup ke liye rehne do)
+  // ✅ **IMPROVED: In-App Downloader, isko hum istemal karenge**
   const handleUpdate = async () => {
-    if (!updateInfo) return;
+    if (!updateInfo || !updateInfo.apk_url) {
+      setError('Update information is missing. Cannot download.');
+      return;
+    }
+    
+    // IMPORTANT: Make sure your Supabase URL is the direct download link
+    // e.g., https://<project-ref>.supabase.co/storage/v1/object/public/apk/app-release.apk
+    const directApkUrl = updateInfo.apk_url;
+    console.log(`[Update] Starting download from: ${directApkUrl}`);
+
     setDownloading(true);
     setError('');
+    setDownloadProgress(0);
 
     try {
-      const fileName = `update_${updateInfo.version_code}.apk`;
-      const response = await fetch(updateInfo.apk_url);
-      if (!response.ok) throw new Error('Download failed');
+      // Naya file name version ke hisab se
+      const fileName = `attendify_v${updateInfo.version_name}.apk`;
 
-      const contentLength = response.headers.get('content-length');
-      const total = contentLength ? parseInt(contentLength) : 0;
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('Stream error');
+      // Capacitor HTTP se download karna behtar hai progress ke liye, but fetch() is also fine
+      const response = await fetch(directApkUrl);
+      if (!response.ok || !response.body) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
 
-      const chunks: Uint8Array[] = [];
-      let received = 0;
+      const reader = response.body.getReader();
+      const contentLength = +response.headers.get('Content-Length')!;
+      let receivedLength = 0;
+      const chunks = [];
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        if (value) {
-          chunks.push(value);
-          received += value.length;
-          if (total > 0) setDownloadProgress(Math.round((received / total) * 100));
+        chunks.push(value);
+        receivedLength += value.length;
+        if (contentLength) {
+          setDownloadProgress(Math.round((receivedLength / contentLength) * 100));
         }
       }
 
-      const allChunks = new Uint8Array(received);
-      let offset = 0;
-      for (const chunk of chunks) {
-        allChunks.set(chunk, offset);
-        offset += chunk.length;
-      }
+      const blob = new Blob(chunks);
+      
+      // Blob ko Base64 me convert karein
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const fileReader = new FileReader();
+        fileReader.onerror = reject;
+        fileReader.onload = () => {
+          const result = fileReader.result as string;
+          // 'data:application/octet-stream;base64,' wala hissa hata dein
+          resolve(result.substr(result.indexOf(',') + 1));
+        };
+        fileReader.readAsDataURL(blob);
+      });
 
-      const base64 = btoa(
-        allChunks.reduce((d, b) => d + String.fromCharCode(b), '')
-      );
+      console.log('[Update] Download complete. Writing file to cache...');
 
-      const writeResult = await Filesystem.writeFile({
+      const result = await Filesystem.writeFile({
         path: fileName,
-        data: base64,
-        directory: Directory.Cache,
+        data: base64Data,
+        directory: Directory.Cache, // Cache directory use karein, system isko manage kar leta hai
       });
 
+      console.log(`[Update] File written to: ${result.uri}. Opening installer...`);
+
+      // FileOpener se APK installer kholein
       await FileOpener.open({
-        filePath: writeResult.uri,
+        filePath: result.uri,
         contentType: 'application/vnd.android.package-archive',
-        openWithDefault: true,
       });
+      
+      setDownloading(false);
+
     } catch (e: any) {
-      console.error('[Update] Download error:', e);
-      setError('Download failed. Please check your connection and try again.');
-    } finally {
+      console.error('[Update] Download/Install error:', e);
+      setError('Update failed. Please try again or check your connection.');
       setDownloading(false);
     }
   };
 
-  return { updateRequired, updateInfo, downloading, downloadProgress, error, handleUpdate };
+  return { updateRequired, updateInfo, downloading, downloadProgress, error, handleUpdate, checkForUpdate };
 }
