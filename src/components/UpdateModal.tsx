@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Browser } from '@capacitor/browser';
+// Capacitor Browser ko hata kar 'App' import karein
+import { App } from '@capacitor/app'; 
 import { useAppUpdate } from '../hooks/useAppUpdate';
 
 export default function UpdateModal() {
@@ -9,17 +10,13 @@ export default function UpdateModal() {
 
   if (!updateRequired) return null;
 
-  // URL Generation Logic
   const getTargetUrl = () => {
     let targetUrl = 'https://github.com/wahabchippa/react-vite-tailwind/releases/latest';
-    
     if (updateInfo?.apk_url) {
       const githubRepoRegex = /^https?:\/\/(?:www\.)?github\.com\/([^\/]+\/[^\/]+)/i;
       const match = updateInfo.apk_url.match(githubRepoRegex);
-      
       if (match && match[1]) {
         let repoPath = match[1].replace(/\.git$/, ''); 
-        // CACHE BUSTING: ?t=${Date.now()}
         targetUrl = `https://github.com/${repoPath}/releases/latest?t=${Date.now()}`;
       }
     }
@@ -31,22 +28,27 @@ export default function UpdateModal() {
     const targetUrl = getTargetUrl();
 
     try {
-      console.log('Opening clean system browser link:', targetUrl);
-      await Browser.open({ url: targetUrl });
+      console.log('Opening REAL External Browser:', targetUrl);
+      
+      // YAHAN MAGIC HAI ✨
+      // App.openUrl direct Android OS ko hit karta hai aur App se bahar nikal kar asli Chrome kholta hai
+      await App.openUrl({ url: targetUrl });
       
       setTimeout(() => setIsProcessing(false), 5000);
     } catch (err) {
-      console.error('Browser failed, trying fallback:', err);
-      try {
-        window.open(targetUrl, '_system');
-      } catch (e2) {
-        window.location.href = targetUrl;
-      }
+      console.error('App.openUrl failed, trying pure window fallback:', err);
+      // Agar plugin fail ho jaye, toh hum native HTML tag ke zariye external browser force karenge
+      const a = document.createElement('a');
+      a.href = targetUrl;
+      a.target = '_blank'; // Opens in new external tab
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
       setIsProcessing(false);
     }
   };
 
-  // Bina plugin ke Copy function
   const handleCopyLink = async () => {
     const url = getTargetUrl();
     try {
@@ -61,6 +63,8 @@ export default function UpdateModal() {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md">
       <div className="bg-white rounded-3xl shadow-2xl p-7 w-full max-w-sm mx-5 transform transition-all">
+        {/* ... (Baqi ka poora UI code waisa hi rahega jaisa pehle tha) ... */}
+        
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/30">
             <svg className="w-8 h-8 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -93,7 +97,7 @@ export default function UpdateModal() {
         
         <div className="mt-5 text-center">
           <p className="text-slate-400 text-xs mb-2">
-            Clicking will open GitHub Releases.<br/>Tap <span className="font-semibold text-slate-600">app-debug.apk</span> to install.
+            Clicking will open your phone's browser.<br/>Tap <span className="font-semibold text-slate-600">app-debug.apk</span> to install.
           </p>
           <button 
             onClick={handleCopyLink}
