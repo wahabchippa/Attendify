@@ -91,7 +91,8 @@ export function useAppUpdate() {
 
       console.log('[Update] Server code:', serverCode, 'Force:', mustForce);
 
-      const shouldUpdate = mustForce || serverCode > currentVersionCode;
+      const shouldUpdate = serverCode > currentVersionCode;
+
 
       if (shouldUpdate) {
         console.log('[Update] UPDATE REQUIRED ✅');
