@@ -452,14 +452,35 @@ export async function revokeAccess(empId: string, feature: string) {
 export function hasAccess(empId: string, feature: string): boolean { return getAccessControl()[feature]?.includes(empId) || false; }
 export function canSeeOT(empId: string): boolean { return hasAccess(empId, 'ot'); }
 // 🌟 Holidays Logic
-export function getHolidays(): string[] { return cacheGet('c_holidays', []); }
-export function isHoliday(dateStr: string): boolean { return getHolidays().includes(dateStr); }
+export interface Holiday { date: string; name: string; }
+export function getHolidays(): Holiday[] { return cacheGet('c_holidays', []); }
+export function isHoliday(dateStr: string): boolean { return getHolidays().some(h => h.date === dateStr); }
+
+export async function addHoliday(date: string, name: string) {
+  try {
+    const q = db.from('holidays');
+    if (q) {
+      await q.upsert({ date, name });
+      await syncHolidays();
+    }
+  } catch {}
+}
+
+export async function removeHoliday(date: string) {
+  try {
+    const q = db.from('holidays');
+    if (q) {
+      await q.delete().eq('date', date);
+      await syncHolidays();
+    }
+  } catch {}
+}
 
 async function syncHolidays() {
   try {
     const q = db.from('holidays'); if (!q) return;
-    const { data } = await q.select('date');
-    if (data) cacheSet('c_holidays', data.map((d: any) => d.date));
+    const { data } = await q.select('date, name');
+    if (data) cacheSet('c_holidays', data);
   } catch {}
 }
 export async function syncAll() {
