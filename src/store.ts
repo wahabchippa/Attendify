@@ -149,7 +149,8 @@ async function syncRecords() {
         checkIn: r.login_time,
         checkOut: (r.logout_time && r.logout_time !== r.login_time) ? r.logout_time : null,
         status: r.status || 'present',
-        totalHours: r.total_hours || 0,
+                totalHours: r.total_hours || 0,
+        overtime_hours: r.overtime_hours || 0, // 🌟 Yeh add karein
         wifiVerified: r.wifi_connected === 'true' || r.wifi_connected === true,
                 ipAddress: r.notes && r.notes.includes('QC') ? '202.141.254.126' : '103.93.12.229',
         notes: r.notes || '',
@@ -193,6 +194,7 @@ export async function addAttendanceRecord(record: AttendanceRecord) {
       login_time: record.checkIn,
       logout_time: record.checkOut,
       total_hours: record.totalHours,
+      overtime_hours: record.overtime_hours || 0, // 🌟 Yeh add karein
       wifi_connected: record.wifiVerified ? 'true' : 'false',
       notes: record.notes || getLocationFromIP(record.ipAddress),
     });
@@ -230,6 +232,7 @@ export async function updateAttendanceRecord(id: string, updates: Partial<Attend
     if (updates.checkIn !== undefined) payload.login_time = updatedRecord.checkIn;
     if (updates.checkOut !== undefined) payload.logout_time = updatedRecord.checkOut;
     if (updates.totalHours !== undefined) payload.total_hours = updatedRecord.totalHours;
+    if (updates.overtime_hours !== undefined) payload.overtime_hours = updatedRecord.overtime_hours; // 🌟 Yeh add karein
     if (updates.date !== undefined) payload.date = updatedRecord.date;
     if (updates.wifiVerified !== undefined) {
       payload.wifi_connected = updatedRecord.wifiVerified ? 'true' : 'false';
@@ -448,10 +451,20 @@ export async function revokeAccess(empId: string, feature: string) {
 
 export function hasAccess(empId: string, feature: string): boolean { return getAccessControl()[feature]?.includes(empId) || false; }
 export function canSeeOT(empId: string): boolean { return hasAccess(empId, 'ot'); }
+// 🌟 Holidays Logic
+export function getHolidays(): string[] { return cacheGet('c_holidays', []); }
+export function isHoliday(dateStr: string): boolean { return getHolidays().includes(dateStr); }
 
+async function syncHolidays() {
+  try {
+    const q = db.from('holidays'); if (!q) return;
+    const { data } = await q.select('date');
+    if (data) cacheSet('c_holidays', data.map((d: any) => d.date));
+  } catch {}
+}
 export async function syncAll() {
   try {
-    await Promise.all([syncEmployees(), syncRecords(), syncWFH(), syncAccountRequests(), syncTimings(), syncAccess(), syncLocations()]);
+    await Promise.all([syncEmployees(), syncRecords(), syncWFH(), syncAccountRequests(), syncTimings(), syncAccess(), syncLocations(), syncHolidays()]); // 🌟 syncHolidays add karein
   } catch {}
 }
 
