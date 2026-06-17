@@ -11,23 +11,25 @@ export default function UpdateModal() {
   const handleBrowserUpdate = async () => {
     setIsProcessing(true);
     
-    // 🚀 STUCK FREE SOLUTION: Direct web page par bhejein taake Chrome freeze na ho
-    // Yeh link user ko seedha aapki repo ke latest release page par le jayega
-    const targetUrl = 'https://github.com/wahabchippa/react-vite-tailwind/releases/latest';
+    // 🚀 DYNAMIC LINK: Supabase ke link se auto GitHub clean web page generate karega
+    let targetUrl = 'https://github.com/wahabchippa/react-vite-tailwind/releases/latest';
+    
+    if (updateInfo?.apk_url) {
+      // Agar apk_url me direct download file ka link hai, to usko clean kar k web page bana dega
+      const cleanUrl = updateInfo.apk_url.split('/download/')[0];
+      targetUrl = `${cleanUrl}/latest`;
+    }
 
     try {
-      console.log('Opening system browser for Release Page:', targetUrl);
-      
-      // Mobile ka actual Google Chrome trigger hoga
+      console.log('Opening clean system browser link:', targetUrl);
       await Browser.open({ url: targetUrl });
       
-      // 5 second baad button ko normal karein
       setTimeout(() => {
         setIsProcessing(false);
       }, 5000);
 
     } catch (err) {
-      console.error('Browser open failed, trying fallback:', err);
+      console.error('Browser failed, trying fallback:', err);
       try {
         window.open(targetUrl, '_system');
       } catch (e2) {
@@ -46,7 +48,7 @@ export default function UpdateModal() {
           </div>
           <h2 className="text-slate-800 font-bold text-lg">Update Required</h2>
           <p className="text-slate-500 text-sm mt-1">
-            Version {updateInfo?.version_name || '1.0.8'} is available. You must update to continue using the app.
+            Version {updateInfo?.version_name || '1.0.9'} is available. You must update to continue using the app.
           </p>
         </div>
 
