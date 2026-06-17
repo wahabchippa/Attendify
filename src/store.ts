@@ -278,6 +278,7 @@ export async function updateAttendanceRecord(id: string, updates: Partial<Attend
         login_time: updatedRecord.checkIn,
         logout_time: updatedRecord.checkOut,
         total_hours: updatedRecord.totalHours,
+        overtime_hours: updatedRecord.overtime_hours || 0, // 🌟 Yeh line add karni hai
         wifi_connected: updatedRecord.wifiVerified ? 'true' : 'false',
         notes: payload.notes || getLocationFromIP(updatedRecord.ipAddress),
       });
