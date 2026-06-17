@@ -1,3 +1,7 @@
+import { 
+  // ... purane imports
+  getHolidays, addHoliday, removeHoliday, Holiday // 🌟 Yeh add karein
+} from '../store';
 import { useState, useEffect, useRef } from 'react';
 import { Employee } from '../types';
 import { 
@@ -5,7 +9,7 @@ import {
   getAllEmployeeTimings, saveAllEmployeeTimings, EmployeeTiming,
   updateEmployeePin, addEmployee, removeEmployee, getAttendanceRecords, saveAttendanceRecords, updateAttendanceRecord, getLocationFromIP,
   hasAccess, getAccessControl, grantAccess, revokeAccess, getOfficeLocations,
-  bindEmployeeDevice // <-- Yeh add karein
+  bindEmployeeDevice, getHolidays, addHoliday, removeHoliday, Holiday
 } from '../store';
 import { format, parseISO } from 'date-fns';
 
@@ -29,6 +33,28 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
   const [newRole, setNewRole] = useState<'employee'|'admin'|'manager'>('employee');
   const [addMsg, setAddMsg] = useState('');
   const [deviceResetMsg, setDeviceResetMsg] = useState(''); // 📱 Device Reset Message
+
+  // 🌟 Holidays State & Handlers
+  const [hDate, setHDate] = useState('');
+  const [hName, setHName] = useState('');
+  const [hMsg, setHMsg] = useState('');
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
+
+  useEffect(() => { setHolidays(getHolidays()); }, []);
+
+  const handleAddHoliday = async () => {
+    if (!hDate || !hName.trim()) { setHMsg('Date and Name required!'); return; }
+    await addHoliday(hDate, hName.trim());
+    setHolidays(getHolidays());
+    setHDate(''); setHName('');
+    setHMsg('Holiday marked successfully!'); setTimeout(() => setHMsg(''), 2000);
+  };
+
+  const handleRemoveHoliday = async (date: string) => {
+    if (!confirm('Remove this holiday?')) return;
+    await removeHoliday(date);
+    setHolidays(getHolidays());
+  };
 
   // 📱 Device Reset Handler
   const handleResetDevice = async (empId: string, empName: string) => {
@@ -617,7 +643,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
         </div>
       )}
 
-      {/* ABOUT */}
+            {/* ABOUT */}
       {activeTab === 'about' && (
         <div className="bg-white rounded-xl border border-slate-200 p-5 text-center py-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-xl mb-4"><span className="text-white text-lg font-bold">Af</span></div>
@@ -633,6 +659,72 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
               <li>• Role-based access control</li>
             </ul>
           </div>
+        </div>
+      )}
+
+      {/* 🌟 MANAGE HOLIDAYS (Only for Admin & Manager) */}
+      {(currentUser.role === 'admin' || currentUser.role === 'manager') && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-slate-800 font-semibold text-lg">Manage Holidays</h3>
+              <p className="text-slate-500 text-xs mt-1">Mark official holidays for automatic OT calculation.</p>
+            </div>
+            <span className="px-2 py-1 bg-purple-50 text-purple-600 text-xs font-medium rounded border border-purple-200">
+              {holidays.length} Marked
+            </span>
+          </div>
+
+          {/* Add Holiday Form */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <input 
+              type="date" 
+              value={hDate} 
+              onChange={e => setHDate(e.target.value)} 
+              className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" 
+            />
+            <input 
+              type="text" 
+              placeholder="Holiday Name (e.g., Independence Day)" 
+              value={hName} 
+              onChange={e => setHName(e.target.value)} 
+              className="md:col-span-2 bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" 
+            />
+            <button 
+              onClick={handleAddHoliday} 
+              className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2.5 font-medium text-sm transition-colors"
+            >
+              Mark as Holiday
+            </button>
+          </div>
+          {hMsg && <p className={`text-sm font-medium ${hMsg.includes('required') ? 'text-red-500' : 'text-emerald-600'}`}>{hMsg}</p>}
+
+          {/* Holidays List */}
+          {holidays.length > 0 ? (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {holidays.sort((a, b) => b.date.localeCompare(a.date)).map(h => (
+                <div key={h.date} className="flex items-center justify-between bg-slate-50 rounded-lg p-3 border border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </div>
+                    <div>
+                      <p className="text-slate-800 text-sm font-medium">{h.name}</p>
+                      <p className="text-slate-400 text-xs">{new Date(h.date + 'T00:00:00').toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleRemoveHoliday(h.date)} 
+                    className="px-3 py-1.5 bg-red-50 text-red-500 rounded text-xs font-medium hover:bg-red-100 border border-red-200 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-slate-400 text-sm text-center py-4">No holidays marked yet.</p>
+          )}
         </div>
       )}
     </div>
