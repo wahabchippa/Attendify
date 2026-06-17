@@ -32,56 +32,61 @@ jobs:
           npx cap add android || true
           npx cap sync android
 
-      # 👇 1. JDK 17 Setup (Temurin is best for Android)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 👇 2. Android SDK Setup
-      - name: Setup Android SDK
+      - name: Setup Android SDK & Install SDK 34
         uses: android-actions/setup-android@v3
-
-      - name: Accept Android SDK Licenses
+        
+      - name: Install Specific SDK Packages
         run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
           yes | sdkmanager --licenses || true
 
-      # 👇 3. DYNAMIC PATCHING: Yeh step Gradle ko crash hone se bachayega
       - name: Fix Gradle Memory & SDK Versions
         run: |
           cd android
-          
-          # A) Gradle ki Memory ko 4GB par lock karein (OOM Crash Fix)
-          echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError" >> gradle.properties
+          # Memory ko 3GB par lock karein (4GB se GitHub server khud crash ho jata hai)
+          echo "org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m" >> gradle.properties
           echo "org.gradle.daemon=false" >> gradle.properties
           echo "org.gradle.parallel=false" >> gradle.properties
           echo "org.gradle.workers.max=2" >> gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
           
-          # B) Capacitor ki variables.gradle mein SDK 34 force karein
+          # SDK 34 force karein
           sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' variables.gradle
           sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' variables.gradle
-          
-          echo "✅ Gradle properties and SDK versions patched successfully!"
-          cat gradle.properties
 
-      # 👇 4. Official Gradle Setup (Caching aur Memory management ke liye)
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      # 👇 5. Build APK (With --stacktrace to reveal hidden errors)
-      - name: Build APK with Gradle
+      # 👇 JADOOI STEP 1: Build run karein aur log ko file mein save karein
+      - name: Build APK with Gradle (Capture Log)
+        id: build_apk
+        continue-on-error: true # Agar fail bhi ho tab bhi rukay ga nahi
         run: |
           cd android
           chmod +x ./gradlew
-          # Purane daemons kill karein
           ./gradlew --stop || true
-          # --stacktrace hidden errors ko show karega
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          # Saara output (error + success) build.log file mein save hoga
+          ./gradlew assembleDebug --stacktrace --no-daemon > build.log 2>&1
 
-      # 👇 6. Supabase Auto-Update Logic
+      # 👇 JADOOI STEP 2: Agar fail hua, toh asli error screen par print karein
+      - name: 🚨 Print Exact Error (If Build Failed)
+        if: steps.build_apk.outcome == 'failure'
+        run: |
+          echo "========================================="
+          echo "❌ GRADLE BUILD FAILED! HERE IS THE EXACT ERROR:"
+          echo "========================================="
+          # Log file ki aakhri 100 lines print karein jahan asli error hota hai
+          tail -n 100 android/build.log || true
+          echo "========================================="
+          # Ab workflow ko fail kar dein
+          exit 1 
+
+      # 👇 Yahan se neechay Supabase wala code hai (Sirf tab chalega jab build pass ho)
       - name: Fetch Current Version from Supabase
+        if: steps.build_apk.outcome == 'success'
         id: get_version
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -99,6 +104,7 @@ jobs:
           echo "new_name=$NEW_NAME" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release & Upload APK
+        if: steps.build_apk.outcome == 'success'
         uses: ncipollo/release-action@v1
         with:
           artifacts: "android/app/build/outputs/apk/debug/app-debug.apk"
@@ -108,6 +114,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Supabase App Version
+        if: steps.build_apk.outcome == 'success'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
