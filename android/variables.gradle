@@ -1,8 +1,8 @@
 ext {
     minSdkVersion = 22
-    compileSdkVersion = 36  // 👈 34 se 36 kar dein
-    targetSdkVersion = 36   // 👈 34 se 36 kar dein
-    androidxActivityVersion = '1.9.0' // Agar yeh line hai toh isay bhi check karein
+    compileSdkVersion = 35
+    targetSdkVersion = 35
+    androidxActivityVersion = '1.9.0'
     androidxAppCompatVersion = '1.7.0'
     androidxCoordinatorLayoutVersion = '1.2.0'
     androidxCoreVersion = '1.13.1'
