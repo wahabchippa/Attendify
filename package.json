@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor-community/file-opener": "latest",
+    "@capacitor/app": "latest",
+    "@capacitor/filesystem": "latest",
     "@capacitor/android": "^8.4.0",
     "@capacitor/cli": "^8.4.0",
     "@capacitor/core": "^8.4.0",
