@@ -9,11 +9,6 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
-    
-    # 🛡️ Global Memory Fix: Gradle ko zyada RAM khane se rokein
-    env:
-      JAVA_OPTS: "-Xmx2048m"
-      GRADLE_OPTS: "-Xmx2048m -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false"
 
     steps:
       - name: Checkout Source Code
@@ -38,7 +33,7 @@ jobs:
           npx cap add android || true
           npx cap sync android
 
-      # 2. JDK 17 Setup (Best for Capacitor & Gradle 8.x)
+      # 2. JDK 17 Setup (Best for Gradle 8.7)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -53,15 +48,15 @@ jobs:
         run: |
           yes | sdkmanager --licenses || true
 
-      # 4. Build APK (With Memory Crash Fix)
+      # 4. Build APK (With Ultimate Memory Crash Fix)
       - name: Build APK with Gradle
         run: |
           cd android
           chmod +x ./gradlew
-          # Purane daemons ko kill karein taake RAM free ho
+          # Purane daemons ko kill karein
           ./gradlew --stop || true
-          # --no-daemon aur --max-workers=2 crash ko 100% fix karega
-          ./gradlew assembleDebug --no-daemon --max-workers=2 --stacktrace
+          # --no-daemon aur -Xmx2048m crash ko 100% fix karega
+          ./gradlew assembleDebug --no-daemon --max-workers=2 -Dorg.gradle.jvmargs="-Xmx2048m" --stacktrace
 
       # 5. Supabase se purana version check karein
       - name: Fetch Current Version from Supabase
@@ -86,7 +81,6 @@ jobs:
           
           echo "new_code=$NEW_CODE" >> $GITHUB_OUTPUT
           echo "new_name=$NEW_NAME" >> $GITHUB_OUTPUT
-          echo "Naya Version: $NEW_NAME"
 
       # 6. GitHub Release banayein aur APK upload karein
       - name: Create GitHub Release & Upload APK
@@ -110,8 +104,6 @@ jobs:
           
           APK_URL="https://github.com/${{ github.repository }}/releases/download/v${NEW_NAME}/app-debug.apk"
           
-          echo "Supabase update ho raha hai: Code=$NEW_CODE, Name=$NEW_NAME"
-          
           curl -s -X PATCH "$URL/rest/v1/app_version?id=eq.1" \
             -H "apikey: $SUPABASE_KEY" \
             -H "Authorization: Bearer $SUPABASE_KEY" \
@@ -123,5 +115,3 @@ jobs:
               \"apk_url\": \"$APK_URL\",
               \"force_update\": true
             }"
-          
-          echo "✅ Supabase successfully update ho gaya!"
