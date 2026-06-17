@@ -32,7 +32,6 @@ jobs:
           npx cap add android || true
           npx cap sync android
 
-      # 👇 Yahan JDK 17 ko JDK 21 kar diya hai
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -64,10 +63,9 @@ jobs:
       - name: Fetch Current Version from Supabase
         id: get_version
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          URL="${SUPABASE_URL%/}"
+          URL="https://gefkpawkljalbevkxytn.supabase.co"
           RESPONSE=$(curl -s -X GET "$URL/rest/v1/app_version?id=eq.1&select=version_code" \
             -H "apikey: $SUPABASE_KEY" \
             -H "Authorization: Bearer $SUPABASE_KEY")
@@ -89,10 +87,9 @@ jobs:
 
       - name: Update Supabase App Version
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          URL="${SUPABASE_URL%/}"
+          URL="https://gefkpawkljalbevkxytn.supabase.co"
           NEW_CODE="${{ steps.get_version.outputs.new_code }}"
           NEW_NAME="${{ steps.get_version.outputs.new_name }}"
           APK_URL="https://github.com/${{ github.repository }}/releases/download/v${NEW_NAME}/app-debug.apk"
