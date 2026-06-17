@@ -1,9 +1,8 @@
-# File: .github/workflows/release.yml
+# File: .github/workflows/release.yml (Updated & Corrected Version)
 
 name: Build and Release Android APK
 
 on:
-  # Yeh workflow tab chalega jab aap ek naya "release" create karenge GitHub par
   release:
     types: [published]
 
@@ -12,76 +11,125 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Aapka code download karega
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetches all history for accurate commit count
 
-      # Step 2: Java (JDK) set up karega jo Android build ke liye zaroori hai
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Node.js set up karega (npm install ke liye)
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
 
-      # Step 4: Saare node packages install karega
       - name: Install Dependencies
         run: npm install
 
-      # Step 5: Web assets build karega (Vite)
       - name: Build Web Assets
         run: npm run build
 
-      # Step 6: Capacitor ko web assets se sync karega
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # Step 7: Gradle file mein version update karega
       - name: Update Version in Gradle
+        id: versioning
         run: |
-          # Release tag se version name nikale ga (e.g., v1.0.3 -> 1.0.3)
+          # Get version name from the release tag (e.g., v1.0.1 -> 1.0.1)
           VERSION_NAME=${{ github.event.release.tag_name }}
-          # Gradle file mein naya version name update karega
-          sed -i "s/versionName \".*\"/versionName \"$VERSION_NAME\"/" android/app/build.gradle
-          # Naya version code (number of commits) set karega
+          # Remove 'v' prefix if it exists
+          VERSION_NAME=${VERSION_NAME#v}
+          
+          # Use the number of commits as a unique version code
           VERSION_CODE=$(git rev-list --count HEAD)
+
+          # Update build.gradle
+          sed -i "s/versionName \".*\"/versionName \"$VERSION_NAME\"/" android/app/build.gradle
           sed -i "s/versionCode .*/versionCode $VERSION_CODE/" android/app/build.gradle
-          echo "Updated to Version: $VERSION_NAME ($VERSION_CODE)"
+          
+          echo "Updated to Version Name: $VERSION_NAME, Version Code: $VERSION_CODE"
+          # Set outputs for other steps to use
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
 
-      # Step 8: Keystore file ko secret se decode karke banayega
       - name: Decode Keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          echo $KEYSTORE_BASE64 | base64 --decode > android/my-release-key.jks
-          echo "Keystore file created."
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > my-release-key.jks
 
-      # Step 9: Android APK build karega
-      - name: Build Android APK
+      - name: Build Unsigned APK
         run: |
           cd android
           ./gradlew assembleRelease
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          
-      # Step 10: APK file ko sign karega
+
       - name: Sign APK
+        id: sign_apk
         run: |
-          $ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks android/my-release-key.jks --ks-key-alias ${{ secrets.KEY_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} android/app/build/outputs/apk/release/app-release-unsigned.apk
-        
-      # Step 11: Supabase CLI install karega aur APK upload karega
+          APK_PATH="android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          SIGNED_APK_PATH="app-release.apk"
+          
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+            --ks my-release-key.jks \
+            --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+            --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" \
+            --out $SIGNED_APK_PATH \
+            $APK_PATH
+          
+          echo "signed_apk_path=$SIGNED_APK_PATH" >> $GITHUB_OUTPUT
+
+      - name: Create Supabase Upload/Update Script
+        run: |
+          # This creates a small Node.js script to interact with Supabase
+          cat << 'EOF' > upload.mjs
+          import { createClient } from '@supabase/supabase-js';
+          import fs from 'fs';
+
+          const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+          
+          async function uploadAndSave() {
+            const apkData = fs.readFileSync(process.env.APK_PATH);
+            const apkName = 'app-release.apk'; // Always use the same name to overwrite
+
+            console.log(`Uploading ${apkName} to bucket: ${process.env.BUCKET_NAME}`);
+            const { error: uploadError } = await supabase.storage
+              .from(process.env.BUCKET_NAME)
+              .upload(apkName, apkData, { upsert: true, contentType: 'application/vnd.android.package-archive' });
+            
+            if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+            console.log('Upload successful!');
+
+            const { data: urlData } = supabase.storage.from(process.env.BUCKET_NAME).getPublicUrl(apkName);
+            const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`; // Add timestamp for cache busting
+            
+            console.log(`Updating database with version_code: ${process.env.VERSION_CODE}`);
+            const { error: dbError } = await supabase
+              .from('app_version')
+              .update({
+                version_code: process.env.VERSION_CODE,
+                version_name: process.env.VERSION_NAME,
+                apk_url: publicUrl,
+              })
+              .eq('id', 1);
+
+            if (dbError) throw new Error(`DB update failed: ${dbError.message}`);
+            console.log('Database update successful!');
+          }
+
+          uploadAndSave().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          EOF
+
       - name: Upload to Supabase and Update DB
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }} # <-- Yeh secret add karna padega
-          APK_PATH: android/app/build/outputs/apk/release/app-release-unsigned.apk # Signed APK yahi hota hai is process mein
-          BUCKET_NAME: 'apk' # Aapke bucket ka naam
-        run: |
-          # Comming soon
-          echo "Supabase upload feature will be added here"
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          APK_PATH: ${{ steps.sign_apk.outputs.signed_apk_path }}
+          BUCKET_NAME: 'apk'
+          VERSION_NAME: ${{ steps.versioning.outputs.version_name }}
+          VERSION_CODE: ${{ steps.versioning.outputs.version_code }}
+        run: node upload.mjs
