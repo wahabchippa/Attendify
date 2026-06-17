@@ -76,6 +76,12 @@ jobs:
           echo "new_code=$NEW_CODE" >> $GITHUB_OUTPUT
           echo "new_name=$NEW_NAME" >> $GITHUB_OUTPUT
 
+      # ✅ YE NEW STEP ADD KARDO YAHAN:
+      - name: Update LOCAL_VERSION_CODE in useAppUpdate.ts
+        run: |
+          NEW_CODE="${{ steps.get_version.outputs.new_code }}"
+          sed -i "s/const LOCAL_VERSION_CODE = .*/const LOCAL_VERSION_CODE = $NEW_CODE;/" src/hooks/useAppUpdate.ts
+
       - name: Create GitHub Release & Upload APK
         uses: ncipollo/release-action@v1
         with:
