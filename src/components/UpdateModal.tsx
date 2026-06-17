@@ -4,38 +4,34 @@ import { useAppUpdate } from '../hooks/useAppUpdate';
 
 export default function UpdateModal() {
   const { updateRequired, updateInfo } = useAppUpdate();
-  const [localError, setLocalError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!updateRequired) return null;
 
   const handleBrowserUpdate = async () => {
-    setLocalError(null);
     setIsProcessing(true);
     
-    // 🚀 Hardcoded fallback URL agar hook se dynamic URL khali mile ya fail ho jaye
-    const fallbackUrl = 'https://github.com/wahabchippa/react-vite-tailwind/releases/latest';
-    const finalUrl = updateInfo?.apk_url || fallbackUrl;
+    // 🚀 STUCK FREE SOLUTION: Direct web page par bhejein taake Chrome freeze na ho
+    // Yeh link user ko seedha aapki repo ke latest release page par le jayega
+    const targetUrl = 'https://github.com/wahabchippa/react-vite-tailwind/releases/latest';
 
     try {
-      console.log('Opening system browser for URL:', finalUrl);
+      console.log('Opening system browser for Release Page:', targetUrl);
       
-      // Mobile ka actual default browser system trigger karein
-      await Browser.open({ url: finalUrl });
+      // Mobile ka actual Google Chrome trigger hoga
+      await Browser.open({ url: targetUrl });
       
-      // 5 second ke baad processing state reset karein
+      // 5 second baad button ko normal karein
       setTimeout(() => {
         setIsProcessing(false);
       }, 5000);
 
     } catch (err) {
-      console.error('Capacitor Browser failed, trying fallback:', err);
+      console.error('Browser open failed, trying fallback:', err);
       try {
-        // Safe Webview Fallback 1
-        window.open(finalUrl, '_system');
+        window.open(targetUrl, '_system');
       } catch (e2) {
-        // Safe Webview Fallback 2
-        window.location.href = finalUrl;
+        window.location.href = targetUrl;
       }
       setIsProcessing(false);
     }
@@ -50,16 +46,9 @@ export default function UpdateModal() {
           </div>
           <h2 className="text-slate-800 font-bold text-lg">Update Required</h2>
           <p className="text-slate-500 text-sm mt-1">
-            Version {updateInfo?.version_name || '1.0.6'} is available. You must update to continue using the app.
+            Version {updateInfo?.version_name || '1.0.8'} is available. You must update to continue using the app.
           </p>
         </div>
-
-        {/* Local error feedback box agar link crash ho */}
-        {localError && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-xs font-medium text-red-600 text-center">
-            {localError}
-          </div>
-        )}
 
         <button
           onClick={handleBrowserUpdate}
@@ -70,7 +59,7 @@ export default function UpdateModal() {
         </button>
         
         <p className="text-center text-slate-400 text-xs mt-3">
-          Clicking will open your browser to download the update.
+          Clicking will open GitHub Releases. Tap 'app-debug.apk' to install.
         </p>
       </div>
     </div>
