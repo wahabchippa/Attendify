@@ -592,8 +592,8 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                    <div className="flex items-center gap-2 flex-wrap justify-end">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${emp.role === 'admin' ? 'bg-purple-50 text-purple-600' : emp.role === 'manager' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>{emp.role.toUpperCase()}</span>
                     
-                                        {/* 📱 Reset Device Button - Sirf tab dikhega jab device_id maujood ho */}
-                    {emp.device_id && (
+                                        {/* 📱 Reset Device Button - Sirf Admin aur Manager (Albash) ke liye */}
+                    {emp.device_id && emp.role !== 'admin' && currentUser.role !== 'employee' && (
                       <button 
                         onClick={() => handleResetDevice(emp.id, emp.name)}
                         className="px-2 py-1 bg-amber-50 text-amber-600 rounded text-xs font-medium hover:bg-amber-100 border border-amber-200 flex items-center gap-1 transition-colors"
