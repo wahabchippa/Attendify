@@ -1,11 +1,11 @@
-// Top-level build file
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.0' // 👈 Yeh 8.5.0 hona chahiye
+        // 👈 Yeh 8.5.0 hai (8.13.0 nahi)
+        classpath 'com.android.tools.build:gradle:8.5.0'
         classpath 'com.google.gms:google-services:4.4.4'
     }
 }
