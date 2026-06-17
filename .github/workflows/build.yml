@@ -32,7 +32,7 @@ jobs:
         run: |
           npm install @capacitor/assets --no-save
           npx cap add android || true
-          npx capacitor-assets generate --icon
+          npx capacitor-assets generate
           npx cap sync android
 
       - name: Set up JDK 21
