@@ -41,31 +41,18 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         
-      - name: Install Specific SDK Packages
+      - name: Install SDK 35 & Accept Licenses
         run: |
           sdkmanager "platforms;android-35" "build-tools;35.0.0"
           yes | sdkmanager --licenses || true
 
-      - name: Fix Gradle Memory & SDK Versions
+      # 👇 Fallback Fix: Agar Capacitor ne files overwrite kar di, toh yeh unhe wapis theek kar dega
+      - name: Ensure Correct Versions
         run: |
           cd android
-          
-          # Clean gradle.properties (No duplicates)
-          rm -f gradle.properties
-          echo "org.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8" > gradle.properties
-          echo "org.gradle.daemon=false" >> gradle.properties
-          echo "org.gradle.parallel=false" >> gradle.properties
-          echo "android.useAndroidX=true" >> gradle.properties
-          echo "android.enableJetifier=true" >> gradle.properties
-          
-          # Force SDK 35
           sed -i 's/compileSdkVersion.*/compileSdkVersion = 35/' variables.gradle
           sed -i 's/targetSdkVersion.*/targetSdkVersion = 35/' variables.gradle
-          
-          # Force Gradle 8.7
-          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' gradle/wrapper/gradle-wrapper.properties
-          
-          echo "✅ SDK 35, Gradle 8.7, and Memory fixed!"
+          sed -i "s/classpath 'com.android.tools.build:gradle:.*/classpath 'com.android.tools.build:gradle:8.5.0'/" build.gradle
 
       - name: Build APK with Gradle
         run: |
