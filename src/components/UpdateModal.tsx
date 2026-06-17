@@ -1,6 +1,5 @@
 import { useState } from 'react';
-// Capacitor Browser ko hata kar 'App' import karein
-import { App } from '@capacitor/app'; 
+import { App } from '@capacitor/app';
 import { useAppUpdate } from '../hooks/useAppUpdate';
 
 export default function UpdateModal() {
@@ -23,28 +22,20 @@ export default function UpdateModal() {
     return targetUrl;
   };
 
-  const handleBrowserUpdate = async () => {
+  const handleBrowserUpdate = () => {
     setIsProcessing(true);
     const targetUrl = getTargetUrl();
-
     try {
-      console.log('Opening REAL External Browser:', targetUrl);
-      
-      // YAHAN MAGIC HAI ✨
-      // App.openUrl direct Android OS ko hit karta hai aur App se bahar nikal kar asli Chrome kholta hai
-      await App.openUrl({ url: targetUrl });
-      
+      window.open(targetUrl, '_system');
       setTimeout(() => setIsProcessing(false), 5000);
     } catch (err) {
-      console.error('App.openUrl failed, trying pure window fallback:', err);
-      // Agar plugin fail ho jaye, toh hum native HTML tag ke zariye external browser force karenge
+      console.error('Failed to open external browser:', err);
       const a = document.createElement('a');
       a.href = targetUrl;
-      a.target = '_blank'; // Opens in new external tab
+      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      
       setIsProcessing(false);
     }
   };
@@ -63,17 +54,17 @@ export default function UpdateModal() {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md">
       <div className="bg-white rounded-3xl shadow-2xl p-7 w-full max-w-sm mx-5 transform transition-all">
-        {/* ... (Baqi ka poora UI code waisa hi rahega jaisa pehle tha) ... */}
-        
         <div className="text-center mb-6">
+          
+          {/* ✅ YAHAN LOGO LAGA DIYA HAI */}
           <div className="w-20 h-20 mx-auto mb-4">
-  {/* Yahan '/logo.png' ki jagah apne logo ka naam likhein jo public folder mein hai */}
-  <img 
-    src="/logo.png" 
-    alt="Attendify Logo" 
-    className="w-full h-full object-contain rounded-2xl shadow-md" 
-  />
-</div>
+            <img 
+              src="/logo.png" 
+              alt="Attendify Logo" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+          
           <h2 className="text-slate-900 font-extrabold text-2xl tracking-tight">Update Required</h2>
           <p className="text-slate-500 text-sm mt-2 leading-relaxed">
             Version <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{updateInfo?.version_name || '1.0.9'}</span> is available. You must update to continue using Attendify.
