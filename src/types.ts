@@ -10,14 +10,15 @@ export interface Employee {
 export interface AttendanceRecord {
   id: string;
   employeeId: string;
-  date: string; // YYYY-MM-DD
-  checkIn: string | null; // ISO timestamp
-  checkOut: string | null; // ISO timestamp
-  status: 'present' | 'late' | 'absent' | 'half-day' | 'work-from-home';
+  date: string;
+  checkIn: string | null;
+  checkOut: string | null;
+  status: string;
   totalHours: number;
+  overtime_hours?: number; // 🌟 Yeh line add karni hai
   wifiVerified: boolean;
   ipAddress: string;
-  notes: string;
+  notes?: string;
 }
 
 export interface WFHRequest {
