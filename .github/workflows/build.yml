@@ -38,21 +38,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK & Install SDK 34
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         
-      # 👇 1. Android SDK 36 Install karein
       - name: Install Specific SDK Packages
         run: |
-          sdkmanager "platforms;android-36"
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
           yes | sdkmanager --licenses || true
 
-      # 👇 2. Gradle Memory, SDK 36 aur Gradle 8.13 ko Force karein
       - name: Fix Gradle Memory & SDK Versions
         run: |
           cd android
           
-          # Memory aur properties fix karein
+          # Clean gradle.properties (No duplicates)
           rm -f gradle.properties
           echo "org.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8" > gradle.properties
           echo "org.gradle.daemon=false" >> gradle.properties
@@ -60,43 +58,23 @@ jobs:
           echo "android.useAndroidX=true" >> gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
           
-          # 🚨 THE REAL FIX: variables.gradle ko SDK 36 par zabardasti set karein
-          sed -i 's/compileSdkVersion.*/compileSdkVersion = 36/' variables.gradle
-          sed -i 's/targetSdkVersion.*/targetSdkVersion = 36/' variables.gradle
+          # Force SDK 35
+          sed -i 's/compileSdkVersion.*/compileSdkVersion = 35/' variables.gradle
+          sed -i 's/targetSdkVersion.*/targetSdkVersion = 35/' variables.gradle
           
-          # Gradle version ko 8.13 par upgrade karein (Pichla fix)
-          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-all.zip|' gradle/wrapper/gradle-wrapper.properties
+          # Force Gradle 8.7
+          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' gradle/wrapper/gradle-wrapper.properties
           
-          echo "✅ SDK 36, Gradle 8.13, and Memory fixed!"
-          cat variables.gradle
+          echo "✅ SDK 35, Gradle 8.7, and Memory fixed!"
 
-      # 👇 JADOOI STEP 1: Build run karein aur log ko file mein save karein
-      - name: Build APK with Gradle (Capture Log)
-        id: build_apk
-        continue-on-error: true # Agar fail bhi ho tab bhi rukay ga nahi
+      - name: Build APK with Gradle
         run: |
           cd android
           chmod +x ./gradlew
           ./gradlew --stop || true
-          # Saara output (error + success) build.log file mein save hoga
-          ./gradlew assembleDebug --stacktrace --no-daemon > build.log 2>&1
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
-      # 👇 JADOOI STEP 2: Agar fail hua, toh asli error screen par print karein
-      - name: 🚨 Print Exact Error (If Build Failed)
-        if: steps.build_apk.outcome == 'failure'
-        run: |
-          echo "========================================="
-          echo "❌ GRADLE BUILD FAILED! HERE IS THE EXACT ERROR:"
-          echo "========================================="
-          # Log file ki aakhri 100 lines print karein jahan asli error hota hai
-          tail -n 100 android/build.log || true
-          echo "========================================="
-          # Ab workflow ko fail kar dein
-          exit 1 
-
-      # 👇 Yahan se neechay Supabase wala code hai (Sirf tab chalega jab build pass ho)
       - name: Fetch Current Version from Supabase
-        if: steps.build_apk.outcome == 'success'
         id: get_version
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -114,7 +92,6 @@ jobs:
           echo "new_name=$NEW_NAME" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release & Upload APK
-        if: steps.build_apk.outcome == 'success'
         uses: ncipollo/release-action@v1
         with:
           artifacts: "android/app/build/outputs/apk/debug/app-debug.apk"
@@ -124,7 +101,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Supabase App Version
-        if: steps.build_apk.outcome == 'success'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
