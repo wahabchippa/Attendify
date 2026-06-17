@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { Browser } from '@capacitor/browser';
-import { Clipboard } from '@capacitor/clipboard'; // (Optional) For Copy to Clipboard
 import { useAppUpdate } from '../hooks/useAppUpdate';
 
 export default function UpdateModal() {
   const { updateRequired, updateInfo } = useAppUpdate();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false); // Copy status state
+  const [copySuccess, setCopySuccess] = useState(false);
 
   if (!updateRequired) return null;
 
-  // URL Generation Logic (Bahar nikal liya taake Copy Link mein bhi use ho sake)
+  // URL Generation Logic
   const getTargetUrl = () => {
     let targetUrl = 'https://github.com/wahabchippa/react-vite-tailwind/releases/latest';
     
@@ -20,7 +19,7 @@ export default function UpdateModal() {
       
       if (match && match[1]) {
         let repoPath = match[1].replace(/\.git$/, ''); 
-        // CACHE BUSTING: ?t=${Date.now()} taake hamesha fresh page khule
+        // CACHE BUSTING: ?t=${Date.now()}
         targetUrl = `https://github.com/${repoPath}/releases/latest?t=${Date.now()}`;
       }
     }
@@ -47,19 +46,15 @@ export default function UpdateModal() {
     }
   };
 
-  // Copy Link Function
+  // Bina plugin ke Copy function
   const handleCopyLink = async () => {
     const url = getTargetUrl();
     try {
-      // Capacitor clipboard plugin use karna best hai
-      await Clipboard.write({ string: url });
+      await navigator.clipboard.writeText(url);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 3000);
     } catch (err) {
-      // Fallback agar plugin nahi hai
-      navigator.clipboard.writeText(url);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 3000);
+      console.error('Copy failed', err);
     }
   };
 
@@ -76,14 +71,6 @@ export default function UpdateModal() {
           <p className="text-slate-500 text-sm mt-2 leading-relaxed">
             Version <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{updateInfo?.version_name || '1.0.9'}</span> is available. You must update to continue using Attendify.
           </p>
-
-          {/* Optional Release Notes (Agar supabase me available ho) */}
-          {updateInfo?.release_notes && (
-            <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 text-left">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">What's New</span>
-              <p className="text-slate-600 text-sm mt-1">{updateInfo.release_notes}</p>
-            </div>
-          )}
         </div>
 
         <button
@@ -104,7 +91,6 @@ export default function UpdateModal() {
           )}
         </button>
         
-        {/* Helper Texts & Copy Link */}
         <div className="mt-5 text-center">
           <p className="text-slate-400 text-xs mb-2">
             Clicking will open GitHub Releases.<br/>Tap <span className="font-semibold text-slate-600">app-debug.apk</span> to install.
@@ -116,7 +102,6 @@ export default function UpdateModal() {
             {copySuccess ? '✓ Link Copied!' : 'Copy Update Link'}
           </button>
         </div>
-
       </div>
     </div>
   );
