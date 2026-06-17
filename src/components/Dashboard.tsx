@@ -7,7 +7,7 @@ import {
   getWFHRequests, addWFHRequest, updateWFHRequest,
   getTodayWFHRequest, getPendingWFHRequests,
   getPendingAccountRequests, updateAccountRequest, addEmployee, syncAll,
-  getPKTDate, getPKTDateString, getPKTISOString
+  getPKTDate, getPKTDateString, getPKTISOString, isHoliday // 🌟 isHoliday add karein
 } from '../store';
 import { verifyWiFiConnection } from '../wifiService';
 import { format, parseISO } from 'date-fns';
@@ -159,43 +159,68 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
     const now = getPKTDate();
     const isSunday = new Date(todayRecord.date).getDay() === 0;
+    const isHolidayShift = isHoliday(todayRecord.date); // 🌟 Holiday Check
+    
     const start = todayRecord.checkIn ? new Date(todayRecord.checkIn) : now;
     const totalHours = Math.round((now.getTime() - start.getTime()) / 3600000 * 100) / 100;
     const t = getEmployeeTiming(currentUser.id);
     
     let status = todayRecord.status;
-    if (!isSunday && totalHours < t.minHoursForHalfDay) status = 'half-day';
-    else if (todayRecord.status === 'late') status = 'late';
-    
-    const otHours = isSunday ? totalHours : (totalHours > t.minHoursForFullDay ? Math.round((totalHours - t.minHoursForFullDay)*100)/100 : 0);
+    let otHours = 0;
+    let overtime_hours = 0; // 🌟 Supabase column ke liye
     const loc = getLocationFromIP(todayRecord.ipAddress);
-    
-    // 2. Trap Logic: Notes aur wifiVerified ko update karein
-    let notes = isSunday ? `SUNDAY OT: ${otHours}h | ${loc}` : (otHours > 0 ? `OT: ${otHours}h | ${loc}` : loc);
-    let wifiVerified = true;
+    let notes = loc;
 
+    // 🌟 2. HOLIDAY OT LOGIC (Sab se pehle yeh check hoga)
+    if (isHolidayShift) {
+      status = 'holiday-ot';
+      otHours = totalHours; 
+      overtime_hours = totalHours;
+      notes = `HOLIDAY OT: ${otHours}h | ${loc}`;
+    } 
+    // 3. SUNDAY OT LOGIC
+    else if (isSunday) {
+      otHours = totalHours;
+      overtime_hours = totalHours;
+      notes = `SUNDAY OT: ${otHours}h | ${loc}`;
+    } 
+    // 4. NORMAL DAY LOGIC
+    else {
+      if (totalHours < t.minHoursForHalfDay) status = 'half-day';
+      else if (todayRecord.status === 'late') status = 'late';
+      
+      if (totalHours > t.minHoursForFullDay) {
+        otHours = Math.round((totalHours - t.minHoursForFullDay) * 100) / 100;
+        overtime_hours = otHours;
+        notes = `OT: ${otHours}h | ${loc}`;
+      }
+    }
+
+    // 🚨 5. Silent Trap Logic (Ghar se check out)
+    let wifiVerified = true;
     if (!isInsideOffice) {
-      wifiVerified = false; // Unverified mark karein
-      notes += ' | ⚠️ OUTSIDE OFFICE (Unverified)'; // Admin ke liye flag
+      wifiVerified = false;
+      notes += ' | ⚠️ OUTSIDE OFFICE (Unverified)';
     }
 
     const localISOString = getPKTISOString();
     
-    // 3. Database mein save karein (Check-out allow hoga)
+    // 6. Database mein save karein
     await updateAttendanceRecord(todayRecord.id, { 
       checkOut: localISOString, 
       totalHours, 
       status, 
       notes,
-      wifiVerified // Yeh status store ko bhej diya
+      wifiVerified,
+      overtime_hours // 🌟 Yeh Supabase mein save hoga
     });
     await syncAll();
     
-    setTodayRecord({ ...todayRecord, checkOut: localISOString, totalHours, status, notes, wifiVerified });
+    setTodayRecord({ ...todayRecord, checkOut: localISOString, totalHours, status, notes, wifiVerified, overtime_hours });
     
-    // 4. UI Feedback: Agar office mein nahi hai toh Warning Modal dikhayen
+    // 7. UI Feedback
     if (!isInsideOffice) {
-      setShowWarningModal(true); // 🚨 Silent Trap Triggered!
+      setShowWarningModal(true); 
     } else {
       showNotif('success', `Checked out! ${totalHours.toFixed(1)}h${otHours > 0 ? ` (OT: +${otHours}h)` : ''}`);
     }
@@ -233,7 +258,8 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const getGreeting = () => { const h = currentTime.getHours(); return h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening'; };
   const ss = (s: string) => {
     const m: any = { present:'bg-emerald-50 text-emerald-700 border-emerald-200', late:'bg-amber-50 text-amber-700 border-amber-200',
-      absent:'bg-red-50 text-red-700 border-red-200', 'half-day':'bg-orange-50 text-orange-700 border-orange-200', 'work-from-home':'bg-blue-50 text-blue-700 border-blue-200' };
+      absent:'bg-red-50 text-red-700 border-red-200', 'half-day':'bg-orange-50 text-orange-700 border-orange-200', 'work-from-home':'bg-blue-50 text-blue-700 border-blue-200',
+      'holiday-ot':'bg-purple-50 text-purple-700 border-purple-200' }; // 🌟 Yeh line add karni hai
     return m[s] || 'bg-slate-50 text-slate-600 border-slate-200';
   };
 
@@ -387,7 +413,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                   <div className="space-y-4">
                     <div className="text-center">
                       <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold border ${ss(todayRecord.status)}`}>
-                        {todayRecord.status === 'work-from-home' ? '🏠 WFH' : todayRecord.status === 'present' ? '✓ Present' : todayRecord.status === 'late' ? '⚠ Late' : todayRecord.status.toUpperCase()}
+                        {todayRecord.status === 'holiday-ot' ? '🌟 Holiday OT' : todayRecord.status === 'work-from-home' ? '🏠 WFH' : todayRecord.status === 'present' ? '✓ Present' : todayRecord.status === 'late' ? '⚠ Late' : todayRecord.status.toUpperCase()}
                       </span>
                       {todayRecord.notes?.includes('SUNDAY') && <span className="ml-2 px-2 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-medium border border-purple-200">Sunday OT</span>}
                     </div>
