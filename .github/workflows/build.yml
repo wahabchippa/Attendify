@@ -41,17 +41,17 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         
-      - name: Install SDK 35 & Accept Licenses
+      - name: Install SDK 36 & Accept Licenses
         run: |
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
           yes | sdkmanager --licenses || true
 
       # 👇 Fallback Fix: Agar Capacitor ne files overwrite kar di, toh yeh unhe wapis theek kar dega
       - name: Ensure Correct Versions
         run: |
           cd android
-          sed -i 's/compileSdkVersion.*/compileSdkVersion = 35/' variables.gradle
-          sed -i 's/targetSdkVersion.*/targetSdkVersion = 35/' variables.gradle
+          sed -i 's/compileSdkVersion.*/compileSdkVersion = 36/' variables.gradle
+          sed -i 's/targetSdkVersion.*/targetSdkVersion = 36/' variables.gradle
           sed -i "s/classpath 'com.android.tools.build:gradle:.*/classpath 'com.android.tools.build:gradle:8.5.0'/" build.gradle
 
       - name: Build APK with Gradle
