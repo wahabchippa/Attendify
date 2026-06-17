@@ -14,7 +14,6 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # 1. Node.js 22 Setup
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -33,14 +32,14 @@ jobs:
           npx cap add android || true
           npx cap sync android
 
-      # 2. JDK 17 Setup (Best for Gradle 8.7)
+      # 👇 1. JDK 17 Setup (Temurin is best for Android)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. Android SDK Setup
+      # 👇 2. Android SDK Setup
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
@@ -48,17 +47,40 @@ jobs:
         run: |
           yes | sdkmanager --licenses || true
 
-      # 4. Build APK (With Ultimate Memory Crash Fix)
+      # 👇 3. DYNAMIC PATCHING: Yeh step Gradle ko crash hone se bachayega
+      - name: Fix Gradle Memory & SDK Versions
+        run: |
+          cd android
+          
+          # A) Gradle ki Memory ko 4GB par lock karein (OOM Crash Fix)
+          echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError" >> gradle.properties
+          echo "org.gradle.daemon=false" >> gradle.properties
+          echo "org.gradle.parallel=false" >> gradle.properties
+          echo "org.gradle.workers.max=2" >> gradle.properties
+          echo "android.useAndroidX=true" >> gradle.properties
+          
+          # B) Capacitor ki variables.gradle mein SDK 34 force karein
+          sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' variables.gradle
+          sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' variables.gradle
+          
+          echo "✅ Gradle properties and SDK versions patched successfully!"
+          cat gradle.properties
+
+      # 👇 4. Official Gradle Setup (Caching aur Memory management ke liye)
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # 👇 5. Build APK (With --stacktrace to reveal hidden errors)
       - name: Build APK with Gradle
         run: |
           cd android
           chmod +x ./gradlew
-          # Purane daemons ko kill karein
+          # Purane daemons kill karein
           ./gradlew --stop || true
-          # --no-daemon aur -Xmx2048m crash ko 100% fix karega
-          ./gradlew assembleDebug --no-daemon --max-workers=2 -Dorg.gradle.jvmargs="-Xmx2048m" --stacktrace
+          # --stacktrace hidden errors ko show karega
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
-      # 5. Supabase se purana version check karein
+      # 👇 6. Supabase Auto-Update Logic
       - name: Fetch Current Version from Supabase
         id: get_version
         env:
@@ -69,20 +91,13 @@ jobs:
           RESPONSE=$(curl -s -X GET "$URL/rest/v1/app_version?id=eq.1&select=version_code" \
             -H "apikey: $SUPABASE_KEY" \
             -H "Authorization: Bearer $SUPABASE_KEY")
-          
           CURRENT_CODE=$(echo "$RESPONSE" | jq '.[0].version_code')
-          
-          if [ "$CURRENT_CODE" == "null" ] || [ -z "$CURRENT_CODE" ]; then 
-            CURRENT_CODE=0
-          fi
-          
+          if [ "$CURRENT_CODE" == "null" ] || [ -z "$CURRENT_CODE" ]; then CURRENT_CODE=0; fi
           NEW_CODE=$((CURRENT_CODE + 1))
           NEW_NAME="1.0.$NEW_CODE" 
-          
           echo "new_code=$NEW_CODE" >> $GITHUB_OUTPUT
           echo "new_name=$NEW_NAME" >> $GITHUB_OUTPUT
 
-      # 6. GitHub Release banayein aur APK upload karein
       - name: Create GitHub Release & Upload APK
         uses: ncipollo/release-action@v1
         with:
@@ -92,7 +107,6 @@ jobs:
           body: "Automated build from main branch. Force update enabled."
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 7. Supabase database ko naye version aur link se update karein
       - name: Update Supabase App Version
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -101,17 +115,10 @@ jobs:
           URL="${SUPABASE_URL%/}"
           NEW_CODE="${{ steps.get_version.outputs.new_code }}"
           NEW_NAME="${{ steps.get_version.outputs.new_name }}"
-          
           APK_URL="https://github.com/${{ github.repository }}/releases/download/v${NEW_NAME}/app-debug.apk"
-          
           curl -s -X PATCH "$URL/rest/v1/app_version?id=eq.1" \
             -H "apikey: $SUPABASE_KEY" \
             -H "Authorization: Bearer $SUPABASE_KEY" \
             -H "Content-Type: application/json" \
             -H "Prefer: return=minimal" \
-            -d "{
-              \"version_code\": $NEW_CODE,
-              \"version_name\": \"$NEW_NAME\",
-              \"apk_url\": \"$APK_URL\",
-              \"force_update\": true
-            }"
+            -d "{\"version_code\": $NEW_CODE, \"version_name\": \"$NEW_NAME\", \"apk_url\": \"$APK_URL\", \"force_update\": true}"
