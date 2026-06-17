@@ -3,9 +3,7 @@ import { App } from '@capacitor/app';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileOpener } from '@capacitor-community/file-opener';
 import { Capacitor } from '@capacitor/core';
-import { supabase } from '../store'; // Agar aapka supabase client kisi aur file mein hai toh isko change kar sakte hain
-
-const LOCAL_VERSION_CODE = 1; // ← Har baar jab aap nayi APK bano ge, isko 2, 3, 4 kar dena
+import { supabase } from '../store';
 
 interface UpdateInfo {
   version_code: number;
@@ -22,13 +20,18 @@ export function useAppUpdate() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Yeh code sirf asli mobile par chalega, computer/browser par error nahi dega
     if (!Capacitor.isNativePlatform()) return;
     checkForUpdate();
   }, []);
 
   const checkForUpdate = async () => {
     try {
+      // Get actual app version from device
+      const appInfo = await App.getInfo();
+      const currentVersionCode = appInfo.versionCode; // Dynamic version
+      
+      console.log('Current App Version Code:', currentVersionCode);
+
       const { data, error } = await supabase
         .from('app_version')
         .select('*')
@@ -37,12 +40,16 @@ export function useAppUpdate() {
 
       if (error || !data) return;
 
-      // Agar database mein version_code bara hai local se, toh update modal dikhao
-      if (data.version_code > LOCAL_VERSION_CODE) {
+      console.log('Server Version Code:', data.version_code);
+
+      // Compare dynamic versions
+      if (data.version_code > currentVersionCode) {
         setUpdateInfo(data);
         setUpdateRequired(true);
       }
-    } catch {}
+    } catch (err) {
+      console.error('Update check failed:', err);
+    }
   };
 
   const handleUpdate = async () => {
@@ -84,14 +91,12 @@ export function useAppUpdate() {
         allChunks.reduce((data, byte) => data + String.fromCharCode(byte), '')
       );
 
-      // Mobile memory mein save karein
       const writeResult = await Filesystem.writeFile({
         path: fileName,
         data: base64,
         directory: Directory.Cache,
       });
 
-      // Package installer ko call karein
       await FileOpener.open({
         filePath: writeResult.uri,
         contentType: 'application/vnd.android.package-archive',
