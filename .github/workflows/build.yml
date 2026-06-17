@@ -49,16 +49,22 @@ jobs:
       - name: Fix Gradle Memory & SDK Versions
         run: |
           cd android
-          # Memory ko 3GB par lock karein (4GB se GitHub server khud crash ho jata hai)
-          echo "org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m" >> gradle.properties
+          
+          # 1. Purani file delete karein taake duplicate parameters ka crash na ho
+          rm -f gradle.properties
+          
+          # 2. Bilkul nayi aur saaf file banayein
+          echo "org.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8" > gradle.properties
           echo "org.gradle.daemon=false" >> gradle.properties
           echo "org.gradle.parallel=false" >> gradle.properties
-          echo "org.gradle.workers.max=2" >> gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
           
-          # SDK 34 force karein
-          sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' variables.gradle
-          sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' variables.gradle
+          # 3. SDK 34 force karein (Without spaces issue)
+          sed -i 's/compileSdkVersion.*/compileSdkVersion = 34/' variables.gradle
+          sed -i 's/targetSdkVersion.*/targetSdkVersion = 34/' variables.gradle
+          
+          echo "✅ Gradle properties fixed!"
 
       # 👇 JADOOI STEP 1: Build run karein aur log ko file mein save karein
       - name: Build APK with Gradle (Capture Log)
