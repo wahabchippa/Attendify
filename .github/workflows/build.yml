@@ -50,21 +50,23 @@ jobs:
         run: |
           cd android
           
-          # 1. Purani file delete karein taake duplicate parameters ka crash na ho
+          # 1. Memory aur properties fix karein
           rm -f gradle.properties
-          
-          # 2. Bilkul nayi aur saaf file banayein
           echo "org.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8" > gradle.properties
           echo "org.gradle.daemon=false" >> gradle.properties
           echo "org.gradle.parallel=false" >> gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
           
-          # 3. SDK 34 force karein (Without spaces issue)
+          # 2. SDK 34 force karein
           sed -i 's/compileSdkVersion.*/compileSdkVersion = 34/' variables.gradle
           sed -i 's/targetSdkVersion.*/targetSdkVersion = 34/' variables.gradle
           
-          echo "✅ Gradle properties fixed!"
+          # 3. 🚨 THE REAL FIX: Gradle version ko 8.13 par upgrade karein
+          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-all.zip|' gradle/wrapper/gradle-wrapper.properties
+          
+          echo "✅ Gradle 8.13 and properties fixed!"
+          cat gradle/wrapper/gradle-wrapper.properties
 
       # 👇 JADOOI STEP 1: Build run karein aur log ko file mein save karein
       - name: Build APK with Gradle (Capture Log)
