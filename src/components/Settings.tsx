@@ -277,7 +277,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
             <select value={secretEditRecord?.status || 'present'} onChange={e => setSecretEditRecord((p:any) => ({...p, status: e.target.value}))}
               className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
               <option value="present">Present</option><option value="late">Late</option><option value="absent">Absent</option>
-              <option value="half-day">Half Day</option><option value="work-from-home">WFH</option>
+              <option value="half-day">Half Day</option><option value="holiday-ot">🌟 Holiday OT</option>
             </select>
             <input type="number" step="0.5" placeholder="Hours" value={secretEditRecord?.totalHours || ''}
               onChange={e => setSecretEditRecord((p:any) => ({...p, totalHours: parseFloat(e.target.value)||0}))}
@@ -385,7 +385,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   <select value={secretEditRecord.status} onChange={e => setSecretEditRecord((p:any) => ({...p, status: e.target.value}))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
                     <option value="present">Present</option><option value="late">Late</option><option value="absent">Absent</option>
-                    <option value="half-day">Half Day</option><option value="work-from-home">WFH</option>
+                    <option value="half-day">Half Day</option><option value="holiday-ot">🌟 Holiday OT</option>
                   </select>
                 </div>
 
