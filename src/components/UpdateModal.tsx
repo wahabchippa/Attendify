@@ -1,23 +1,43 @@
+import { useState } from 'react';
 import { Browser } from '@capacitor/browser';
 import { useAppUpdate } from '../hooks/useAppUpdate';
 
 export default function UpdateModal() {
-  // Hum sirf updateRequired aur updateInfo use karenge
   const { updateRequired, updateInfo } = useAppUpdate();
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Agar update ki zaroorat nahi hai, toh kuch bhi screen par nahi dikhao
   if (!updateRequired) return null;
 
-  // Naya Function: Browser open karne ke liye
   const handleBrowserUpdate = async () => {
-    if (updateInfo?.apk_url) {
+    setLocalError(null);
+    setIsProcessing(true);
+    
+    // 🚀 Hardcoded fallback URL agar hook se dynamic URL khali mile ya fail ho jaye
+    const fallbackUrl = 'https://github.com/wahabchippa/react-vite-tailwind/releases/latest';
+    const finalUrl = updateInfo?.apk_url || fallbackUrl;
+
+    try {
+      console.log('Opening system browser for URL:', finalUrl);
+      
+      // Mobile ka actual default browser system trigger karein
+      await Browser.open({ url: finalUrl });
+      
+      // 5 second ke baad processing state reset karein
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 5000);
+
+    } catch (err) {
+      console.error('Capacitor Browser failed, trying fallback:', err);
       try {
-        // Mobile ka default browser (Chrome) open karega
-        await Browser.open({ url: updateInfo.apk_url });
-      } catch (err) {
-        // Fallback agar browser na open ho
-        window.open(updateInfo.apk_url, '_blank');
+        // Safe Webview Fallback 1
+        window.open(finalUrl, '_system');
+      } catch (e2) {
+        // Safe Webview Fallback 2
+        window.location.href = finalUrl;
       }
+      setIsProcessing(false);
     }
   };
 
@@ -30,16 +50,23 @@ export default function UpdateModal() {
           </div>
           <h2 className="text-slate-800 font-bold text-lg">Update Required</h2>
           <p className="text-slate-500 text-sm mt-1">
-            Version {updateInfo?.version_name} is available. You must update to continue using the app.
+            Version {updateInfo?.version_name || '1.0.6'} is available. You must update to continue using the app.
           </p>
         </div>
 
-        {/* Downloading progress bar hata diya hai kyunke browser khud download karega */}
+        {/* Local error feedback box agar link crash ho */}
+        {localError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-xs font-medium text-red-600 text-center">
+            {localError}
+          </div>
+        )}
+
         <button
           onClick={handleBrowserUpdate}
-          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors shadow-lg shadow-blue-600/20"
+          disabled={isProcessing}
+          className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold rounded-xl text-sm transition-colors shadow-lg shadow-blue-600/20"
         >
-          Update Now
+          {isProcessing ? 'Opening Browser...' : 'Update Now'}
         </button>
         
         <p className="text-center text-slate-400 text-xs mt-3">
