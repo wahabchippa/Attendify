@@ -35,14 +35,24 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin' # Temurin is best for Android
           java-version: '17'
+
+      # 👇 NAYA STEP: Android SDK Setup karein
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 👇 NAYA STEP: Android Licenses Accept karein (Bohat Zaroori)
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | sdkmanager --licenses || true
 
       - name: Build APK with Gradle
         run: |
           cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          chmod +x ./gradlew
+          # --stacktrace lagaya hai taake error ki detail mil sake
+          ./gradlew assembleDebug --stacktrace 
 
       # 👇 STEP A: Supabase se purana version check karein
       - name: Fetch Current Version from Supabase
