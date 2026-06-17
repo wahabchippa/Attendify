@@ -13,4 +13,7 @@ ext {
     androidxJunitVersion = '1.2.1'
     androidxEspressoCoreVersion = '3.6.1'
     cordovaAndroidVersion = '10.1.1'
+    
+    // 🚀 THE MAGIC BULLET: Capacitor ko strictly bata rahe hain ke 1.8.0 hi use kare
+    androidxBrowserVersion = '1.8.0'
 }
