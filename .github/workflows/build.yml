@@ -27,9 +27,12 @@ jobs:
       - name: Build Web Project
         run: npm run build --if-present
 
-      - name: Add and Sync Android Platform
+      # 🚀 YEH HAI WOH VIP STEP JO AAPKE LOGO.PNG SE ANDROID ICONS GENERATE KAREGA
+      - name: Generate Custom App Icons & Sync
         run: |
+          npm install @capacitor/assets --no-save
           npx cap add android || true
+          npx capacitor-assets generate --icon
           npx cap sync android
 
       - name: Set up JDK 21
@@ -76,7 +79,6 @@ jobs:
           echo "new_code=$NEW_CODE" >> $GITHUB_OUTPUT
           echo "new_name=$NEW_NAME" >> $GITHUB_OUTPUT
 
-      # ✅ YE NEW STEP ADD KARDO YAHAN:
       - name: Update LOCAL_VERSION_CODE in useAppUpdate.ts
         run: |
           NEW_CODE="${{ steps.get_version.outputs.new_code }}"
@@ -88,7 +90,7 @@ jobs:
           artifacts: "android/app/build/outputs/apk/debug/app-debug.apk"
           tag: "${{ steps.get_version.outputs.new_name }}"
           name: "Attendify Release ${{ steps.get_version.outputs.new_name }}"
-          body: "Automated build from main branch. Force update enabled."
+          body: "Automated build from main branch with custom blue/white logo."
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Supabase App Version
