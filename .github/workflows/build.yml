@@ -106,4 +106,4 @@ jobs:
             -H "Authorization: Bearer $SUPABASE_KEY" \
             -H "Content-Type: application/json" \
             -H "Prefer: return=minimal" \
-            -d "{\"version_code\": $NEW_CODE, \"version_name\": \"$NEW_NAME\", \"apk_url\": \"$APK_URL\", \"force_update\": true}"
+            -d "{\"version_code\": $NEW_CODE, \"version_name\": \"$NEW_NAME\", \"apk_url\": \"$APK_URL\", \"force_update\": false}"
