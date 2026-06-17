@@ -207,5 +207,53 @@ export function useAppUpdate() {
     }
   };
 
-  return { updateRequired, updateInfo, downloading, downloadProgress, error, handleUpdate, checkForUpdate };
+  // src/hooks/useAppUpdate.ts
+
+// ... baaki poora code waisa hi rahega ...
+
+// Hum local aur server code ko state mein save karenge taake UI mein dikha sakein
+const [debugInfo, setDebugInfo] = useState({ local: 0, server: 0 }); 
+
+// ...
+
+const checkForUpdate = async () => {
+  try {
+    console.log('===== UPDATE CHECK STARTED =====');
+    const currentVersionCode = await getLocalBuildCode();
+    
+    // ...
+    
+    const { data, error: dbError } = await supabase
+      // ...
+    
+    const serverCode = Number(data.version_code);
+    
+    // NAYI LINE: Debug info state mein save karein
+    setDebugInfo({ local: currentVersionCode, server: serverCode }); 
+
+    // ...
+
+    if (serverCode > currentVersionCode) {
+      // ...
+    } else {
+      // ...
+    }
+  } catch (err) {
+    // ...
+  }
+};
+
+// ...
+
+return { 
+  updateRequired, 
+  updateInfo, 
+  downloading, 
+  downloadProgress, 
+  error, 
+  handleUpdate, 
+  checkForUpdate,
+  debugInfo // <-- YEH NAYA ADD KIYA
+};
+}
 }
