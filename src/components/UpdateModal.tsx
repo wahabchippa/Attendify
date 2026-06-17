@@ -1,53 +1,19 @@
-import { useState } from 'react';
-import { App } from '@capacitor/app';
+// src/components/UpdateModal.tsx
+
 import { useAppUpdate } from '../hooks/useAppUpdate';
 
 export default function UpdateModal() {
-  const { updateRequired, updateInfo } = useAppUpdate();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
+  // ✅ hook se nayi cheezein nikaalein: handleUpdate, downloading, progress
+  const { updateRequired, updateInfo, handleUpdate, downloading, downloadProgress, error } = useAppUpdate();
 
-  if (!updateRequired) return null;
-
-  const getTargetUrl = () => {
-    let targetUrl = 'https://github.com/wahabchippa/react-vite-tailwind/releases/latest';
-    if (updateInfo?.apk_url) {
-      const githubRepoRegex = /^https?:\/\/(?:www\.)?github\.com\/([^\/]+\/[^\/]+)/i;
-      const match = updateInfo.apk_url.match(githubRepoRegex);
-      if (match && match[1]) {
-        let repoPath = match[1].replace(/\.git$/, ''); 
-        targetUrl = `https://github.com/${repoPath}/releases/latest?t=${Date.now()}`;
-      }
-    }
-    return targetUrl;
-  };
-
-  const handleBrowserUpdate = () => {
-    setIsProcessing(true);
-    const targetUrl = getTargetUrl();
-    try {
-      window.open(targetUrl, '_system');
-      setTimeout(() => setIsProcessing(false), 5000);
-    } catch (err) {
-      console.error('Failed to open external browser:', err);
-      const a = document.createElement('a');
-      a.href = targetUrl;
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setIsProcessing(false);
-    }
-  };
+  // Agar update zaroori nahi, toh component ko render hi na karein
+  if (!updateRequired || !updateInfo) return null;
 
   const handleCopyLink = async () => {
-    const url = getTargetUrl();
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 3000);
-    } catch (err) {
-      console.error('Copy failed', err);
+    // Ab hum direct APK URL copy karenge
+    if (updateInfo?.apk_url) {
+      await navigator.clipboard.writeText(updateInfo.apk_url);
+      // Optional: show a success message
     }
   };
 
@@ -55,51 +21,61 @@ export default function UpdateModal() {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md">
       <div className="bg-white rounded-3xl shadow-2xl p-7 w-full max-w-sm mx-5 transform transition-all">
         <div className="text-center mb-6">
-          
-          {/* ✅ YAHAN LOGO LAGA DIYA HAI */}
           <div className="w-20 h-20 mx-auto mb-4">
-            <img 
-              src="/logo.png" 
-              alt="Attendify Logo" 
-              className="w-full h-full object-contain"
-            />
+            <img src="/logo.png" alt="Attendify Logo" className="w-full h-full object-contain" />
           </div>
-          
-          <h2 className="text-slate-900 font-extrabold text-2xl tracking-tight">Update Required</h2>
+          <h2 className="text-slate-900 font-extrabold text-2xl tracking-tight">Update Available</h2>
           <p className="text-slate-500 text-sm mt-2 leading-relaxed">
-            Version <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{updateInfo?.version_name || '1.0.9'}</span> is available. You must update to continue using Attendify.
+            A new version <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{updateInfo.version_name}</span> is ready. Please update to continue.
           </p>
         </div>
 
-        <button
-          onClick={handleBrowserUpdate}
-          disabled={isProcessing}
-          className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] disabled:bg-slate-300 disabled:text-slate-500 text-white font-bold rounded-xl text-[16px] transition-all duration-200 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
-        >
-          {isProcessing ? (
-            <>
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Opening Browser...
-            </>
+        {/* --- UPDATE BUTTON LOGIC --- */}
+        <div className="w-full">
+          {downloading ? (
+            // Jab download ho raha ho
+            <div className="w-full text-center">
+              <p className="text-sm font-semibold text-slate-700">Downloading... {downloadProgress}%</p>
+              <div className="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                <div 
+                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
+                  style={{ width: `${downloadProgress}%` }}
+                ></div>
+              </div>
+            </div>
           ) : (
-            'Update Now'
+            // Default state
+            <button
+              onClick={handleUpdate} // ✅ AB YEH IN-APP DOWNLOADER CALL KAREGA
+              disabled={downloading}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-xl text-[16px] transition-all duration-200 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+            >
+              Update Now
+            </button>
           )}
-        </button>
-        
-        <div className="mt-5 text-center">
-          <p className="text-slate-400 text-xs mb-2">
-            Clicking will open your phone's browser.<br/>Tap <span className="font-semibold text-slate-600">app-debug.apk</span> to install.
-          </p>
-          <button 
-            onClick={handleCopyLink}
-            className="text-xs font-semibold text-blue-500 hover:text-blue-600 transition-colors"
-          >
-            {copySuccess ? '✓ Link Copied!' : 'Copy Update Link'}
-          </button>
         </div>
+        
+        {/* Error message */}
+        {error && <p className="text-red-500 text-xs text-center mt-3">{error}</p>}
+        
+        {/* Force update message */}
+        {updateInfo.force_update && (
+           <p className="text-xs text-center text-slate-500 mt-4">
+             This is a mandatory update. You must install it to continue using the app.
+           </p>
+        )}
+
+        {/* Optional: Copy link as fallback */}
+        {!downloading && !updateInfo.force_update && (
+            <div className="mt-4 text-center">
+                <button 
+                    onClick={handleCopyLink}
+                    className="text-xs font-semibold text-blue-500 hover:text-blue-600 transition-colors"
+                >
+                    Copy Download Link
+                </button>
+            </div>
+        )}
       </div>
     </div>
   );
