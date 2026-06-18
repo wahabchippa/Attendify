@@ -31,8 +31,12 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      # ✅ YAHAN ENV VARIABLES ADD KAR DIYE HAIN TAAKE VITE BUILD FAIL NA HO
       - name: Build Web Assets
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: Sync Capacitor
         run: npx cap sync android
@@ -127,7 +131,8 @@ jobs:
       - name: Upload to Supabase and Update DB
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          # ✅ YAHAN GITHUB SECRET KA SAHI NAAM LIKH DIYA HAI TAAKE SCRIPT FAIL NA HO
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           APK_PATH: ${{ steps.sign_apk.outputs.signed_apk_path }}
           BUCKET_NAME: 'apk'
           VERSION_NAME: ${{ steps.versioning.outputs.version_name }}
