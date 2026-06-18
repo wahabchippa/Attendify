@@ -92,7 +92,57 @@ export function useAppUpdate() {
   };
 
   const handleUpdate = async () => {
-    // ... (handleUpdate function remains the same, no changes needed here) ...
+    if (!updateInfo) return;
+    setDownloading(true);
+    setError('');
+
+    try {
+      const fileName = `update_${updateInfo.version_code}.apk`;
+      const response = await fetch(updateInfo.apk_url);
+      if (!response.ok) throw new Error('Download failed');
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('Stream error');
+
+      const chunks: Uint8Array[] = [];
+      let received = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          chunks.push(value);
+          received += value.length;
+        }
+      }
+
+      const allChunks = new Uint8Array(received);
+      let offset = 0;
+      for (const chunk of chunks) {
+        allChunks.set(chunk, offset);
+        offset += chunk.length;
+      }
+
+      const base64 = btoa(
+        allChunks.reduce((d, b) => d + String.fromCharCode(b), '')
+      );
+
+      const writeResult = await Filesystem.writeFile({
+        path: fileName,
+        data: base64,
+        directory: Directory.Cache,
+      });
+
+      await FileOpener.open({
+        filePath: writeResult.uri,
+        contentType: 'application/vnd.android.package-archive',
+        openWithDefault: true,
+      });
+    } catch (e: any) {
+      setError('Download failed.');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return { 
