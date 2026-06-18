@@ -7,11 +7,13 @@ import History from './components/History';
 import AISearch from './components/AISearch';
 import Analytics from './components/Analytics';
 import Settings from './components/Settings';
-import UpdateModal from './components/UpdateModal'; // 🚀 NAYA: Modal Import Kar Liya
+import UpdateModal from './components/UpdateModal';
+import { useAppUpdate } from './hooks/useAppUpdate'; // <-- 1. YEH LINE ADD HUI
 
 type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings';
 
 const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
+  // ... (Your NAV_ITEMS array remains unchanged)
   { 
     key: 'dashboard', 
     label: 'Dashboard', 
@@ -40,6 +42,8 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function App() {
+  const { updateRequired, updateInfo, debugInfo } = useAppUpdate(); // <-- 2. YEH LINE ADD HUI
+  
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -67,21 +71,27 @@ export default function App() {
     localStorage.removeItem('current_user_session');
   };
 
-  // 🚀 NAYA: Loading Screen Par Bhi Modal
+  // <-- 3. SABSE IMPORTANT CHANGE: UPDATE CHECK SABSE PEHLE HOGA -->
+  // Agar update zaroori hai (aur force_update true hai), toh poori app ruk jayegi
+  if (updateRequired && updateInfo?.force_update) {
+    return <UpdateModal />;
+  }
+
+  // Loading Screen
   if (loading) {
     return (
       <>
-        <UpdateModal />
+        {updateRequired && <UpdateModal />}
         <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="text-center"><div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3"><span className="text-white font-bold">Af</span></div><p className="text-slate-500 text-sm">Loading...</p></div></div>
       </>
     );
   }
 
-  // 🚀 NAYA: Login Screen Par Bhi Modal
+  // Login Screen
   if (!currentUser) {
     return (
       <>
-        <UpdateModal />
+        {updateRequired && <UpdateModal />}
         <LoginScreen onLogin={handleLogin} />
       </>
     );
@@ -95,11 +105,28 @@ export default function App() {
     return false;
   });
 
-  // 🚀 NAYA: Main App Par Bhi Modal
+  // Main App
   return (
     <>
-      <UpdateModal />
+      {updateRequired && <UpdateModal />}
+      
+      {/* <-- 4. DEBUG BOX AB YAHAN HAI --> */}
+      <div style={{
+        position: 'fixed', bottom: 20, right: 20,
+        background: 'rgba(0,0,0,0.8)', color: 'white',
+        padding: '10px', borderRadius: '8px',
+        fontSize: '11px', fontFamily: 'monospace',
+        zIndex: 99999, opacity: 0.8
+      }}>
+        <p style={{ margin: 0, padding: 0, fontWeight: 'bold' }}>-- DEBUG --</p>
+        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Local: {debugInfo.local}</p>
+        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Server: {debugInfo.server}</p>
+        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Update?: {updateRequired ? 'YES' : 'NO'}</p>
+      </div>
+
       <div className="min-h-screen bg-slate-50">
+        {/* ... Baaki ka poora JSX waisa hi rahega ... */}
+        {/* ... Mobile Header, Sidebar, Main Content, etc. ... */}
         {/* Mobile Header */}
         <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3">
           <div className="flex items-center justify-between">
