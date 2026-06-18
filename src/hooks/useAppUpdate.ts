@@ -1,5 +1,3 @@
-// src/hooks/useAppUpdate.ts
-
 import { useEffect, useState } from 'react';
 import { App } from '@capacitor/app';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -14,7 +12,6 @@ interface UpdateInfo {
   force_update: boolean;
 }
 
-// Web par test ke liye isko true kar sakte hain
 const ALLOW_WEB_TEST = false;
 
 export function useAppUpdate() {
@@ -24,18 +21,17 @@ export function useAppUpdate() {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [error, setError] = useState('');
 
-  // IMPORTANT: Sirf ek baar app start hone par check karein
+  // <-- 1. DEBUG STATE ADD HUA -->
+  const [debugInfo, setDebugInfo] = useState({ local: 0, server: 0 });
+
   useEffect(() => {
     const check = async () => {
-      // Platform check
       const isNative = Capacitor.isNativePlatform();
       if (!isNative && !ALLOW_WEB_TEST) {
         console.log('[Update] Skipping check: Not a native platform.');
         return;
       }
-
-      // App ke resume hone par baar baar check na ho, isliye event listener lagayein
-      // Taa ke user app update kar ke wapas aaye toh modal chala jaye
+      
       App.addListener('appStateChange', ({ isActive }) => {
         if (isActive) {
           console.log('[Update] App resumed, re-checking for update status...');
@@ -43,31 +39,25 @@ export function useAppUpdate() {
         }
       });
 
-      // Initial check
       await checkForUpdate();
     };
 
     check();
 
-    // Cleanup listener on component unmount
     return () => {
       App.removeAllListeners();
     };
   }, []);
 
-  // ✅ **IMPROVED: Local app build code nikaalne ka reliable tareeqa**
   const getLocalBuildCode = async (): Promise<number> => {
     if (!Capacitor.isNativePlatform()) {
-        // Web ke liye dummy version code
-        console.log('[Update] Running on web, returning dummy version code 1');
-        return 1;
+      console.log('[Update] Running on web, returning dummy version code 1');
+      return 1;
     }
     try {
       const info = await App.getInfo();
       console.log('[Update] AppInfo from device:', info);
 
-      // Sabse reliable: `info.build` jo ke `versionCode` hota hai Android par
-      // Yeh ek string ho sakti hai, isliye isko number mein convert karein
       const buildNumber = parseInt(info.build, 10);
       if (!isNaN(buildNumber) && buildNumber > 0) {
         console.log(`[Update] Got build number: ${buildNumber}`);
@@ -76,7 +66,6 @@ export function useAppUpdate() {
     } catch (e) {
       console.error('[Update] Could not get AppInfo:', e);
     }
-    // Agar sab kuch fail ho jaye
     console.warn('[Update] Could not determine build number. Falling back to 1.');
     return 1;
   };
@@ -86,10 +75,10 @@ export function useAppUpdate() {
       console.log('===== UPDATE CHECK STARTED =====');
       const currentVersionCode = await getLocalBuildCode();
       
-      // Agar version code 1 hai (fallback), toh shayad error hai, isliye check skip karein
       if (currentVersionCode === 1 && Capacitor.isNativePlatform()) {
-          console.warn('[Update] Local version code is fallback value (1). Skipping check to avoid update loop.');
-          return;
+        console.warn('[Update] Local version code is fallback value (1). Skipping check.');
+        setDebugInfo({ local: currentVersionCode, server: 0 }); // Update debug info
+        return;
       }
 
       console.log(`[Update] Local version code: ${currentVersionCode}`);
@@ -97,7 +86,7 @@ export function useAppUpdate() {
       const { data, error: dbError } = await supabase
         .from('app_version')
         .select('version_code, version_name, apk_url, force_update')
-        .eq('id', 1) // Maan rahe hain ke aap hamesha id=1 wali row update karte hain
+        .eq('id', 1)
         .single();
 
       if (dbError) throw new Error(dbError.message);
@@ -105,6 +94,9 @@ export function useAppUpdate() {
 
       const serverCode = Number(data.version_code);
       console.log(`[Update] Server version code: ${serverCode}`);
+      
+      // <-- 2. DEBUG INFO STATE MEIN SAVE HUA -->
+      setDebugInfo({ local: currentVersionCode, server: serverCode });
 
       if (serverCode > currentVersionCode) {
         console.log('[Update] UPDATE REQUIRED ✅');
@@ -127,15 +119,12 @@ export function useAppUpdate() {
     }
   };
 
-  // ✅ **IMPROVED: In-App Downloader, isko hum istemal karenge**
   const handleUpdate = async () => {
     if (!updateInfo || !updateInfo.apk_url) {
       setError('Update information is missing. Cannot download.');
       return;
     }
     
-    // IMPORTANT: Make sure your Supabase URL is the direct download link
-    // e.g., https://<project-ref>.supabase.co/storage/v1/object/public/apk/app-release.apk
     const directApkUrl = updateInfo.apk_url;
     console.log(`[Update] Starting download from: ${directApkUrl}`);
 
@@ -144,10 +133,8 @@ export function useAppUpdate() {
     setDownloadProgress(0);
 
     try {
-      // Naya file name version ke hisab se
       const fileName = `attendify_v${updateInfo.version_name}.apk`;
 
-      // Capacitor HTTP se download karna behtar hai progress ke liye, but fetch() is also fine
       const response = await fetch(directApkUrl);
       if (!response.ok || !response.body) {
         throw new Error(`Download failed: ${response.statusText}`);
@@ -170,13 +157,11 @@ export function useAppUpdate() {
 
       const blob = new Blob(chunks);
       
-      // Blob ko Base64 me convert karein
       const base64Data = await new Promise<string>((resolve, reject) => {
         const fileReader = new FileReader();
         fileReader.onerror = reject;
         fileReader.onload = () => {
           const result = fileReader.result as string;
-          // 'data:application/octet-stream;base64,' wala hissa hata dein
           resolve(result.substr(result.indexOf(',') + 1));
         };
         fileReader.readAsDataURL(blob);
@@ -187,12 +172,11 @@ export function useAppUpdate() {
       const result = await Filesystem.writeFile({
         path: fileName,
         data: base64Data,
-        directory: Directory.Cache, // Cache directory use karein, system isko manage kar leta hai
+        directory: Directory.Cache,
       });
 
       console.log(`[Update] File written to: ${result.uri}. Opening installer...`);
 
-      // FileOpener se APK installer kholein
       await FileOpener.open({
         filePath: result.uri,
         contentType: 'application/vnd.android.package-archive',
@@ -207,53 +191,14 @@ export function useAppUpdate() {
     }
   };
 
-  // src/hooks/useAppUpdate.ts
-
-// ... baaki poora code waisa hi rahega ...
-
-// Hum local aur server code ko state mein save karenge taake UI mein dikha sakein
-const [debugInfo, setDebugInfo] = useState({ local: 0, server: 0 }); 
-
-// ...
-
-const checkForUpdate = async () => {
-  try {
-    console.log('===== UPDATE CHECK STARTED =====');
-    const currentVersionCode = await getLocalBuildCode();
-    
-    // ...
-    
-    const { data, error: dbError } = await supabase
-      // ...
-    
-    const serverCode = Number(data.version_code);
-    
-    // NAYI LINE: Debug info state mein save karein
-    setDebugInfo({ local: currentVersionCode, server: serverCode }); 
-
-    // ...
-
-    if (serverCode > currentVersionCode) {
-      // ...
-    } else {
-      // ...
-    }
-  } catch (err) {
-    // ...
-  }
-};
-
-// ...
-
-return { 
-  updateRequired, 
-  updateInfo, 
-  downloading, 
-  downloadProgress, 
-  error, 
-  handleUpdate, 
-  checkForUpdate,
-  debugInfo // <-- YEH NAYA ADD KIYA
-};
-}
+  return { 
+    updateRequired, 
+    updateInfo, 
+    downloading, 
+    downloadProgress, 
+    error, 
+    handleUpdate, 
+    checkForUpdate,
+    debugInfo // <-- 3. DEBUG INFO RETURN HUA -->
+  };
 }
