@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Employee } from '../types';
 import { getEmployees, addAccountRequest, bindEmployeeDevice } from '../store';
+import { useAppUpdate } from '../hooks/useAppUpdate'; // <-- 1. YEH LINE ADD HUI
 
 interface LoginScreenProps { onLogin: (employee: Employee) => void; }
 
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
+  const { updateRequired, debugInfo } = useAppUpdate(); // <-- 2. YEH LINE ADD HUI
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +30,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     setTimeout(() => setPhase('pin'), 50);
   };
 
-  // 📱 Helper: Device ka unique hardware fingerprint (UUID) generate ya fetch karein
   const getDeviceUUID = () => {
     let uuid = localStorage.getItem('attendify_device_uuid');
     if (!uuid) {
@@ -40,46 +41,37 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     return uuid;
   };
 
-  // 🔒 Main Login Logic with Device Binding
   const handleLogin = async () => {
     if (!selectedEmployee) return;
     const latest = getEmployees().find(e => e.id === selectedEmployee.id);
     
-    // PIN Check
     if (!latest || pin !== latest.pin) {
       setError('Incorrect PIN'); 
       setPin(''); 
       return;
     }
 
-    // 1. Check karein ke yeh Mobile/Tablet hai ya Desktop/Laptop
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    // Agar Desktop/Laptop hai, toh device lock bypass karein aur seedha login karwayein
     if (!isMobile) {
       onLogin(latest);
       return;
     }
 
-    // 2. Mobile Device: UUID fetch karein
     const currentDeviceUUID = getDeviceUUID();
 
-    // 3. Device Binding Logic (Cases A, B, C)
     if (!latest.device_id) {
-      // Case A: First Time Login - Device ko database mein hamesha ke liye bind karein
       try {
         await bindEmployeeDevice(latest.id, currentDeviceUUID);
         const updatedEmployee = { ...latest, device_id: currentDeviceUUID };
-        onLogin(updatedEmployee); // Dashboard par bhej dein
+        onLogin(updatedEmployee);
       } catch (err) {
         setError('Device binding failed. Please try again.');
         setPin('');
       }
     } else if (latest.device_id === currentDeviceUUID) {
-      // Case B: Matched Device - Login allow karein
       onLogin(latest);
     } else {
-      // Case C: Wrong Device / Fraud - Login BLOCK karein
       setError("🚫 Access Denied! Aap kisi doosre mobile se login kar rahe hain. Kripya apne registered device ka istemal karein ya Admin se device reset karwayein.");
       setPin('');
     }
@@ -98,7 +90,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     setTimeout(() => { setCreateMsg(''); setShowCreate(false); }, 3000);
   };
 
-  // Create Account Screen
   if (showCreate) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4">
@@ -124,14 +115,12 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center p-4 overflow-hidden">
-      {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-32 -right-32 w-64 h-64 bg-blue-100/40 rounded-full blur-3xl transition-all duration-[2s] ${mounted ? 'opacity-100' : 'opacity-0'}`} />
         <div className={`absolute -bottom-32 -left-32 w-64 h-64 bg-slate-100/60 rounded-full blur-3xl transition-all duration-[2s] delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`} />
       </div>
 
       <div className="w-full max-w-sm relative z-10">
-        {/* Logo */}
         <div className={`text-center mb-8 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-6'}`}>
           <div className={`inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-xl shadow-blue-600/25 mb-4 transition-all duration-700 delay-200 ${mounted ? 'scale-100 rotate-0' : 'scale-50 rotate-12'}`}>
             <span className="text-white text-xl font-bold">Af</span>
@@ -140,15 +129,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           <p className={`text-slate-400 text-xs mt-1 transition-all duration-500 delay-400 ${mounted ? 'opacity-100' : 'opacity-0'}`}>Employee Attendance</p>
         </div>
 
-        {/* Card */}
         <div className={`bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden transition-all duration-600 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-
-          {/* SELECT PHASE */}
           {phase === 'select' && (
             <div className="p-6 animate-fade-in">
               <p className="text-slate-500 text-xs font-medium mb-3">Who are you?</p>
-
-              {/* Search Input */}
               <div className="relative mb-2">
                 <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -167,8 +151,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                   </button>
                 )}
               </div>
-
-              {/* Employee List */}
               {showList && (
                 <div className="bg-white border border-slate-100 rounded-2xl shadow-lg max-h-56 overflow-y-auto mb-3 animate-fade-in overscroll-contain">
                   {filtered.length === 0 ? (
@@ -189,14 +171,12 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                   )}
                 </div>
               )}
-
               {!showList && (
                 <button onClick={() => { setShowList(true); searchRef.current?.focus(); }}
                   className="w-full py-3 text-blue-600 text-sm font-medium hover:bg-blue-50/50 rounded-2xl transition-colors mb-2">
                   Tap to select employee ↓
                 </button>
               )}
-
               <div className="pt-3 border-t border-slate-100">
                 <button onClick={() => setShowCreate(true)} className="w-full py-2.5 text-slate-500 text-xs hover:text-blue-600 transition-colors">
                   Don't have an account? <span className="text-blue-600 font-medium">Request Access</span>
@@ -204,11 +184,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               </div>
             </div>
           )}
-
-          {/* PIN PHASE */}
           {phase === 'pin' && selectedEmployee && (
             <div className="animate-fade-in">
-              {/* User Header */}
               <div className="flex items-center gap-3 p-5 bg-gradient-to-r from-slate-50 to-blue-50/30 border-b border-slate-100">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-600/20">{selectedEmployee.avatar}</div>
                 <div className="flex-1">
@@ -219,11 +196,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                   ← Back
                 </button>
               </div>
-
               <div className="p-5">
                 <p className="text-center text-slate-400 text-xs mb-4">Enter PIN to continue</p>
-
-                {/* PIN Display */}
                 <div className="flex justify-center gap-3 mb-4">
                   {[0,1,2,3].map(i => (
                     <div key={i} className={`w-13 h-15 rounded-2xl border-2 flex items-center justify-center text-xl font-bold transition-all duration-200 ${
@@ -237,22 +211,18 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     </div>
                   ))}
                 </div>
-
                 <button onClick={() => setShowPin(!showPin)} className="block mx-auto text-xs text-slate-400 hover:text-blue-600 mb-4 transition-colors">
                   {showPin ? 'Hide' : 'Show'} PIN
                 </button>
-
                 {error && (
-  <div className={`text-xs text-center mb-3 py-3 px-4 rounded-2xl animate-fade-in border ${
-    error.includes('Access Denied') 
-      ? 'bg-red-100 text-red-700 border-red-300 font-semibold' 
-      : 'bg-red-50/80 text-red-500 border-transparent'
-  }`}>
-    {error}
-  </div>
-)}
-
-                {/* Numpad */}
+                  <div className={`text-xs text-center mb-3 py-3 px-4 rounded-2xl animate-fade-in border ${
+                    error.includes('Access Denied') 
+                      ? 'bg-red-100 text-red-700 border-red-300 font-semibold' 
+                      : 'bg-red-50/80 text-red-500 border-transparent'
+                  }`}>
+                    {error}
+                  </div>
+                )}
                 <div className="grid grid-cols-3 gap-2.5">
                   {[1,2,3,4,5,6,7,8,9].map(n => (
                     <button key={n} onClick={() => handlePinInput(String(n))}
@@ -283,6 +253,27 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+      
+      {/* <-- 3. YEH POORA DEBUG SECTION ADD HUA --> */}
+      <div style={{
+        position: 'fixed',
+        bottom: 10,
+        left: 10,
+        background: 'rgba(0,0,0,0.8)',
+        color: 'white',
+        padding: '10px',
+        borderRadius: '8px',
+        fontSize: '11px',
+        fontFamily: 'monospace',
+        zIndex: 99999,
+        opacity: 0.8
+      }}>
+        <p style={{ margin: 0, padding: 0, fontWeight: 'bold' }}>-- DEBUG --</p>
+        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Local Ver: {debugInfo.local}</p>
+        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Server Ver: {debugInfo.server}</p>
+        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Update?: {updateRequired ? 'YES' : 'NO'}</p>
+      </div>
+
     </div>
   );
 }
