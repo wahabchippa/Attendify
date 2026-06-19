@@ -1,28 +1,76 @@
+// src/wifiService.ts
+
 import { supabase } from './store';
 
+// =============================================
+// TYPES
+// =============================================
+
 export interface WiFiCheckResult {
-  isConnected: boolean;
-  ipAddress: string;
-  method: string;
-  details: string;
+  isConnected:    boolean;
+  ipAddress:      string;
+  method:         string;
+  details:        string;
+  locationLabel?: string;
+  distance?:      number; // 🆕 Distance from nearest office in meters
 }
 
-const ZONE_LATITUDE = 24.825222;
-const ZONE_LONGITUDE = 67.247472;
-const ZONE_RADIUS_METERS = 500;
+// =============================================
+// OFFICE GEO-FENCES
+// =============================================
 
-const QC_CENTER_LATITUDE = 24.856917;
-const QC_CENTER_LONGITUDE = 67.111833;
-const QC_CENTER_RADIUS_METERS = 800;
+interface GeoFence {
+  name:      string;
+  lat:       number;
+  lng:       number;
+  radiusM:   number;
+  fakeIP:    string;
+}
 
-const Z_HOUSE_LATITUDE = 24.882889;
-const Z_HOUSE_LONGITUDE = 67.073278;
-const Z_HOUSE_RADIUS_METERS = 700;
+const OFFICE_FENCES: GeoFence[] = [
+  {
+    name:    'QC Center',
+    lat:     24.856917,
+    lng:     67.111833,
+    radiusM: 800,
+    fakeIP:  '202.141.254.126',
+  },
+  {
+    name:    'PK Zone',
+    lat:     24.825222,
+    lng:     67.247472,
+    radiusM: 500,
+    fakeIP:  '103.93.12.229',
+  },
+  {
+    name:    'Z House',
+    lat:     24.882889,
+    lng:     67.073278,
+    radiusM: 700,
+    fakeIP:  '103.93.12.229',
+  },
+];
 
-async function checkLocationPermission(): Promise<'granted' | 'denied' | 'prompt' | 'unsupported'> {
-  if (!navigator.permissions || !navigator.permissions.query) {
-    return 'unsupported';
-  }
+// =============================================
+// HELPERS
+// =============================================
+
+function haversineDistance(
+  lat1: number, lon1: number,
+  lat2: number, lon2: number
+): number {
+  const R    = 6_371_000; // Earth radius in meters
+  const toR  = (d: number) => d * (Math.PI / 180);
+  const dLat = toR(lat2 - lat1);
+  const dLon = toR(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toR(lat1)) * Math.cos(toR(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function getPermissionState(): Promise<'granted' | 'denied' | 'prompt' | 'unsupported'> {
+  if (!navigator.permissions?.query) return 'unsupported';
   try {
     const result = await navigator.permissions.query({ name: 'geolocation' });
     return result.state as 'granted' | 'denied' | 'prompt';
@@ -31,168 +79,185 @@ async function checkLocationPermission(): Promise<'granted' | 'denied' | 'prompt
   }
 }
 
-function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function checkGPSLocation(lat: number, lng: number, radius: number, name: string): Promise<{ isConnected: boolean; distance: number; error?: string }> {
-  return new Promise(async (resolve) => {
-    const perm = await checkLocationPermission();
-    if (perm === 'denied') {
-      resolve({ isConnected: false, distance: -1, error: 'Location permission denied. Please enable in settings.' });
-      return;
-    }
-
+function getCurrentPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      resolve({ isConnected: false, distance: -1, error: 'GPS not supported' });
+      reject(new Error('GPS not supported'));
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userLat = position.coords.latitude;
-        const userLng = position.coords.longitude;
-        const distance = getDistanceFromLatLonInMeters(lat, lng, userLat, userLng);
-        resolve({
-          isConnected: distance <= radius,
-          distance: Math.round(distance),
-        });
-      },
-      (err) => {
-        let errorMsg = 'GPS location failed';
-        if (err.code === 1) errorMsg = 'Location permission denied.';
-        else if (err.code === 2) errorMsg = 'GPS signal unavailable.';
-        else if (err.code === 3) errorMsg = 'GPS timeout.';
-        resolve({ isConnected: false, distance: -1, error: errorMsg });
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 60000,
-      }
+      resolve,
+      reject,
+      { enableHighAccuracy: true, timeout: 6000, maximumAge: 60_000 }
     );
   });
 }
 
+interface GeoResult {
+  fence:    GeoFence;
+  distance: number;
+  inside:   boolean;
+}
+
+async function checkFence(fence: GeoFence, pos: GeolocationPosition): Promise<GeoResult> {
+  const distance = Math.round(haversineDistance(
+    fence.lat, fence.lng,
+    pos.coords.latitude, pos.coords.longitude
+  ));
+  return { fence, distance, inside: distance <= fence.radiusM };
+}
+
 async function getPublicIP(): Promise<string | null> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-    clearTimeout(timeoutId);
-    const data = await res.json();
-    return data.ip;
-  } catch {
+  const endpoints = [
+    'https://api.ipify.org?format=json',
+    'https://api.my-ip.io/v2/ip.json',
+  ];
+
+  for (const url of endpoints) {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch('https://api.my-ip.io/v2/ip.json', { signal: controller.signal });
-      clearTimeout(timeoutId);
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
+      const res  = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
       const data = await res.json();
-      return data.ip;
-    } catch {
-      return null;
-    }
+      const ip = data.ip;
+      if (ip && typeof ip === 'string') return ip;
+    } catch { /* try next */ }
   }
+  return null;
 }
 
 async function getActiveOfficeIPs(): Promise<string[]> {
-  const { data, error } = await supabase
-    .from('office_locations')
-    .select('ip_address')
-    .eq('is_active', true);
-
-  if (error || !data) {
-    console.error('Error fetching office IPs:', error);
+  try {
+    const { data, error } = await supabase
+      .from('office_locations')
+      .select('ip_address')
+      .eq('is_active', true);
+    if (error || !data) return [];
+    return data.map((r: any) => r.ip_address as string);
+  } catch {
     return [];
   }
-  return data.map(row => row.ip_address);
 }
+
+// =============================================
+// MAIN VERIFICATION
+// =============================================
 
 export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
-  const publicIP = await getPublicIP();
+
+  // ── Step 1: Check GPS permission ──
+  const perm = await getPermissionState();
+
+  if (perm === 'denied') {
+    return {
+      isConnected:   false,
+      ipAddress:     'unknown',
+      method:        'gps-off',
+      details:       '❌ Location permission denied. Enable in settings.',
+      locationLabel: '',
+    };
+  }
+
+  // ── Step 2: Get GPS position + Public IP in parallel ──
+  const [posResult, publicIP] = await Promise.allSettled([
+    getCurrentPosition(),
+    getPublicIP(),
+  ]);
+
+  const ip = publicIP.status === 'fulfilled' ? publicIP.value : null;
+
+  // ── Step 3: GPS failed / unavailable ──
+  if (posResult.status === 'rejected') {
+    const err = posResult.reason as GeolocationPositionError | Error;
+    const code = (err as GeolocationPositionError).code;
+
+    if (code === 1) {
+      return {
+        isConnected:   false,
+        ipAddress:     ip || 'unknown',
+        method:        'gps-off',
+        details:       '❌ Location permission denied.',
+        locationLabel: '',
+      };
+    }
+
+    const activeIPs = await getActiveOfficeIPs();
+    if (ip && activeIPs.includes(ip)) {
+      return {
+        isConnected:   true,
+        ipAddress:     ip,
+        method:        'public-ip-match',
+        details:       `✅ Verified via IP match`,
+        locationLabel: 'Office',
+      };
+    }
+
+    return {
+      isConnected:   false,
+      ipAddress:     ip || 'unknown',
+      method:        'gps-failed',
+      details:       `❌ GPS failed: ${err.message || 'unavailable'}`,
+      locationLabel: '',
+    };
+  }
+
+  const pos = posResult.value;
+
+  // ── Step 4: Check all fences in parallel ──
+  const fenceResults = await Promise.all(
+    OFFICE_FENCES.map(fence => checkFence(fence, pos))
+  );
+
+  // Find first matching fence
+  const matched = fenceResults.find(r => r.inside);
+
+  if (matched) {
+    return {
+      isConnected:   true,
+      ipAddress:     matched.fence.fakeIP,
+      method:        'gps-geofence',
+      details:       `✅ GPS verified: ${matched.distance}m from ${matched.fence.name}`,
+      locationLabel: matched.fence.name,
+      distance:      matched.distance, // 🆕 Add distance
+    };
+  }
+
+  // ── Step 5: GPS didn't match — try IP fallback ──
   const activeIPs = await getActiveOfficeIPs();
 
-  const qcGPS = await checkGPSLocation(QC_CENTER_LATITUDE, QC_CENTER_LONGITUDE, QC_CENTER_RADIUS_METERS, 'QC Center');
-  if (qcGPS.isConnected) {
+  if (ip && activeIPs.includes(ip)) {
+    // Even with IP match, return closest distance
+    const closest = fenceResults.sort((a, b) => a.distance - b.distance)[0];
     return {
-      isConnected: true,
-      ipAddress: `QC Center (GPS: ${qcGPS.distance}m)`,
-      method: 'gps-geofence',
-      details: `✅ Verified via GPS: ${qcGPS.distance}m from QC Center`,
-    };
-  } else if (qcGPS.error && qcGPS.error.includes('permission denied')) {
-    return {
-      isConnected: false,
-      ipAddress: publicIP || 'unknown',
-      method: 'permission-denied',
-      details: `❌ ${qcGPS.error}`,
+      isConnected:   true,
+      ipAddress:     ip,
+      method:        'public-ip-match',
+      details:       `✅ Verified via IP match`,
+      locationLabel: 'Office',
+      distance:      closest?.distance, // 🆕 Add distance
     };
   }
 
-  if (publicIP && activeIPs.includes(publicIP)) {
-    return {
-      isConnected: true,
-      ipAddress: publicIP,
-      method: 'public-ip-match',
-      details: `✅ Verified via IP: QC Center`,
-    };
-  }
-
-  const zoneGPS = await checkGPSLocation(ZONE_LATITUDE, ZONE_LONGITUDE, ZONE_RADIUS_METERS, 'PK Zone');
-  if (zoneGPS.isConnected) {
-    return {
-      isConnected: true,
-      ipAddress: `PK Zone (GPS: ${zoneGPS.distance}m)`,
-      method: 'gps-geofence',
-      details: `✅ Verified via GPS: ${zoneGPS.distance}m from PK Zone`,
-    };
-  }
-
-  const zHouseGPS = await checkGPSLocation(Z_HOUSE_LATITUDE, Z_HOUSE_LONGITUDE, Z_HOUSE_RADIUS_METERS, 'Z House');
-  if (zHouseGPS.isConnected) {
-    return {
-      isConnected: true,
-      ipAddress: `Z House (GPS: ${zHouseGPS.distance}m)`,
-      method: 'gps-geofence',
-      details: `✅ Verified via GPS: ${zHouseGPS.distance}m from Z House`,
-    };
-  }
-
-  if (qcGPS.error || zoneGPS.error || zHouseGPS.error) {
-    const errorMsg = qcGPS.error || zoneGPS.error || zHouseGPS.error || 'GPS failed';
-    return {
-      isConnected: false,
-      ipAddress: publicIP || 'unknown',
-      method: 'gps-failed',
-      details: `❌ ${errorMsg}`,
-    };
-  }
+  // ── Step 6: Not in office ──
+  const closest = fenceResults.sort((a, b) => a.distance - b.distance)[0];
 
   return {
-    isConnected: false,
-    ipAddress: publicIP || 'unknown',
-    method: 'public-ip-mismatch',
-    details: `❌ Not in Office (QC Center/PK Zone/Z House)`,
+    isConnected:   false,
+    ipAddress:     ip || 'unknown',
+    method:        'public-ip-mismatch',
+    details:       `❌ Not in office. Closest: ${closest.fence.name} (${closest.distance}m away)`,
+    locationLabel: '',
+    distance:      closest.distance, // 🆕 Add distance
   };
 }
+
+// =============================================
+// QUICK CHECK
+// =============================================
 
 export async function quickWiFiCheck(): Promise<boolean> {
   const result = await verifyWiFiConnection();
   return result.isConnected;
-}
-
-export function getLocationFromIP(ip: string): string {
-  if (ip.includes('QC Center')) return 'QC Center';
-  if (ip.includes('PK Zone')) return 'PK Zone';
-  if (ip.includes('Z House')) return 'Z House';
-  return '';
 }

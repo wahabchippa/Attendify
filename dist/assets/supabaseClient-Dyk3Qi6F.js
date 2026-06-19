@@ -1,1 +1,0 @@
-import{c as I}from"./index-CZ4vb2fE.js";const s="https://gefkpawkljalbevkxytn.supabase.co",c="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZmtwYXdrbGphbGJldmt4eXRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjQ5ODgsImV4cCI6MjA5Njk0MDk4OH0.2MC8c4HpKYbBfO_0FCE53_nnwkN7nhqjYIAbvKGHSZE",i=I(s,c);export{i as supabase};

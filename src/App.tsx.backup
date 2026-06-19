@@ -16,9 +16,7 @@ import UpdateModal from './components/UpdateModal';
 import { useAppUpdate } from './hooks/useAppUpdate';
 import { useLocationPermission } from './hooks/useLocationPermission';
 import LocationPermissionDialog from './components/LocationPermissionDialog';
-import NotificationBell from './components/NotificationBell';
-import WeatherWidget from './components/WeatherWidget';
-import { useDarkMode } from './hooks/useDarkMode';
+
 type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile';
 
 const getInitials = (name: string) =>
@@ -71,23 +69,23 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
     ),
   },
   {
-    key: 'correction',
-    label: 'Correction',
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-      </svg>
-    ),
-  },
-  {
-    key: 'profile',
-    label: 'Profile',
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-      </svg>
-    ),
-  },
+  key: 'correction',
+  label: 'Correction',
+  icon: (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+    </svg>
+  ),
+},
+{
+  key: 'profile',
+  label: 'Profile',
+  icon: (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  ),
+},
   {
     key: 'settings',
     label: 'Settings',
@@ -102,7 +100,6 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
 
 export default function App() {
   const { updateRequired, updateInfo } = useAppUpdate();
-    const { isDark, toggle: toggleDark } = useDarkMode();
   const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission();
 
   const [currentUser, setCurrentUser]       = useState<Employee | null>(null);
@@ -126,6 +123,7 @@ export default function App() {
   const handleLogin = (employee: Employee) => {
     setCurrentUser(employee);
     localStorage.setItem('current_user_session', JSON.stringify(employee));
+    // 🆕 Set audit user
     setCurrentAuditUser(employee.id, employee.name);
   };
 
@@ -146,6 +144,7 @@ export default function App() {
     setSidebarOpen(false);
   };
 
+  // ── Force Update ──
   if (updateRequired && updateInfo?.force_update) {
     return <UpdateModal />;
   }
@@ -157,15 +156,16 @@ export default function App() {
         {updateRequired && <UpdateModal />}
         <div className="min-h-screen bg-gradient-to-br from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] flex items-center justify-center font-sans">
           <div className="flex flex-col items-center animate-pulse">
-            <div className="relative mb-6">
+            <div className="relative">
               <img
                 src="/icon.png"
                 alt="Attendify"
-                className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-3xl shadow-2xl"
+                className="w-24 h-24 object-contain mb-4 drop-shadow-2xl"
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
               <div className="absolute -inset-4 bg-white/20 blur-2xl rounded-full -z-10" />
             </div>
-            <h2 className="text-3xl font-black text-white tracking-tight">Attendify</h2>
+            <h2 className="text-2xl font-black text-white tracking-tight">Attendify</h2>
             <div className="mt-4 flex items-center gap-2">
               <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
@@ -178,6 +178,7 @@ export default function App() {
     );
   }
 
+  // ── Login Screen ──
   if (!currentUser) {
     return (
       <>
@@ -187,23 +188,26 @@ export default function App() {
     );
   }
 
+  // ── Set audit user on load ──
   setCurrentAuditUser(currentUser.id, currentUser.name);
 
+  // ── Filter nav by permissions ──
   const visibleNav = NAV_ITEMS.filter(item => {
-    if (item.key === 'dashboard' || item.key === 'history') return true;
-    if (item.key === 'ai-search')  return hasAccess(currentUser.id, 'ai');
-    if (item.key === 'analytics')  return hasAccess(currentUser.id, 'analytics');
-    if (item.key === 'settings')   return hasAccess(currentUser.id, 'settings');
-    if (item.key === 'leave')      return true;
-    if (item.key === 'correction') return true;
-    if (item.key === 'profile')    return true;
-    return false;
-  });
+  if (item.key === 'dashboard' || item.key === 'history') return true;
+  if (item.key === 'ai-search')  return hasAccess(currentUser.id, 'ai');
+  if (item.key === 'analytics')  return hasAccess(currentUser.id, 'analytics');
+  if (item.key === 'settings')   return hasAccess(currentUser.id, 'settings');
+  if (item.key === 'leave')      return true;
+  if (item.key === 'correction') return true;
+  if (item.key === 'profile')    return true;
+  return false;
+});
 
   return (
     <>
       {updateRequired && <UpdateModal />}
 
+      {/* Location Permission Dialog */}
       {status === 'denied' && showSettingsDialog && showDialog && (
         <LocationPermissionDialog
           onOpenSettings={openAppSettings}
@@ -230,25 +234,28 @@ export default function App() {
               </svg>
             </button>
 
-            {/* 🎯 MOBILE HEADER — Logo + Text */}
             <div className="flex items-center gap-2.5">
-              <img
-                src="/icon.png"
-                alt="Attendify"
-                className="w-12 h-12 md:w-14 md:h-14 object-cover rounded-xl shadow-md"
-              />
-              <span className="text-slate-800 font-black text-base tracking-tight">Attendify</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center shadow-md shadow-blue-500/20">
+                <img
+                  src="/icon.png"
+                  alt="Attendify"
+                  className="w-7 h-7 object-contain"
+                  onError={e => {
+                    const parent = (e.target as HTMLImageElement).parentElement;
+                    if (parent) parent.innerHTML = '<span class="text-white text-xs font-black">Af</span>';
+                  }}
+                />
+              </div>
+              <span className="text-slate-800 font-black text-sm tracking-tight">Attendify</span>
             </div>
 
-            <div className="flex items-center gap-2">
-  <NotificationBell currentUser={currentUser} />
-  <div className="w-9 h-9 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center text-[10px] font-black text-white shadow-md shadow-blue-500/20">
-    {getInitials(currentUser.name)}
-  </div>
-</div>
+            <div className="w-9 h-9 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center text-[10px] font-black text-white shadow-md shadow-blue-500/20">
+              {getInitials(currentUser.name)}
+            </div>
           </div>
         </header>
 
+        {/* ===== SIDEBAR OVERLAY ===== */}
         {sidebarOpen && (
           <div
             className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
@@ -268,22 +275,28 @@ export default function App() {
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="flex flex-col h-full relative z-10">
+            {/* Brand */}
+            <div className="px-5 py-6 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/50">
+                  <img
+                    src="/icon.png"
+                    alt="Attendify"
+                    className="w-9 h-9 object-contain"
+                    onError={e => {
+                      const parent = (e.target as HTMLImageElement).parentElement;
+                      if (parent) parent.innerHTML = '<span class="text-white text-sm font-black">Af</span>';
+                    }}
+                  />
+                </div>
+                <div>
+                  <h1 className="text-white font-black tracking-tight">Attendify</h1>
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">v3.0</p>
+                </div>
+              </div>
+            </div>
 
-            {/* 🎯 SIDEBAR BRAND — Clean Logo + Text */}
-<div className="px-5 py-6 border-b border-white/5">
-  <div className="flex items-center gap-3">
-    <img
-      src="/icon.png"
-      alt="Attendify"
-      className="w-12 h-12 md:w-14 md:h-14 object-cover rounded-xl shadow-md"
-    />
-    <div className="flex flex-col">
-      <h1 className="text-xl font-extrabold text-white leading-tight">Attendify</h1>
-      <p className="text-xs font-semibold text-slate-400 leading-tight mt-0.5">V3.0</p>
-    </div>
-  </div>
-</div>
-
+            {/* Navigation */}
             <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
               {visibleNav.map(item => {
                 const isActive = currentPage === item.key;
@@ -315,6 +328,7 @@ export default function App() {
               })}
             </nav>
 
+            {/* User Profile Card */}
             <div className="p-3 border-t border-white/5">
               <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-2xl border border-white/5">
                 <div className="w-10 h-10 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center text-xs font-black text-white shadow-md shadow-blue-900/40 shrink-0">
@@ -325,27 +339,15 @@ export default function App() {
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest capitalize">{currentUser.role}</p>
                 </div>
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0" title="Online" />
-</div>
-
-{/* Dark Mode Toggle */}
-<button onClick={toggleDark}
-  className="w-full mt-2 flex items-center justify-between gap-3 px-3 py-2.5 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all">
-  <div className="flex items-center gap-2">
-    <span className="text-base">{isDark ? '🌙' : '☀️'}</span>
-    <span className="text-white text-xs font-bold">{isDark ? 'Dark Mode' : 'Light Mode'}</span>
-  </div>
-  <div className={`w-9 h-5 rounded-full p-0.5 transition-all ${isDark ? 'bg-[#1E40AF]' : 'bg-slate-600'}`}>
-    <div className={`w-4 h-4 bg-white rounded-full transition-all ${isDark ? 'translate-x-4' : 'translate-x-0'}`} />
-  </div>
-</button>
-
-<p className="text-center text-slate-700 text-[9px] font-bold mt-3 tracking-widest">
+              </div>
+              <p className="text-center text-slate-700 text-[9px] font-bold mt-3 tracking-widest">
                 © {new Date().getFullYear()} ATTENDIFY INC.
               </p>
             </div>
           </div>
         </aside>
 
+        {/* ===== MAIN CONTENT ===== */}
         <main className="lg:ml-64 min-h-screen">
           <div className={`
             p-4 lg:p-6 pt-20 lg:pt-6 pb-24 lg:pb-6
@@ -360,10 +362,11 @@ export default function App() {
             {currentPage === 'settings'   && <Settings         currentUser={currentUser} onLogout={handleLogout} />}
             {currentPage === 'leave'      && <LeaveManagement  currentUser={currentUser} />}
             {currentPage === 'correction' && <CorrectionRequest currentUser={currentUser} />}
-            {currentPage === 'profile'    && <EmployeeProfile  currentUser={currentUser} />}
+            {currentPage === 'profile' && <EmployeeProfile currentUser={currentUser} />}
           </div>
         </main>
 
+        {/* ===== BOTTOM NAV (Mobile) ===== */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg">
           <div className="flex items-stretch px-2 py-2 gap-1">
             {visibleNav.map(item => {
@@ -398,6 +401,7 @@ export default function App() {
         </nav>
       </div>
 
+      {/* ===== GLOBAL STYLES ===== */}
       <style>{`
         @keyframes slideDown {
           from { opacity: 0; transform: translate(-50%, -16px); }
