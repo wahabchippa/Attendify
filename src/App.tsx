@@ -18,7 +18,6 @@ import { useLocationPermission } from './hooks/useLocationPermission';
 import LocationPermissionDialog from './components/LocationPermissionDialog';
 import NotificationBell from './components/NotificationBell';
 import WeatherWidget from './components/WeatherWidget';
-import { useDarkMode } from './hooks/useDarkMode';
 type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile';
 
 const getInitials = (name: string) =>
@@ -102,7 +101,6 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
 
 export default function App() {
   const { updateRequired, updateInfo } = useAppUpdate();
-    const { isDark, toggle: toggleDark } = useDarkMode();
   const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission();
 
   const [currentUser, setCurrentUser]       = useState<Employee | null>(null);
@@ -327,17 +325,6 @@ export default function App() {
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0" title="Online" />
 </div>
 
-{/* Dark Mode Toggle */}
-<button onClick={toggleDark}
-  className="w-full mt-2 flex items-center justify-between gap-3 px-3 py-2.5 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all">
-  <div className="flex items-center gap-2">
-    <span className="text-base">{isDark ? '🌙' : '☀️'}</span>
-    <span className="text-white text-xs font-bold">{isDark ? 'Dark Mode' : 'Light Mode'}</span>
-  </div>
-  <div className={`w-9 h-5 rounded-full p-0.5 transition-all ${isDark ? 'bg-[#1E40AF]' : 'bg-slate-600'}`}>
-    <div className={`w-4 h-4 bg-white rounded-full transition-all ${isDark ? 'translate-x-4' : 'translate-x-0'}`} />
-  </div>
-</button>
 
 <p className="text-center text-slate-700 text-[9px] font-bold mt-3 tracking-widest">
                 © {new Date().getFullYear()} ATTENDIFY INC.
