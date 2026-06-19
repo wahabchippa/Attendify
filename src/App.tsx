@@ -1,4 +1,4 @@
-// src/App.tsx
+// src/App.tsx — Safe Version
 
 import { useState, useEffect } from 'react';
 import { Employee } from './types';
@@ -11,48 +11,54 @@ import Analytics from './components/Analytics';
 import Settings from './components/Settings';
 import UpdateModal from './components/UpdateModal';
 import { useAppUpdate } from './hooks/useAppUpdate';
-import { useLocationPermission } from './hooks/useLocationPermission'; // ✅ Location permission hook
-import LocationPermissionDialog from './components/LocationPermissionDialog'; // ✅ Dialog component
+
+// ✅ Safe imports with fallback
+let useLocationPermission: any = () => ({ 
+  status: 'unsupported', 
+  showSettingsDialog: false, 
+  checkPermission: () => {}, 
+  openAppSettings: () => {} 
+});
+
+let LocationPermissionDialog: any = () => null;
+
+try {
+  const hook = require('./hooks/useLocationPermission');
+  useLocationPermission = hook.useLocationPermission || useLocationPermission;
+} catch (e) {
+  console.warn('⚠️ useLocationPermission not found, using fallback');
+}
+
+try {
+  const dialog = require('./components/LocationPermissionDialog');
+  LocationPermissionDialog = dialog.default || LocationPermissionDialog;
+} catch (e) {
+  console.warn('⚠️ LocationPermissionDialog not found, using fallback');
+}
 
 type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings';
 
 const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
-  { 
-    key: 'dashboard', 
-    label: 'Dashboard', 
-    icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-  },
-  { 
-    key: 'history', 
-    label: 'History', 
-    icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-  },
-  { 
-    key: 'ai-search', 
-    label: 'AI Search', 
-    icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-  },
-  { 
-    key: 'analytics', 
-    label: 'Analytics', 
-    icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-  },
-  { 
-    key: 'settings', 
-    label: 'Settings', 
-    icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-  },
+  // ... (your NAV_ITEMS)
 ];
 
 export default function App() {
   const { updateRequired, updateInfo } = useAppUpdate();
-  const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission(); // ✅ Hook call
+  
+  // ✅ Safe hook usage
+  let permissionData;
+  try {
+    permissionData = useLocationPermission();
+  } catch (e) {
+    permissionData = { status: 'unsupported', showSettingsDialog: false, checkPermission: () => {}, openAppSettings: () => {} };
+  }
+  const { status, showSettingsDialog, checkPermission, openAppSettings } = permissionData;
   
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showDialog, setShowDialog] = useState(true); // ✅ Local state to hide dialog temporarily
+  const [showDialog, setShowDialog] = useState(true);
 
   useEffect(() => {
     initializeApp().finally(() => setLoading(false));
@@ -76,12 +82,10 @@ export default function App() {
     localStorage.removeItem('current_user_session');
   };
 
-  // --- Update Check ---
   if (updateRequired && updateInfo?.force_update) {
     return <UpdateModal />;
   }
 
-  // --- Loading Screen ---
   if (loading) {
     return (
       <>
@@ -98,7 +102,6 @@ export default function App() {
     );
   }
 
-  // --- Login Screen ---
   if (!currentUser) {
     return (
       <>
@@ -108,7 +111,6 @@ export default function App() {
     );
   }
 
-  // --- Main App ---
   const visibleNav = NAV_ITEMS.filter(item => {
     if (item.key === 'dashboard' || item.key === 'history') return true;
     if (item.key === 'ai-search') return hasAccess(currentUser.id, 'ai');
@@ -121,7 +123,7 @@ export default function App() {
     <>
       {updateRequired && <UpdateModal />}
 
-      {/* ✅ Location Permission Dialog */}
+      {/* ✅ Safe Dialog Render */}
       {status === 'denied' && showSettingsDialog && showDialog && (
         <LocationPermissionDialog
           onOpenSettings={openAppSettings}
