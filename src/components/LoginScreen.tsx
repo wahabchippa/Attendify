@@ -26,6 +26,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [phase, setPhase] = useState<'select' | 'pin'>('select');
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const employees = getEmployees();
@@ -163,73 +164,102 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   // =============================================
-  // CREATE ACCOUNT — Premium Light Theme
+  // REGISTER ACCOUNT — Premium Enterprise
   // =============================================
   if (showCreate) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 font-sans overflow-hidden">
-        {/* Decorative Elements */}
-        <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-200/30 rounded-full filter blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-indigo-200/20 rounded-full filter blur-[120px]" />
-        
-        <div className={`relative w-full max-w-[420px] bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 sm:p-10 z-10 transition-all duration-700 ease-out hover:shadow-[0_20px_60px_-15px_rgba(37,99,235,0.15)] ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          
-          {/* Top Accent Line */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-400 rounded-full" />
+      <div className="relative min-h-screen flex items-center justify-center p-4 bg-[#F8FAFC] font-sans overflow-hidden">
+        {/* Subtle blur orbs */}
+        <div className="absolute top-[-8%] left-[-5%] w-[300px] h-[300px] bg-blue-400/15 rounded-full filter blur-[100px]" />
+        <div className="absolute bottom-[-8%] right-[-5%] w-[300px] h-[300px] bg-blue-300/10 rounded-full filter blur-[100px]" />
 
+        <div className={`relative w-full max-w-[420px] bg-white rounded-[32px] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.08)] p-8 sm:p-10 z-10 transition-all duration-700 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          
+          {/* Header */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4 hover:scale-105 transition-transform duration-300">
-              <svg viewBox="0 0 24 24" fill="none" className="w-12 h-12">
-                <path d="M22.95 19.32l-10-16.7A1 1 0 0012 2H8.38a1 1 0 00-.86.5l-6 10.32a.49.49 0 00.33.72l4.89.84a1 1 0 001.12-.51l4-6.8a.24.24 0 01.42 0l7.26 12.15a1 1 0 01-.86 1.5H3.63a1 1 0 00.86.5h16.74a1 1 0 00.86-1.51z" fill="#2563EB"/>
-                <path d="M12.18 2.37l-10 16.7a1 1 0 00.86 1.51H7a1 1 0 00.86-.5l10-16.7a1 1 0 00-.86-1.51h-4a1 1 0 00-.82.5z" fill="#60A5FA"/>
-                <path d="M11.66 12.6l-2.6-4.32a.24.24 0 00-.42 0l-5.6 9.6a1 1 0 00.86 1.51h7.82a1 1 0 00.85-1.5l-.9-1.52a.49.49 0 010-.49l.9-1.5a1 1 0 00-.01-1.02z" fill="#3B82F6"/>
-                <path d="M19.06 19.49L12.56 8.52a.24.24 0 00-.42 0L6.78 17.5a1 1 0 00.86 1.5h10.56a1 1 0 00.86-1.5z" fill="#93C5FD"/>
-              </svg>
-              <span className="text-slate-900 text-2xl font-bold tracking-tight ml-3">Attendify</span>
+            <div className="flex items-center justify-center mb-5">
+              <div className="w-10 h-10 bg-[#2563EB] rounded-xl flex items-center justify-center mr-3">
+                <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+                  <path d="M22.95 19.32l-10-16.7A1 1 0 0012 2H8.38a1 1 0 00-.86.5l-6 10.32a.49.49 0 00.33.72l4.89.84a1 1 0 001.12-.51l4-6.8a.24.24 0 01.42 0l7.26 12.15a1 1 0 01-.86 1.5H3.63a1 1 0 00.86.5h16.74a1 1 0 00.86-1.51z" fill="white"/>
+                  <path d="M12.18 2.37l-10 16.7a1 1 0 00.86 1.51H7a1 1 0 00.86-.5l10-16.7a1 1 0 00-.86-1.51h-4a1 1 0 00-.82.5z" fill="#93C5FD"/>
+                </svg>
+              </div>
+              <span className="text-slate-900 text-2xl font-bold tracking-tight">Attendify</span>
             </div>
-            <h1 className="text-xl font-semibold text-slate-800">New Account</h1>
-            <p className="text-slate-500 text-xs font-medium mt-1 tracking-wide">Request will be sent to admin</p>
+            <h1 className="text-xl font-semibold text-slate-800">Create an account</h1>
+            <p className="text-slate-500 text-sm font-medium mt-1">Request will be sent to admin for approval</p>
           </div>
           
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Full Name</label>
-              <input 
-                value={newName} 
-                onChange={e => setNewName(e.target.value)} 
-                placeholder="Enter your full name"
-                className="w-full bg-white/70 backdrop-blur-sm border-2 border-slate-200/80 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/15 text-slate-900 placeholder-slate-400 transition-all duration-200" 
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <input 
+                  value={newName} 
+                  onChange={e => setNewName(e.target.value)} 
+                  placeholder="Enter your full name"
+                  className="w-full h-14 bg-white border border-slate-200 rounded-[18px] pl-11 pr-4 text-sm font-medium focus:outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 text-slate-900 placeholder-slate-400 transition-all duration-200" 
+                />
+              </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">4-Digit PIN</label>
-              <input 
-                value={newPin} 
-                onChange={e => setNewPin(e.target.value.replace(/\D/g,'').slice(0,4))} 
-                placeholder="Enter 4-digit PIN" 
-                maxLength={4}
-                className="w-full bg-white/70 backdrop-blur-sm border-2 border-slate-200/80 rounded-xl px-4 py-3.5 text-2xl font-bold text-center tracking-[0.4em] focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/15 text-slate-900 placeholder-slate-400 transition-all duration-200" 
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <input 
+                  value={newPin} 
+                  onChange={e => setNewPin(e.target.value.replace(/\D/g,'').slice(0,4))} 
+                  placeholder="Enter 4-digit PIN" 
+                  maxLength={4}
+                  type={showPassword ? 'text' : 'password'}
+                  className="w-full h-14 bg-white border border-slate-200 rounded-[18px] pl-11 pr-12 text-2xl font-bold tracking-[0.4em] focus:outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 text-slate-900 placeholder-slate-400 transition-all duration-200" 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
             
             {createMsg && (
-              <div className={`text-xs text-center p-3.5 rounded-xl font-semibold animate-fade-in ${createMsg.type === 'ok' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              <div className={`text-xs text-center p-3.5 rounded-xl font-medium animate-fade-in ${createMsg.type === 'ok' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
                 {createMsg.text}
               </div>
             )}
             
             <button 
               type="submit" 
-              className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 active:scale-[0.98] text-white rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+              className="w-full h-14 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-[18px] font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-md"
             >
               Submit Request
             </button>
             <button 
               type="button" 
               onClick={() => setShowCreate(false)} 
-              className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-700 rounded-xl font-semibold text-sm transition-all duration-200"
+              className="w-full h-14 bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-600 rounded-[18px] font-medium text-sm transition-all duration-200 border border-slate-200"
             >
-              ← Cancel
+              Cancel
             </button>
           </form>
         </div>
@@ -238,42 +268,39 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   }
 
   // =============================================
-  // MAIN LOGIN — Premium Light Theme
+  // MAIN LOGIN — Premium Enterprise
   // =============================================
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 font-sans overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-[#F8FAFC] font-sans overflow-hidden">
       
-      {/* Decorative Background Elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-200/30 rounded-full filter blur-[120px] animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-indigo-200/20 rounded-full filter blur-[120px] animate-pulse delay-1000" />
-      <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-white/40 rounded-full filter blur-[100px]" />
+      {/* Subtle blur orbs */}
+      <div className="absolute top-[-8%] left-[-5%] w-[300px] h-[300px] bg-blue-400/15 rounded-full filter blur-[100px]" />
+      <div className="absolute bottom-[-8%] right-[-5%] w-[300px] h-[300px] bg-blue-300/10 rounded-full filter blur-[100px]" />
 
-      {/* Main Card — Premium Glassmorphism */}
-      <div className={`relative w-full max-w-[420px] bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 sm:p-10 z-10 transition-all duration-700 ease-out hover:shadow-[0_20px_60px_-15px_rgba(37,99,235,0.15)] ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+      {/* Main Card */}
+      <div className={`relative w-full max-w-[420px] bg-white rounded-[32px] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.08)] p-8 sm:p-10 z-10 transition-all duration-700 ease-out hover:shadow-[0_25px_70px_-12px_rgba(0,0,0,0.12)] ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
         
-        {/* Top Accent Glow Line */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-400 rounded-full" />
-
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-4 hover:scale-105 transition-transform duration-300">
-            <svg viewBox="0 0 24 24" fill="none" className="w-12 h-12 drop-shadow-sm">
-              <path d="M22.95 19.32l-10-16.7A1 1 0 0012 2H8.38a1 1 0 00-.86.5l-6 10.32a.49.49 0 00.33.72l4.89.84a1 1 0 001.12-.51l4-6.8a.24.24 0 01.42 0l7.26 12.15a1 1 0 01-.86 1.5H3.63a1 1 0 00.86.5h16.74a1 1 0 00.86-1.51z" fill="#2563EB"/>
-              <path d="M12.18 2.37l-10 16.7a1 1 0 00.86 1.51H7a1 1 0 00.86-.5l10-16.7a1 1 0 00-.86-1.51h-4a1 1 0 00-.82.5z" fill="#60A5FA"/>
-              <path d="M11.66 12.6l-2.6-4.32a.24.24 0 00-.42 0l-5.6 9.6a1 1 0 00.86 1.51h7.82a1 1 0 00.85-1.5l-.9-1.52a.49.49 0 010-.49l.9-1.5a1 1 0 00-.01-1.02z" fill="#3B82F6"/>
-              <path d="M19.06 19.49L12.56 8.52a.24.24 0 00-.42 0L6.78 17.5a1 1 0 00.86 1.5h10.56a1 1 0 00.86-1.5z" fill="#93C5FD"/>
-            </svg>
-            <span className="text-slate-900 text-2xl font-bold tracking-tight ml-3">Attendify</span>
+          <div className="flex items-center justify-center mb-5">
+            <div className="w-10 h-10 bg-[#2563EB] rounded-xl flex items-center justify-center mr-3">
+              <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+                <path d="M22.95 19.32l-10-16.7A1 1 0 0012 2H8.38a1 1 0 00-.86.5l-6 10.32a.49.49 0 00.33.72l4.89.84a1 1 0 001.12-.51l4-6.8a.24.24 0 01.42 0l7.26 12.15a1 1 0 01-.86 1.5H3.63a1 1 0 00.86.5h16.74a1 1 0 00.86-1.51z" fill="white"/>
+                <path d="M12.18 2.37l-10 16.7a1 1 0 00.86 1.51H7a1 1 0 00.86-.5l10-16.7a1 1 0 00-.86-1.51h-4a1 1 0 00-.82.5z" fill="#93C5FD"/>
+              </svg>
+            </div>
+            <span className="text-slate-900 text-2xl font-bold tracking-tight">Attendify</span>
           </div>
-          <p className="text-[11px] font-semibold text-slate-500 bg-white/60 backdrop-blur-sm inline-block px-4 py-1.5 rounded-full border border-slate-200/50 uppercase tracking-wider">
-            Employee Attendance System
-          </p>
+          <div className="inline-flex items-center gap-2 bg-slate-100/80 px-3.5 py-1.5 rounded-full">
+            <span className="w-1.5 h-1.5 bg-[#2563EB] rounded-full" />
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.15em]">Employee Attendance System</span>
+          </div>
         </div>
 
         {/* ===== PHASE 1: USER SELECTION ===== */}
         {phase === 'select' && (
           <div className="space-y-5 animate-fade-in">
-            <div className="space-y-2 relative" ref={dropdownRef}>
+            <div className="space-y-1.5 relative" ref={dropdownRef}>
               <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider ml-1">
                 Username
               </label>
@@ -281,53 +308,84 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               <button
                 type="button"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full flex items-center justify-between px-4 py-3.5 bg-white/60 backdrop-blur-sm hover:bg-white/80 border-2 border-slate-200/80 rounded-xl transition-all duration-300 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/15 text-left group"
+                className="w-full h-14 flex items-center justify-between px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-[18px] transition-all duration-300 focus:outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 text-left group"
               >
-                <span className={`text-sm font-medium ${selectedEmployee ? "text-slate-900" : "text-slate-400"}`}>
-                  {selectedEmployee ? selectedEmployee.name : "Select your username"}
-                </span>
-                <svg className={`w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-transform duration-300 ${dropdownOpen ? 'rotate-180 text-blue-500' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span className={`text-sm font-medium truncate ${selectedEmployee ? "text-slate-900" : "text-slate-400"}`}>
+                    {selectedEmployee ? selectedEmployee.name : "Select your username"}
+                  </span>
+                </div>
+                <svg className={`w-4 h-4 text-slate-400 group-hover:text-[#2563EB] transition-transform duration-300 flex-shrink-0 ${dropdownOpen ? 'rotate-180 text-[#2563EB]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
 
               {dropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-2xl rounded-xl z-50 overflow-hidden animate-drop-in origin-top">
-                  <div className="p-3 border-b border-slate-100 bg-slate-50/50">
-                    <input
-                      type="text"
-                      placeholder="Search your name..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white border-2 border-slate-200/80 rounded-lg text-sm font-medium focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/15 placeholder-slate-400 text-slate-900 transition-all duration-200"
-                    />
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.12)] rounded-[20px] z-50 overflow-hidden animate-drop-in origin-top">
+                  <div className="p-3 border-b border-slate-100">
+                    <div className="relative">
+                      <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="Search employees..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full h-10 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-[12px] text-sm font-medium focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 placeholder-slate-400 text-slate-900 transition-all duration-200"
+                        autoFocus
+                      />
+                    </div>
                   </div>
-                  <div className="max-h-52 overflow-y-auto p-2 space-y-1">
+                  <div className="max-h-52 overflow-y-auto p-2 space-y-0.5">
                     {filtered.length > 0 ? (
-                      filtered.map(emp => (
-                        <button
-                          key={emp.id}
-                          type="button"
-                          onClick={() => selectEmp(emp)}
-                          className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all duration-200 flex items-center gap-3 group"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors">
-                            {getInitials(emp.name)}
-                          </div>
-                          {emp.name}
-                        </button>
-                      ))
+                      filtered.map(emp => {
+                        const isSelected = selectedEmployee?.id === emp.id;
+                        return (
+                          <button
+                            key={emp.id}
+                            type="button"
+                            onClick={() => selectEmp(emp)}
+                            className={`w-full text-left px-3 py-2.5 rounded-[14px] transition-all duration-200 flex items-center gap-3 ${
+                              isSelected 
+                                ? 'bg-[#2563EB]/10 text-[#2563EB]' 
+                                : 'hover:bg-slate-50 text-slate-700'
+                            }`}
+                          >
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                              isSelected 
+                                ? 'bg-[#2563EB] text-white' 
+                                : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {getInitials(emp.name)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-semibold truncate ${isSelected ? 'text-[#2563EB]' : 'text-slate-700'}`}>
+                                {emp.name}
+                              </p>
+                            </div>
+                            {isSelected && (
+                              <svg className="w-4 h-4 text-[#2563EB] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                        );
+                      })
                     ) : (
-                      <div className="p-4 text-center text-sm font-medium text-slate-400">No users found</div>
+                      <div className="p-4 text-center text-sm font-medium text-slate-400">No employees found</div>
                     )}
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="space-y-2 opacity-60 pointer-events-none">
+            <div className="space-y-1.5 opacity-50 pointer-events-none">
               <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider ml-1">Password</label>
-              <div className="w-full px-4 py-3.5 bg-white/40 backdrop-blur-sm border-2 border-slate-200/80 rounded-xl text-slate-900 font-bold text-lg tracking-[0.3em]">
+              <div className="w-full h-14 flex items-center px-4 bg-slate-50 border border-slate-200 rounded-[18px] text-slate-500 font-bold text-lg tracking-[0.3em]">
                 ••••••••
               </div>
             </div>
@@ -335,20 +393,22 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             <button
               type="button"
               onClick={() => setDropdownOpen(true)}
-              className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 active:scale-[0.98] text-white rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+              className="w-full h-14 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white rounded-[18px] font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-md"
             >
               Next
             </button>
 
-            <div className="pt-6 text-center border-t border-slate-200/50 mt-4">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-3">or create new account</p>
+            <div className="pt-6 text-center">
+              <div className="flex items-center gap-4 before:flex-1 before:h-px before:bg-slate-200 after:flex-1 after:h-px after:bg-slate-200">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">or</span>
+              </div>
               <button
                 type="button"
                 onClick={() => { setShowCreate(true); setCreateMsg(null); }}
-                className="w-full py-3 bg-white/60 backdrop-blur-sm hover:bg-white/90 border-2 border-slate-200/80 text-slate-700 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98] hover:border-blue-300 hover:text-blue-600"
+                className="w-full mt-4 h-12 bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-600 rounded-[18px] font-medium text-sm transition-all duration-200 border border-slate-200 flex items-center justify-center gap-2.5"
               >
-                <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                <svg className="w-4 h-4 text-[#2563EB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 Register Account
               </button>
@@ -359,16 +419,18 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         {/* ===== PHASE 2: PIN PAD ===== */}
         {phase === 'pin' && selectedEmployee && (
           <div className="space-y-5 animate-fade-in">
-            <div className="flex items-center gap-3 bg-white/60 backdrop-blur-sm border-2 border-slate-200/80 p-2 rounded-xl mb-4">
-              <div className="w-11 h-11 bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 rounded-lg flex items-center justify-center font-bold text-base shadow-inner">
+            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 p-2 rounded-[18px] mb-3">
+              <div className="w-11 h-11 bg-[#2563EB] text-white rounded-[14px] flex items-center justify-center font-bold text-base shadow-sm">
                 {getInitials(selectedEmployee.name)}
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-slate-900">{selectedEmployee.name}</p>
-                <p className="text-[10px] text-blue-500 font-semibold uppercase tracking-wider mt-0.5">Selected User</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-900 truncate">{selectedEmployee.name}</p>
+                <p className="text-[10px] text-[#2563EB] font-semibold uppercase tracking-wider mt-0.5">Selected User</p>
               </div>
-              <button type="button" onClick={goBack} className="w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors active:scale-90">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+              <button type="button" onClick={goBack} className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-[14px] text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors active:scale-95 flex-shrink-0">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
@@ -381,19 +443,22 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     key={i}
                     className={`w-4 h-4 rounded-full transition-all duration-300 ${
                       i < pin.length 
-                        ? "bg-blue-600 scale-110 shadow-[0_0_16px_rgba(37,99,235,0.35)]" 
+                        ? "bg-[#2563EB] scale-110 shadow-[0_0_16px_rgba(37,99,235,0.3)]" 
                         : "bg-slate-200 border-2 border-slate-300"
                     }`}
                   />
                 ))}
               </div>
               <div className="h-6">
-                {error ? <span className="text-xs font-semibold text-red-500 animate-bounce block">{error}</span> 
-                 : loading ? <span className="text-xs font-semibold text-blue-500 animate-pulse block">Verifying securely...</span> : null}
+                {error ? (
+                  <span className="text-xs font-medium text-red-500 animate-bounce block">{error}</span>
+                ) : loading ? (
+                  <span className="text-xs font-medium text-[#2563EB] animate-pulse block">Verifying...</span>
+                ) : null}
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 max-w-[280px] mx-auto mt-4">
+            <div className="grid grid-cols-3 gap-3 max-w-[280px] mx-auto mt-3">
               {PAD_KEYS.map((key) => {
                 const isSpecial = key === "back" || key === "clear";
                 return (
@@ -402,10 +467,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     type="button"
                     disabled={loading}
                     onClick={() => void handlePad(key)}
-                    className={`h-14 w-14 mx-auto rounded-xl flex items-center justify-center transition-all duration-200 active:scale-95 ${
+                    className={`h-14 w-14 mx-auto rounded-[18px] flex items-center justify-center transition-all duration-150 active:scale-95 ${
                       isSpecial 
-                        ? "text-slate-500 text-sm font-bold bg-slate-100/80 hover:bg-slate-200/80 backdrop-blur-sm" 
-                        : "text-slate-800 text-xl font-bold bg-white/70 backdrop-blur-sm border-2 border-slate-200/80 hover:bg-white hover:border-blue-300 hover:shadow-[0_0_20px_rgba(37,99,235,0.08)]"
+                        ? "text-slate-500 text-sm font-medium bg-slate-100 hover:bg-slate-200" 
+                        : "text-slate-800 text-xl font-semibold bg-white border-2 border-slate-200 hover:border-[#2563EB] hover:bg-slate-50"
                     }`}
                   >
                     {key === "back" ? "⌫" : key === "clear" ? "C" : key}
@@ -419,15 +484,16 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       </div>
       
       {/* Footer */}
-      <p className={`fixed bottom-4 text-center text-slate-400 text-[10px] font-semibold tracking-wider transition-all duration-700 delay-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+      <p className={`fixed bottom-4 text-center text-slate-400 text-[10px] font-medium tracking-wider transition-all duration-700 delay-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
         Attendify v3.0 — © {new Date().getFullYear()}
       </p>
 
+      {/* Animations */}
       <style>{`
         @keyframes dropIn {
           from { 
             opacity: 0; 
-            transform: translateY(-8px) scaleY(0.95) scaleX(0.98); 
+            transform: translateY(-6px) scaleY(0.96) scaleX(0.98); 
           }
           to { 
             opacity: 1; 
@@ -435,27 +501,24 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           }
         }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-10px); }
-          40% { transform: translateX(10px); }
-          60% { transform: translateX(-6px); }
-          80% { transform: translateX(6px); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-5px); }
+          80% { transform: translateX(5px); }
         }
         .animate-drop-in { 
-          animation: dropIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+          animation: dropIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
         }
         .animate-fade-in { 
-          animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+          animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
         }
         .animate-shake { 
           animation: shake 0.4s ease forwards; 
-        }
-        .animate-pulse-slow { 
-          animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
         }
       `}</style>
     </div>
