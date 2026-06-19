@@ -14,7 +14,7 @@ export interface WiFiCheckResult {
 // =============================================
 const ZONE_LATITUDE = 24.825222;    // ✅ 24°49'30.8"N
 const ZONE_LONGITUDE = 67.247472;   // ✅ 67°14'50.9"E
-const ZONE_RADIUS_METERS = 300;     // 300 meter radius
+const ZONE_RADIUS_METERS = 300;     // 300 meter radius (agar building barri hai toh 500 kar dein)
 
 // =============================================
 // 1. GPS HELPER
@@ -31,10 +31,10 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
   return R * c;
 }
 
-function checkZoneGPS(): Promise<{ isConnected: boolean; distance: number }> {
+function checkZoneGPS(): Promise<{ isConnected: boolean; distance: number; error?: string }> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      resolve({ isConnected: false, distance: -1 });
+      resolve({ isConnected: false, distance: -1, error: 'GPS not supported' });
       return;
     }
 
@@ -53,12 +53,17 @@ function checkZoneGPS(): Promise<{ isConnected: boolean; distance: number }> {
           distance: Math.round(distance),
         });
       },
-      () => {
-        resolve({ isConnected: false, distance: -1 });
+      (err) => {
+        // User ne permission deny kar di ya GPS fail
+        let errorMsg = 'GPS location failed';
+        if (err.code === 1) errorMsg = 'Location permission denied';
+        else if (err.code === 2) errorMsg = 'GPS signal unavailable';
+        else if (err.code === 3) errorMsg = 'GPS timeout';
+        resolve({ isConnected: false, distance: -1, error: errorMsg });
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 8000, // 8 seconds timeout (pehle 10 tha)
         maximumAge: 0,
       }
     );
@@ -134,7 +139,17 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 3: Sab fail ---
+  // --- STEP 3: Agar GPS fail ho aur koi error message ho ---
+  if (gpsResult.error) {
+    return {
+      isConnected: false,
+      ipAddress: publicIP || 'unknown',
+      method: 'gps-failed',
+      details: `❌ ${gpsResult.error}`,
+    };
+  }
+
+  // --- STEP 4: Sab fail ---
   if (publicIP) {
     return {
       isConnected: false,
@@ -148,12 +163,12 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     isConnected: false,
     ipAddress: 'unknown',
     method: 'detection-failed',
-    details: 'Could not detect location.',
+    details: 'Could not detect location. Check internet and GPS.',
   };
 }
 
 // =============================================
-// 5. QUICK CHECK
+// 5. QUICK CHECK (Fast boolean for UI)
 // =============================================
 export async function quickWiFiCheck(): Promise<boolean> {
   const result = await verifyWiFiConnection();
