@@ -10,21 +10,23 @@ export interface WiFiCheckResult {
 }
 
 // =============================================
-// 🔴 LOCATION COORDINATES
+// 🔴 ALL LOCATIONS COORDINATES
 // =============================================
 
-// 1. ZONE (Sirf GPS)
+// 1. PK ZONE (Sirf GPS)
 const ZONE_LATITUDE = 24.825222;    
 const ZONE_LONGITUDE = 67.247472;   
 const ZONE_RADIUS_METERS = 300;     
 
 // 2. QC CENTER (IP + GPS Dono)
-// 🔴 🔴 🔴 YAHAN QC CENTER KI EXACT LOCATION DAALEIN 🔴 🔴 🔴
-// Google Maps par QC Center search karein, right-click karein, "What's here?" click karein
-// Coordinates copy karein aur neechay daalein (Example: 24.8000, 67.2300)
-const QC_CENTER_LATITUDE = 24.8000;    // 🔴 REPLACE WITH ACTUAL QC CENTER LAT
-const QC_CENTER_LONGITUDE = 67.2300;   // 🔴 REPLACE WITH ACTUAL QC CENTER LNG
-const QC_CENTER_RADIUS_METERS = 300;   
+const QC_CENTER_LATITUDE = 24.856917;    // 24°51'24.9"N
+const QC_CENTER_LONGITUDE = 67.111833;   // 67°06'42.6"E
+const QC_CENTER_RADIUS_METERS = 300;     
+
+// 3. Z HOUSE (Sirf GPS, Radius 700m)
+const Z_HOUSE_LATITUDE = 24.882889;      // 24°52'58.4"N
+const Z_HOUSE_LONGITUDE = 67.073278;     // 67°04'23.8"E
+const Z_HOUSE_RADIUS_METERS = 700;       // 🔴 700 METER RADIUS
 
 // =============================================
 // 1. GPS HELPER
@@ -100,13 +102,13 @@ async function getPublicIP(): Promise<string | null> {
 }
 
 // =============================================
-// 3. DATABASE SE SIRF ACTIVE IPs FETCH KAREIN (SIRF QC CENTER)
+// 3. DATABASE SE SIRF ACTIVE IPs FETCH KAREIN (QC CENTER ONLY)
 // =============================================
 async function getActiveOfficeIPs(): Promise<string[]> {
   const { data, error } = await supabase
     .from('office_locations')
     .select('ip_address')
-    .eq('is_active', true); // ⚠️ Zone is_active = false hai, isliye yeh sirf QC Center return karega
+    .eq('is_active', true); // 🔴 Sirf QC Center ki IPs active hain
 
   if (error || !data) {
     console.error('Error fetching office IPs:', error);
@@ -116,7 +118,7 @@ async function getActiveOfficeIPs(): Promise<string[]> {
 }
 
 // =============================================
-// 4. MAIN VERIFY FUNCTION (HYBRID + QC GPS)
+// 4. MAIN VERIFY FUNCTION (ALL LOCATIONS)
 // =============================================
 export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
   const publicIP = await getPublicIP();
@@ -132,18 +134,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 2: Zone GPS Check ---
-  const zoneGPS = await checkGPSLocation(ZONE_LATITUDE, ZONE_LONGITUDE, ZONE_RADIUS_METERS, 'Zone');
-  if (zoneGPS.isConnected) {
-    return {
-      isConnected: true,
-      ipAddress: `Zone (GPS: ${zoneGPS.distance}m)`,
-      method: 'gps-geofence',
-      details: `✅ Verified via GPS: ${zoneGPS.distance}m from Zone`,
-    };
-  }
-
-  // --- STEP 3: QC Center GPS Check (IP fail hone ke baad) ---
+  // --- STEP 2: QC Center GPS Check ---
   const qcGPS = await checkGPSLocation(QC_CENTER_LATITUDE, QC_CENTER_LONGITUDE, QC_CENTER_RADIUS_METERS, 'QC Center');
   if (qcGPS.isConnected) {
     return {
@@ -154,9 +145,31 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 4: Agar GPS fail ho aur koi error message ho (Zone or QC) ---
-  if (zoneGPS.error || qcGPS.error) {
-    const errorMsg = zoneGPS.error || qcGPS.error || 'GPS failed';
+  // --- STEP 3: PK Zone GPS Check ---
+  const zoneGPS = await checkGPSLocation(ZONE_LATITUDE, ZONE_LONGITUDE, ZONE_RADIUS_METERS, 'PK Zone');
+  if (zoneGPS.isConnected) {
+    return {
+      isConnected: true,
+      ipAddress: `PK Zone (GPS: ${zoneGPS.distance}m)`,
+      method: 'gps-geofence',
+      details: `✅ Verified via GPS: ${zoneGPS.distance}m from PK Zone`,
+    };
+  }
+
+  // --- STEP 4: Z House GPS Check (700m Radius) ---
+  const zHouseGPS = await checkGPSLocation(Z_HOUSE_LATITUDE, Z_HOUSE_LONGITUDE, Z_HOUSE_RADIUS_METERS, 'Z House');
+  if (zHouseGPS.isConnected) {
+    return {
+      isConnected: true,
+      ipAddress: `Z House (GPS: ${zHouseGPS.distance}m)`,
+      method: 'gps-geofence',
+      details: `✅ Verified via GPS: ${zHouseGPS.distance}m from Z House`,
+    };
+  }
+
+  // --- STEP 5: Agar GPS fail ho ---
+  if (qcGPS.error || zoneGPS.error || zHouseGPS.error) {
+    const errorMsg = qcGPS.error || zoneGPS.error || zHouseGPS.error || 'GPS failed';
     return {
       isConnected: false,
       ipAddress: publicIP || 'unknown',
@@ -165,13 +178,13 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 5: Sab fail ---
+  // --- STEP 6: Sab fail (Not in Office) ---
   if (publicIP) {
     return {
       isConnected: false,
       ipAddress: publicIP,
       method: 'public-ip-mismatch',
-      details: `❌ Not in QC Center (IP/GPS) and not in Zone (GPS).`,
+      details: `❌ Not in Office (QC Center/PK Zone/Z House)`,
     };
   }
 
@@ -196,6 +209,7 @@ export async function quickWiFiCheck(): Promise<boolean> {
 // =============================================
 export function getLocationFromIP(ip: string): string {
   if (ip.includes('QC Center')) return 'QC Center';
-  if (ip.includes('Zone')) return 'Zone (GPS)';
+  if (ip.includes('PK Zone')) return 'PK Zone';
+  if (ip.includes('Z House')) return 'Z House';
   return 'Outside';
 }
