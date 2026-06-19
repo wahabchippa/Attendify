@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import { useState, useEffect } from 'react';
 import { Employee } from './types';
 import { initializeApp, hasAccess } from './store';
@@ -8,12 +10,13 @@ import AISearch from './components/AISearch';
 import Analytics from './components/Analytics';
 import Settings from './components/Settings';
 import UpdateModal from './components/UpdateModal';
-import { useAppUpdate } from './hooks/useAppUpdate'; // <-- 1. YEH LINE ADD HUI
+import { useAppUpdate } from './hooks/useAppUpdate';
+import { useLocationPermission } from './hooks/useLocationPermission'; // ✅ Location permission hook
+import LocationPermissionDialog from './components/LocationPermissionDialog'; // ✅ Dialog component
 
 type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings';
 
 const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
-  // ... (Your NAV_ITEMS array remains unchanged)
   { 
     key: 'dashboard', 
     label: 'Dashboard', 
@@ -42,12 +45,14 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function App() {
-  const { updateRequired, updateInfo, debugInfo } = useAppUpdate(); // <-- 2. YEH LINE ADD HUI
+  const { updateRequired, updateInfo } = useAppUpdate();
+  const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission(); // ✅ Hook call
   
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showDialog, setShowDialog] = useState(true); // ✅ Local state to hide dialog temporarily
 
   useEffect(() => {
     initializeApp().finally(() => setLoading(false));
@@ -71,23 +76,29 @@ export default function App() {
     localStorage.removeItem('current_user_session');
   };
 
-  // <-- 3. SABSE IMPORTANT CHANGE: UPDATE CHECK SABSE PEHLE HOGA -->
-  // Agar update zaroori hai (aur force_update true hai), toh poori app ruk jayegi
+  // --- Update Check ---
   if (updateRequired && updateInfo?.force_update) {
     return <UpdateModal />;
   }
 
-  // Loading Screen
+  // --- Loading Screen ---
   if (loading) {
     return (
       <>
         {updateRequired && <UpdateModal />}
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="text-center"><div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3"><span className="text-white font-bold">Af</span></div><p className="text-slate-500 text-sm">Loading...</p></div></div>
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold">Af</span>
+            </div>
+            <p className="text-slate-500 text-sm">Loading...</p>
+          </div>
+        </div>
       </>
     );
   }
 
-  // Login Screen
+  // --- Login Screen ---
   if (!currentUser) {
     return (
       <>
@@ -97,6 +108,7 @@ export default function App() {
     );
   }
 
+  // --- Main App ---
   const visibleNav = NAV_ITEMS.filter(item => {
     if (item.key === 'dashboard' || item.key === 'history') return true;
     if (item.key === 'ai-search') return hasAccess(currentUser.id, 'ai');
@@ -105,16 +117,20 @@ export default function App() {
     return false;
   });
 
-  // Main App
   return (
     <>
       {updateRequired && <UpdateModal />}
-      
-      
+
+      {/* ✅ Location Permission Dialog */}
+      {status === 'denied' && showSettingsDialog && showDialog && (
+        <LocationPermissionDialog
+          onOpenSettings={openAppSettings}
+          onRetry={checkPermission}
+          onClose={() => setShowDialog(false)}
+        />
+      )}
 
       <div className="min-h-screen bg-slate-50">
-        {/* ... Baaki ka poora JSX waisa hi rahega ... */}
-        {/* ... Mobile Header, Sidebar, Main Content, etc. ... */}
         {/* Mobile Header */}
         <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3">
           <div className="flex items-center justify-between">
@@ -159,7 +175,6 @@ export default function App() {
           } lg:translate-x-0`}
         >
           <div className="flex flex-col h-full">
-            {/* Logo */}
             <div className="p-5 border-b border-slate-700">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -174,7 +189,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Navigation */}
             <nav className="flex-1 p-4 space-y-1">
               {visibleNav.map(item => (
                 <button
@@ -195,7 +209,6 @@ export default function App() {
               ))}
             </nav>
 
-            {/* User */}
             <div className="p-4 border-t border-slate-700">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center text-sm font-semibold text-white">
