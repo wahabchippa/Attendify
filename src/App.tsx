@@ -1,4 +1,4 @@
-// src/App.tsx — Safe Version
+// src/App.tsx
 
 import { useState, useEffect } from 'react';
 import { Employee } from './types';
@@ -11,30 +11,8 @@ import Analytics from './components/Analytics';
 import Settings from './components/Settings';
 import UpdateModal from './components/UpdateModal';
 import { useAppUpdate } from './hooks/useAppUpdate';
-
-// ✅ Safe imports with fallback
-let useLocationPermission: any = () => ({ 
-  status: 'unsupported', 
-  showSettingsDialog: false, 
-  checkPermission: () => {}, 
-  openAppSettings: () => {} 
-});
-
-let LocationPermissionDialog: any = () => null;
-
-try {
-  const hook = require('./hooks/useLocationPermission');
-  useLocationPermission = hook.useLocationPermission || useLocationPermission;
-} catch (e) {
-  console.warn('⚠️ useLocationPermission not found, using fallback');
-}
-
-try {
-  const dialog = require('./components/LocationPermissionDialog');
-  LocationPermissionDialog = dialog.default || LocationPermissionDialog;
-} catch (e) {
-  console.warn('⚠️ LocationPermissionDialog not found, using fallback');
-}
+import { useLocationPermission } from './hooks/useLocationPermission'; // ✅ Direct import
+import LocationPermissionDialog from './components/LocationPermissionDialog'; // ✅ Direct import
 
 type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings';
 
@@ -68,15 +46,7 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
 
 export default function App() {
   const { updateRequired, updateInfo } = useAppUpdate();
-  
-  // ✅ Safe hook usage
-  let permissionData;
-  try {
-    permissionData = useLocationPermission();
-  } catch (e) {
-    permissionData = { status: 'unsupported', showSettingsDialog: false, checkPermission: () => {}, openAppSettings: () => {} };
-  }
-  const { status, showSettingsDialog, checkPermission, openAppSettings } = permissionData;
+  const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission(); // ✅ No fallback
   
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
@@ -147,7 +117,7 @@ export default function App() {
     <>
       {updateRequired && <UpdateModal />}
 
-      {/* ✅ Safe Dialog Render */}
+      {/* ✅ Location Permission Dialog */}
       {status === 'denied' && showSettingsDialog && showDialog && (
         <LocationPermissionDialog
           onOpenSettings={openAppSettings}
