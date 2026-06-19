@@ -22,7 +22,6 @@ export function useAppUpdate() {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [error, setError] = useState('');
-  const [debugInfo, setDebugInfo] = useState({ local: 0, server: 0 });
 
   useEffect(() => {
     const check = async () => {
@@ -57,10 +56,8 @@ export function useAppUpdate() {
   const checkForUpdate = async () => {
     try {
       const currentVersionCode = await getLocalBuildCode();
-      if (currentVersionCode === 1 && Capacitor.isNativePlatform()) {
-        setDebugInfo({ local: currentVersionCode, server: 0 });
-        return;
-      }
+      
+      // ✅ Debug info yahan se hata di gayi
 
       const { data, error: dbError } = await supabase
         .from('app_version')
@@ -71,7 +68,6 @@ export function useAppUpdate() {
       if (dbError || !data) throw new Error(dbError?.message || 'No data found');
 
       const serverCode = Number(data.version_code);
-      setDebugInfo({ local: currentVersionCode, server: serverCode });
 
       if (serverCode > currentVersionCode) {
         setUpdateInfo({
@@ -152,7 +148,7 @@ export function useAppUpdate() {
     downloadProgress, 
     error, 
     handleUpdate, 
-    checkForUpdate,
-    debugInfo
+    checkForUpdate
+    // ✅ debugInfo yahan se hata di gayi
   };
 }
