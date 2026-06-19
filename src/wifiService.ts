@@ -10,11 +10,21 @@ export interface WiFiCheckResult {
 }
 
 // =============================================
-// 🔴 ZONE GPS COORDINATES (Aap ki location)
+// 🔴 LOCATION COORDINATES
 // =============================================
-const ZONE_LATITUDE = 24.825222;    // ✅ 24°49'30.8"N
-const ZONE_LONGITUDE = 67.247472;   // ✅ 67°14'50.9"E
-const ZONE_RADIUS_METERS = 300;     // 300 meter radius (agar building barri hai toh 500 kar dein)
+
+// 1. ZONE (Sirf GPS)
+const ZONE_LATITUDE = 24.825222;    
+const ZONE_LONGITUDE = 67.247472;   
+const ZONE_RADIUS_METERS = 300;     
+
+// 2. QC CENTER (IP + GPS Dono)
+// 🔴 🔴 🔴 YAHAN QC CENTER KI EXACT LOCATION DAALEIN 🔴 🔴 🔴
+// Google Maps par QC Center search karein, right-click karein, "What's here?" click karein
+// Coordinates copy karein aur neechay daalein (Example: 24.8000, 67.2300)
+const QC_CENTER_LATITUDE = 24.8000;    // 🔴 REPLACE WITH ACTUAL QC CENTER LAT
+const QC_CENTER_LONGITUDE = 67.2300;   // 🔴 REPLACE WITH ACTUAL QC CENTER LNG
+const QC_CENTER_RADIUS_METERS = 300;   
 
 // =============================================
 // 1. GPS HELPER
@@ -31,7 +41,7 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
   return R * c;
 }
 
-function checkZoneGPS(): Promise<{ isConnected: boolean; distance: number; error?: string }> {
+function checkGPSLocation(lat: number, lng: number, radius: number, name: string): Promise<{ isConnected: boolean; distance: number; error?: string }> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
       resolve({ isConnected: false, distance: -1, error: 'GPS not supported' });
@@ -42,19 +52,13 @@ function checkZoneGPS(): Promise<{ isConnected: boolean; distance: number; error
       (position) => {
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
-        const distance = getDistanceFromLatLonInMeters(
-          ZONE_LATITUDE,
-          ZONE_LONGITUDE,
-          userLat,
-          userLng
-        );
+        const distance = getDistanceFromLatLonInMeters(lat, lng, userLat, userLng);
         resolve({
-          isConnected: distance <= ZONE_RADIUS_METERS,
+          isConnected: distance <= radius,
           distance: Math.round(distance),
         });
       },
       (err) => {
-        // User ne permission deny kar di ya GPS fail
         let errorMsg = 'GPS location failed';
         if (err.code === 1) errorMsg = 'Location permission denied';
         else if (err.code === 2) errorMsg = 'GPS signal unavailable';
@@ -63,7 +67,7 @@ function checkZoneGPS(): Promise<{ isConnected: boolean; distance: number; error
       },
       {
         enableHighAccuracy: true,
-        timeout: 8000, // 8 seconds timeout (pehle 10 tha)
+        timeout: 8000,
         maximumAge: 0,
       }
     );
@@ -112,7 +116,7 @@ async function getActiveOfficeIPs(): Promise<string[]> {
 }
 
 // =============================================
-// 4. MAIN VERIFY FUNCTION (HYBRID)
+// 4. MAIN VERIFY FUNCTION (HYBRID + QC GPS)
 // =============================================
 export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
   const publicIP = await getPublicIP();
@@ -128,34 +132,46 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 2: Zone GPS Check (Dynamic IP wali location) ---
-  const gpsResult = await checkZoneGPS();
-  if (gpsResult.isConnected) {
+  // --- STEP 2: Zone GPS Check ---
+  const zoneGPS = await checkGPSLocation(ZONE_LATITUDE, ZONE_LONGITUDE, ZONE_RADIUS_METERS, 'Zone');
+  if (zoneGPS.isConnected) {
     return {
       isConnected: true,
-      ipAddress: `Zone (GPS: ${gpsResult.distance}m)`,
+      ipAddress: `Zone (GPS: ${zoneGPS.distance}m)`,
       method: 'gps-geofence',
-      details: `✅ Verified via GPS: ${gpsResult.distance}m from Zone`,
+      details: `✅ Verified via GPS: ${zoneGPS.distance}m from Zone`,
     };
   }
 
-  // --- STEP 3: Agar GPS fail ho aur koi error message ho ---
-  if (gpsResult.error) {
+  // --- STEP 3: QC Center GPS Check (IP fail hone ke baad) ---
+  const qcGPS = await checkGPSLocation(QC_CENTER_LATITUDE, QC_CENTER_LONGITUDE, QC_CENTER_RADIUS_METERS, 'QC Center');
+  if (qcGPS.isConnected) {
+    return {
+      isConnected: true,
+      ipAddress: `QC Center (GPS: ${qcGPS.distance}m)`,
+      method: 'gps-geofence',
+      details: `✅ Verified via GPS: ${qcGPS.distance}m from QC Center`,
+    };
+  }
+
+  // --- STEP 4: Agar GPS fail ho aur koi error message ho (Zone or QC) ---
+  if (zoneGPS.error || qcGPS.error) {
+    const errorMsg = zoneGPS.error || qcGPS.error || 'GPS failed';
     return {
       isConnected: false,
       ipAddress: publicIP || 'unknown',
       method: 'gps-failed',
-      details: `❌ ${gpsResult.error}`,
+      details: `❌ ${errorMsg}`,
     };
   }
 
-  // --- STEP 4: Sab fail ---
+  // --- STEP 5: Sab fail ---
   if (publicIP) {
     return {
       isConnected: false,
       ipAddress: publicIP,
       method: 'public-ip-mismatch',
-      details: `❌ Not in QC Center and not in Zone (GPS: ${gpsResult.distance}m)`,
+      details: `❌ Not in QC Center (IP/GPS) and not in Zone (GPS).`,
     };
   }
 
@@ -168,7 +184,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
 }
 
 // =============================================
-// 5. QUICK CHECK (Fast boolean for UI)
+// 5. QUICK CHECK
 // =============================================
 export async function quickWiFiCheck(): Promise<boolean> {
   const result = await verifyWiFiConnection();
