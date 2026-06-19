@@ -1,7 +1,7 @@
-// src/utils/aiSearch.ts
+// src/aiSearch.ts
 
-import { getEmployees, getAttendanceEmployees, getLocationFromIP, getEmployeeTiming, canSeeOT } from '../store';
-import { AttendanceRecord, EmployeeSummary } from '../types';
+import { getEmployees, getAttendanceEmployees, getLocationFromIP, getEmployeeTiming, canSeeOT } from './store';  // ✅ './store'
+import { AttendanceRecord, EmployeeSummary } from './types';  // ✅ './types'
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, subDays, startOfWeek, endOfWeek, subWeeks, differenceInDays } from 'date-fns';
 
 // =============================================
