@@ -8,14 +8,15 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-    "dependencies": {
+  "dependencies": {
     "@capacitor-community/file-opener": "latest",
+    "@capacitor/android": "^8.4.0",
     "@capacitor/app": "latest",
     "@capacitor/browser": "latest",
-    "@capacitor/filesystem": "latest",
-    "@capacitor/android": "^8.4.0",
     "@capacitor/cli": "^8.4.0",
     "@capacitor/core": "^8.4.0",
+    "@capacitor/filesystem": "latest",
+    "@capacitor/geolocation": "^8.2.0",
     "@supabase/supabase-js": "^2.108.1",
     "clsx": "2.1.1",
     "date-fns": "^4.4.0",

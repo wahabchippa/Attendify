@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+mkdir -p src/components
+cat > src/components/LocationPermissionDialog.tsx << 'EOF'
+>>>>>>> 08d23672578f3fd77bf85c76c6e5666084c44ba7
 interface LocationPermissionDialogProps {
   onOpenSettings: () => void;
   onRetry: () => void;
@@ -48,3 +53,7 @@ export default function LocationPermissionDialog({
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+EOF
+>>>>>>> 08d23672578f3fd77bf85c76c6e5666084c44ba7
