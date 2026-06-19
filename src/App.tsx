@@ -11,8 +11,8 @@ import Analytics from './components/Analytics';
 import Settings from './components/Settings';
 import UpdateModal from './components/UpdateModal';
 import { useAppUpdate } from './hooks/useAppUpdate';
-import { useLocationPermission } from './hooks/useLocationPermission'; // ✅ Direct import
-import LocationPermissionDialog from './components/LocationPermissionDialog'; // ✅ Direct import
+import { useLocationPermission } from './hooks/useLocationPermission';
+import LocationPermissionDialog from './components/LocationPermissionDialog';
 
 type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings';
 
@@ -46,7 +46,7 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
 
 export default function App() {
   const { updateRequired, updateInfo } = useAppUpdate();
-  const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission(); // ✅ No fallback
+  const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission();
   
   const [currentUser, setCurrentUser] = useState<Employee | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
@@ -117,7 +117,7 @@ export default function App() {
     <>
       {updateRequired && <UpdateModal />}
 
-      {/* ✅ Location Permission Dialog */}
+      {/* Location Permission Dialog */}
       {status === 'denied' && showSettingsDialog && showDialog && (
         <LocationPermissionDialog
           onOpenSettings={openAppSettings}
@@ -127,7 +127,6 @@ export default function App() {
       )}
 
       <div className="min-h-screen bg-slate-50">
-        {/* Mobile Header */}
         <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3">
           <div className="flex items-center justify-between">
             <button
@@ -156,7 +155,6 @@ export default function App() {
           </div>
         </header>
 
-        {/* Sidebar Overlay */}
         {sidebarOpen && (
           <div
             className="lg:hidden fixed inset-0 z-40 bg-black/30"
@@ -164,7 +162,6 @@ export default function App() {
           />
         )}
 
-        {/* Sidebar */}
         <aside
           className={`fixed top-0 left-0 z-50 h-full w-64 bg-slate-800 transform transition-transform duration-300 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -219,7 +216,6 @@ export default function App() {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="lg:ml-64 min-h-screen">
           <div className="p-4 lg:p-6 pt-20 lg:pt-6 pb-24 lg:pb-6 max-w-6xl mx-auto">
             {currentPage === 'dashboard' && <Dashboard currentUser={currentUser} onLogout={handleLogout} />}
@@ -230,7 +226,6 @@ export default function App() {
           </div>
         </main>
 
-        {/* Mobile Bottom Nav */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 px-2 py-2 mobile-safe">
           <div className="flex justify-around">
             {visibleNav.map(item => (
