@@ -19,14 +19,14 @@ const ZONE_RADIUS_METERS = 500;
 
 const QC_CENTER_LATITUDE = 24.856917;
 const QC_CENTER_LONGITUDE = 67.111833;
-const QC_CENTER_RADIUS_METERS = 800; // 🔴 800m for weak GPS
+const QC_CENTER_RADIUS_METERS = 800; // 800m for weak GPS
 
 const Z_HOUSE_LATITUDE = 24.882889;
 const Z_HOUSE_LONGITUDE = 67.073278;
 const Z_HOUSE_RADIUS_METERS = 700;
 
 // =============================================
-// 1. PERMISSION CHECK (Browser API)
+// 1. PERMISSION CHECK (Browser API) — Optional, fast
 // =============================================
 
 async function checkLocationPermission(): Promise<'granted' | 'denied' | 'prompt' | 'unsupported'> {
@@ -42,7 +42,7 @@ async function checkLocationPermission(): Promise<'granted' | 'denied' | 'prompt
 }
 
 // =============================================
-// 2. GPS HELPER (With Permission Check)
+// 2. GPS HELPER — Fast (7s timeout, cached)
 // =============================================
 
 function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -59,16 +59,12 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
 
 function checkGPSLocation(lat: number, lng: number, radius: number, name: string): Promise<{ isConnected: boolean; distance: number; error?: string }> {
   return new Promise(async (resolve) => {
-    // --- Permission check ---
+    // Quick permission check
     const perm = await checkLocationPermission();
     if (perm === 'denied') {
-      console.log(`❌ ${name}: Location permission denied by user.`);
+      console.log(`❌ ${name}: Location permission denied.`);
       resolve({ isConnected: false, distance: -1, error: 'Location permission denied. Please enable in settings.' });
       return;
-    }
-    if (perm === 'unsupported') {
-      // Fallback: try anyway
-      console.log(`⚠️ ${name}: Permission API not supported, proceeding anyway.`);
     }
 
     if (!navigator.geolocation) {
@@ -76,29 +72,33 @@ function checkGPSLocation(lat: number, lng: number, radius: number, name: string
       return;
     }
 
+    const startTime = Date.now();
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const elapsed = Date.now() - startTime;
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
         const distance = getDistanceFromLatLonInMeters(lat, lng, userLat, userLng);
-        console.log(`✅ ${name}: Distance = ${Math.round(distance)}m (Radius = ${radius}m)`);
+        console.log(`✅ ${name}: Distance = ${Math.round(distance)}m (Radius = ${radius}m) — ${elapsed}ms`);
         resolve({
           isConnected: distance <= radius,
           distance: Math.round(distance),
         });
       },
       (err) => {
+        const elapsed = Date.now() - startTime;
         let errorMsg = 'GPS location failed';
-        if (err.code === 1) errorMsg = 'Location permission denied. Please allow in settings.';
-        else if (err.code === 2) errorMsg = 'GPS signal unavailable. Go outside?';
-        else if (err.code === 3) errorMsg = 'GPS timeout. Try again.';
-        console.log(`❌ ${name}: ${errorMsg} (Code: ${err.code})`);
+        if (err.code === 1) errorMsg = 'Location permission denied.';
+        else if (err.code === 2) errorMsg = 'GPS signal unavailable.';
+        else if (err.code === 3) errorMsg = 'GPS timeout.';
+        console.log(`❌ ${name}: ${errorMsg} (Code: ${err.code}) — ${elapsed}ms`);
         resolve({ isConnected: false, distance: -1, error: errorMsg });
       },
       {
         enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0,
+        timeout: 7000,          // 🔥 7 seconds (was 15)
+        maximumAge: 30000,      // 🔥 Use cached location up to 30 sec old
       }
     );
   });
@@ -146,7 +146,7 @@ async function getActiveOfficeIPs(): Promise<string[]> {
 }
 
 // =============================================
-// 5. MAIN VERIFY FUNCTION (GPS First)
+// 5. MAIN VERIFY FUNCTION — Fast + Fallback
 // =============================================
 export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
   const publicIP = await getPublicIP();
@@ -156,7 +156,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
   console.log(`📡 Public IP: ${publicIP || 'unknown'}`);
   console.log(`📡 Active IPs: ${activeIPs.join(', ') || 'none'}`);
 
-  // --- STEP 1: QC Center GPS Check (Pehle GPS) ---
+  // --- STEP 1: QC Center GPS Check (Primary) ---
   const qcGPS = await checkGPSLocation(QC_CENTER_LATITUDE, QC_CENTER_LONGITUDE, QC_CENTER_RADIUS_METERS, 'QC Center');
   if (qcGPS.isConnected) {
     console.log(`✅ QC Center GPS: ${qcGPS.distance}m (Inside radius)`);
@@ -176,7 +176,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 2: QC Center IP Check ---
+  // --- STEP 2: QC Center IP Check (if GPS fails) ---
   if (publicIP && activeIPs.includes(publicIP)) {
     console.log(`✅ QC Center IP match: ${publicIP}`);
     return {
@@ -213,7 +213,6 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
 
   // --- STEP 5: GPS Errors (Permission Denied or others) ---
   if (qcGPS.error || zoneGPS.error || zHouseGPS.error) {
-    // Prefer permission denied message
     const errorMsg = qcGPS.error || zoneGPS.error || zHouseGPS.error || 'GPS failed';
     console.log(`❌ GPS Error: ${errorMsg}`);
     return {
