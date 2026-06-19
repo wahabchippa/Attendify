@@ -110,19 +110,7 @@ export default function App() {
     <>
       {updateRequired && <UpdateModal />}
       
-      {/* <-- 4. DEBUG BOX AB YAHAN HAI --> */}
-      <div style={{
-        position: 'fixed', bottom: 20, right: 20,
-        background: 'rgba(0,0,0,0.8)', color: 'white',
-        padding: '10px', borderRadius: '8px',
-        fontSize: '11px', fontFamily: 'monospace',
-        zIndex: 99999, opacity: 0.8
-      }}>
-        <p style={{ margin: 0, padding: 0, fontWeight: 'bold' }}>-- DEBUG --</p>
-        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Local: {debugInfo.local}</p>
-        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Server: {debugInfo.server}</p>
-        <p style={{ margin: '4px 0 0 0', padding: 0 }}>Update?: {updateRequired ? 'YES' : 'NO'}</p>
-      </div>
+      
 
       <div className="min-h-screen bg-slate-50">
         {/* ... Baaki ka poora JSX waisa hi rahega ... */}
