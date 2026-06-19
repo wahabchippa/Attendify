@@ -10,7 +10,7 @@ export interface WiFiCheckResult {
 }
 
 // =============================================
-// 🔴 LOCATION COORDINATES (Updated Radius)
+// LOCATION COORDINATES
 // =============================================
 
 const ZONE_LATITUDE = 24.825222;
@@ -19,14 +19,14 @@ const ZONE_RADIUS_METERS = 500;
 
 const QC_CENTER_LATITUDE = 24.856917;
 const QC_CENTER_LONGITUDE = 67.111833;
-const QC_CENTER_RADIUS_METERS = 800; // 800m for weak GPS
+const QC_CENTER_RADIUS_METERS = 800;
 
 const Z_HOUSE_LATITUDE = 24.882889;
 const Z_HOUSE_LONGITUDE = 67.073278;
 const Z_HOUSE_RADIUS_METERS = 700;
 
 // =============================================
-// 1. PERMISSION CHECK (Browser API) — Optional, fast
+// 1. PERMISSION CHECK
 // =============================================
 
 async function checkLocationPermission(): Promise<'granted' | 'denied' | 'prompt' | 'unsupported'> {
@@ -42,7 +42,7 @@ async function checkLocationPermission(): Promise<'granted' | 'denied' | 'prompt
 }
 
 // =============================================
-// 2. GPS HELPER — Fast (7s timeout, cached)
+// 2. GPS HELPER — Fast (5s timeout)
 // =============================================
 
 function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -59,7 +59,6 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
 
 function checkGPSLocation(lat: number, lng: number, radius: number, name: string): Promise<{ isConnected: boolean; distance: number; error?: string }> {
   return new Promise(async (resolve) => {
-    // Quick permission check
     const perm = await checkLocationPermission();
     if (perm === 'denied') {
       console.log(`❌ ${name}: Location permission denied.`);
@@ -97,8 +96,8 @@ function checkGPSLocation(lat: number, lng: number, radius: number, name: string
       },
       {
         enableHighAccuracy: true,
-        timeout: 7000,          // 🔥 7 seconds (was 15)
-        maximumAge: 30000,      // 🔥 Use cached location up to 30 sec old
+        timeout: 5000,          // 🔥 5 seconds
+        maximumAge: 60000,      // 🔥 60 seconds cache
       }
     );
   });
@@ -107,6 +106,7 @@ function checkGPSLocation(lat: number, lng: number, radius: number, name: string
 // =============================================
 // 3. PUBLIC IP HELPER
 // =============================================
+
 async function getPublicIP(): Promise<string | null> {
   try {
     const controller = new AbortController();
@@ -130,8 +130,9 @@ async function getPublicIP(): Promise<string | null> {
 }
 
 // =============================================
-// 4. DATABASE SE ACTIVE IPs FETCH KAREIN
+// 4. DATABASE FETCH
 // =============================================
+
 async function getActiveOfficeIPs(): Promise<string[]> {
   const { data, error } = await supabase
     .from('office_locations')
@@ -146,8 +147,9 @@ async function getActiveOfficeIPs(): Promise<string[]> {
 }
 
 // =============================================
-// 5. MAIN VERIFY FUNCTION — Fast + Fallback
+// 5. MAIN VERIFY FUNCTION
 // =============================================
+
 export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
   const publicIP = await getPublicIP();
   const activeIPs = await getActiveOfficeIPs();
@@ -156,10 +158,10 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
   console.log(`📡 Public IP: ${publicIP || 'unknown'}`);
   console.log(`📡 Active IPs: ${activeIPs.join(', ') || 'none'}`);
 
-  // --- STEP 1: QC Center GPS Check (Primary) ---
+  // STEP 1: QC Center GPS
   const qcGPS = await checkGPSLocation(QC_CENTER_LATITUDE, QC_CENTER_LONGITUDE, QC_CENTER_RADIUS_METERS, 'QC Center');
   if (qcGPS.isConnected) {
-    console.log(`✅ QC Center GPS: ${qcGPS.distance}m (Inside radius)`);
+    console.log(`✅ QC Center GPS: ${qcGPS.distance}m`);
     return {
       isConnected: true,
       ipAddress: `QC Center (GPS: ${qcGPS.distance}m)`,
@@ -167,7 +169,6 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
       details: `✅ Verified via GPS: ${qcGPS.distance}m from QC Center`,
     };
   } else if (qcGPS.error && qcGPS.error.includes('permission denied')) {
-    // Permission denied — return early with clear message
     return {
       isConnected: false,
       ipAddress: publicIP || 'unknown',
@@ -176,7 +177,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 2: QC Center IP Check (if GPS fails) ---
+  // STEP 2: QC Center IP
   if (publicIP && activeIPs.includes(publicIP)) {
     console.log(`✅ QC Center IP match: ${publicIP}`);
     return {
@@ -187,7 +188,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 3: PK Zone GPS ---
+  // STEP 3: PK Zone GPS
   const zoneGPS = await checkGPSLocation(ZONE_LATITUDE, ZONE_LONGITUDE, ZONE_RADIUS_METERS, 'PK Zone');
   if (zoneGPS.isConnected) {
     console.log(`✅ PK Zone GPS: ${zoneGPS.distance}m`);
@@ -199,7 +200,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 4: Z House GPS ---
+  // STEP 4: Z House GPS
   const zHouseGPS = await checkGPSLocation(Z_HOUSE_LATITUDE, Z_HOUSE_LONGITUDE, Z_HOUSE_RADIUS_METERS, 'Z House');
   if (zHouseGPS.isConnected) {
     console.log(`✅ Z House GPS: ${zHouseGPS.distance}m`);
@@ -211,7 +212,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 5: GPS Errors (Permission Denied or others) ---
+  // STEP 5: GPS Errors
   if (qcGPS.error || zoneGPS.error || zHouseGPS.error) {
     const errorMsg = qcGPS.error || zoneGPS.error || zHouseGPS.error || 'GPS failed';
     console.log(`❌ GPS Error: ${errorMsg}`);
@@ -223,7 +224,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     };
   }
 
-  // --- STEP 6: Not in Office ---
+  // STEP 6: Not in Office
   console.log(`❌ Not in Office — IP: ${publicIP}, GPS: QC=${qcGPS.distance}m, Zone=${zoneGPS.distance}m, House=${zHouseGPS.distance}m`);
   return {
     isConnected: false,
@@ -236,6 +237,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
 // =============================================
 // 6. QUICK CHECK
 // =============================================
+
 export async function quickWiFiCheck(): Promise<boolean> {
   const result = await verifyWiFiConnection();
   return result.isConnected;
@@ -244,6 +246,7 @@ export async function quickWiFiCheck(): Promise<boolean> {
 // =============================================
 // 7. LOCATION LABEL
 // =============================================
+
 export function getLocationFromIP(ip: string): string {
   if (ip.includes('QC Center')) return 'QC Center';
   if (ip.includes('PK Zone')) return 'PK Zone';
