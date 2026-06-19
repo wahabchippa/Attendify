@@ -12,13 +12,19 @@ export function useLocationPermission() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
   const checkPermission = async () => {
+    console.log('🔍 Checking location permission...');
+    
     if (!Capacitor.isNativePlatform()) {
-      // Web: browser API use karein
       if (navigator.permissions && navigator.permissions.query) {
-        const result = await navigator.permissions.query({ name: 'geolocation' });
-        setStatus(result.state as PermissionStatus);
-        if (result.state === 'denied') {
-          setShowSettingsDialog(true);
+        try {
+          const result = await navigator.permissions.query({ name: 'geolocation' });
+          setStatus(result.state as PermissionStatus);
+          if (result.state === 'denied') {
+            setShowSettingsDialog(true);
+          }
+          console.log('📍 Web permission status:', result.state);
+        } catch (e) {
+          setStatus('unsupported');
         }
       } else {
         setStatus('unsupported');
@@ -26,15 +32,16 @@ export function useLocationPermission() {
       return;
     }
 
-    // Native (Android/iOS)
     try {
       const perm = await Geolocation.checkPermissions();
+      console.log('📍 Native permission status:', perm.location);
+      
       if (perm.location === 'granted') {
         setStatus('granted');
         setShowSettingsDialog(false);
       } else if (perm.location === 'denied' || perm.location === 'prompt') {
-        // Request permission
         const result = await Geolocation.requestPermissions();
+        console.log('📍 After request:', result.location);
         if (result.location === 'granted') {
           setStatus('granted');
           setShowSettingsDialog(false);
@@ -44,7 +51,7 @@ export function useLocationPermission() {
         }
       }
     } catch (error) {
-      console.error('Permission error:', error);
+      console.error('❌ Permission error:', error);
       setStatus('unsupported');
     }
   };
@@ -53,7 +60,6 @@ export function useLocationPermission() {
     if (Capacitor.isNativePlatform()) {
       await App.openSettings();
     } else {
-      // Web: fallback
       setShowSettingsDialog(false);
     }
   };
@@ -62,5 +68,10 @@ export function useLocationPermission() {
     checkPermission();
   }, []);
 
-  return { status, showSettingsDialog, checkPermission, openAppSettings };
+  return {
+    status,
+    showSettingsDialog,
+    checkPermission,
+    openAppSettings,
+  };
 }
