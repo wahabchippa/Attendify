@@ -1,4 +1,3 @@
-cat > public/site.webmanifest << 'EOF'
 {
   "name": "Attendify",
   "short_name": "Attendify",
@@ -22,4 +21,3 @@ cat > public/site.webmanifest << 'EOF'
     }
   ]
 }
-EOF
