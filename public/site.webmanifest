@@ -1,0 +1,25 @@
+cat > public/site.webmanifest << 'EOF'
+{
+  "name": "Attendify",
+  "short_name": "Attendify",
+  "description": "Employee Attendance Management System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1E40AF",
+  "theme_color": "#1E40AF",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+EOF
