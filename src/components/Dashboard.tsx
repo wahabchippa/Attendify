@@ -17,6 +17,8 @@ import AnalogClock from './AnalogClock';
 import LateWarningModal from './LateWarningModal';
 import EarlyCheckoutModal from './EarlyCheckoutModal';
 import OfficeDistance from './OfficeDistance';
+import AllOfficesDistance from './AllOfficesDistance';
+import { isAdminOrManager } from '../utils/employeeOffice';
 import WeatherWidget from './WeatherWidget';
 
 interface DashboardProps { currentUser: Employee; onLogout: () => void; }
@@ -628,15 +630,21 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 {officeLocation === null && !gpsOff ? 'Detecting Location...' : displayLabel}
               </div>
 
-              {/* 🆕 Office Distance */}
-              {officeDistance !== null && (
+                            {/* 🆕 Office Distance — Role Based */}
+              {isAdminOrManager(currentUser.role) ? (
                 <div className="mt-3 w-full max-w-xs">
-                  <OfficeDistance
-                    distance={officeDistance}
-                    isInside={!!officeLocation}
-                    locationName={officeLocation || undefined}
-                  />
+                  <AllOfficesDistance />
                 </div>
+              ) : (
+                officeDistance !== null && (
+                  <div className="mt-3 w-full max-w-xs">
+                    <OfficeDistance
+                      distance={officeDistance}
+                      isInside={!!officeLocation}
+                      locationName={officeLocation || undefined}
+                    />
+                  </div>
+                )
               )}
 
               {/* Action Area */}
