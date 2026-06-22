@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import useBodyScrollLock from '../hooks/useBodyScrollLock';
 
 interface LateWarningModalProps {
   isOpen: boolean;
@@ -20,51 +22,73 @@ export default function LateWarningModal({ isOpen, minutesLate, onSubmit, onSkip
   const [selected, setSelected] = useState<string>('');
   const [customReason, setCustomReason] = useState('');
 
-  if (!isOpen) return null;
+  useBodyScrollLock(isOpen);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelected('');
+      setCustomReason('');
+    }
+  }, [isOpen]);
+
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const handleSubmit = () => {
     const finalReason = selected === 'Other' ? customReason : selected;
     if (!finalReason.trim()) return;
     onSubmit(finalReason);
-    setSelected('');
-    setCustomReason('');
   };
 
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5 text-white text-center">
-          <div className="w-16 h-16 mx-auto bg-white/20 rounded-2xl flex items-center justify-center mb-3 text-3xl">⚠️</div>
+  return createPortal(
+    <div className="fixed inset-0 z-[1200] flex items-center justify-center overflow-y-auto overscroll-contain bg-black/60 p-4 backdrop-blur-md">
+      <div className="my-auto w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5 text-center text-white">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-3xl">⚠️</div>
           <h2 className="text-xl font-black">You Are Late!</h2>
-          <p className="text-amber-100 text-sm font-bold mt-1">{minutesLate} minutes late today</p>
+          <p className="mt-1 text-sm font-bold text-amber-100">{minutesLate} minutes late today</p>
         </div>
         <div className="p-6">
-          <p className="text-slate-600 text-sm font-semibold mb-4">Please select reason:</p>
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <p className="mb-4 text-sm font-semibold text-slate-600">Please select reason:</p>
+          <div className="mb-4 grid grid-cols-2 gap-2">
             {REASONS.map(r => (
-              <button key={r.label} onClick={() => setSelected(r.label)}
-                className={`p-3 rounded-2xl border text-xs font-bold transition-all ${
-                  selected === r.label ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                }`}>
-                <div className="text-xl mb-1">{r.icon}</div>
+              <button
+                key={r.label}
+                onClick={() => setSelected(r.label)}
+                className={`rounded-2xl border p-3 text-xs font-bold transition-all ${
+                  selected === r.label
+                    ? 'border-amber-300 bg-amber-50 text-amber-700'
+                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <div className="mb-1 text-xl">{r.icon}</div>
                 {r.label}
               </button>
             ))}
           </div>
           {selected === 'Other' && (
-            <textarea value={customReason} onChange={e => setCustomReason(e.target.value)}
-              placeholder="Type your reason..." rows={2}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm mb-4 focus:outline-none focus:border-amber-500" />
+            <textarea
+              value={customReason}
+              onChange={e => setCustomReason(e.target.value)}
+              placeholder="Type your reason..."
+              rows={2}
+              className="mb-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+            />
           )}
           <div className="flex gap-3">
-            <button onClick={onSkip} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm">Skip</button>
-            <button onClick={handleSubmit} disabled={!selected || (selected === 'Other' && !customReason.trim())}
-              className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-black text-sm disabled:opacity-50">
+            <button onClick={onSkip} className="flex-1 rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600">
+              Skip
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={!selected || (selected === 'Other' && !customReason.trim())}
+              className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 py-3 text-sm font-black text-white disabled:opacity-50"
+            >
               Submit
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

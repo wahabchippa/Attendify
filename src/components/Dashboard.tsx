@@ -1,6 +1,7 @@
 // src/components/Dashboard.tsx
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Employee, AttendanceRecord, WFHRequest } from '../types';
 import {
   getEmployees, getAttendanceEmployees, getAttendanceRecords,
@@ -20,6 +21,7 @@ import OfficeDistance from './OfficeDistance';
 import AllOfficesDistance from './AllOfficesDistance';
 import { isAdminOrManager } from '../utils/employeeOffice';
 import WeatherWidget from './WeatherWidget';
+import useBodyScrollLock from '../hooks/useBodyScrollLock';
 
 interface DashboardProps { currentUser: Employee; onLogout: () => void; }
 
@@ -52,6 +54,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const canMarkAttendance = !isManagerOnly;
   const showOT = canSeeOT(currentUser.id);
   const canSeeAccountRequests = currentUser.id === 'emp-001' || currentUser.id === 'emp-005';
+    useBodyScrollLock(showWFHModal || showQuitConfirm || showWarningModal);
 
   // ✅ Refs — sync interval ke liye state tracking
   const lateModalOpenRef = useRef(false);
@@ -490,10 +493,10 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {/* WFH MODAL */}
-      {showWFHModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md animate-scale-up border border-slate-200">
+            {/* ===== WFH MODAL ===== */}
+      {showWFHModal && createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/40 backdrop-blur-sm">
+          <div className="my-auto bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border border-slate-200">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -523,13 +526,14 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* QUIT CONFIRM MODAL */}
-      {showQuitConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm animate-scale-up border border-slate-200 text-center">
+            {/* ===== QUIT CONFIRM MODAL ===== */}
+      {showQuitConfirm && createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/40 backdrop-blur-sm">
+          <div className="my-auto bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border border-slate-200 text-center">
             <div className="w-16 h-16 mx-auto bg-red-100 rounded-2xl flex items-center justify-center mb-5">
               <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -542,13 +546,14 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               <button onClick={onLogout} className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]">Quit</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* WARNING MODAL */}
-      {showWarningModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md animate-scale-up border-2 border-red-400">
+            {/* ===== WARNING MODAL ===== */}
+      {showWarningModal && createPortal(
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/70 backdrop-blur-sm">
+          <div className="my-auto bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border-2 border-red-400">
             <div className="flex items-center justify-center w-20 h-20 mx-auto bg-red-100 rounded-3xl mb-5">
               <span className="text-4xl">🚨</span>
             </div>
@@ -562,7 +567,8 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               I Understand
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MAIN LAYOUT */}
