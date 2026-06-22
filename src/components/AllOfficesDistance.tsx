@@ -9,9 +9,9 @@ interface OfficeInfo {
 }
 
 const OFFICES: OfficeInfo[] = [
-  { name: 'QC Center', lat: 24.856917, lng: 67.111833, radius: 800 },
-  { name: 'PK Zone',   lat: 24.825222, lng: 67.247472, radius: 500 },
-  { name: 'Z House',   lat: 24.882889, lng: 67.073278, radius: 700 },
+  { name: 'QC Center', lat: 24.856917, lng: 67.111833, radius: 150 },
+  { name: 'PK Zone',   lat: 24.825222, lng: 67.247472, radius: 800 },
+  { name: 'Z House',   lat: 24.882889, lng: 67.073278, radius: 500 },
 ];
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
