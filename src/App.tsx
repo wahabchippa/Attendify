@@ -109,6 +109,454 @@ export default function App() {
   const [loading, setLoading]               = useState(true);
   const [showDialog, setShowDialog]         = useState(true);
   const [pageTransition, setPageTransition] = useState(false);
+  const navTimeoutRef = import.meta.env.VITE_SUPABASE_URL ? { current: null as any } : { current: null }; // Quick ref holder to clear active transition timeouts
+
+  useEffect(() => {
+    initializeApp().finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('current_user_session');
+    if (stored) {
+      try {
+        const parsedUser = JSON.parse(stored);
+        // Sync & re-verify user session from database on mount to avoid stale localStorage permissions
+        supabase
+          .from('employees')
+          .select('*')
+          .eq('id', parsedUser.id)
+          .single()
+          .then(({ data, error }) => {
+            if (data && !error) {
+              setCurrentUser(data);
+              localStorage.setItem('current_user_session', JSON.stringify(data));
+              setCurrentAuditUser(data.id, data.name);
+            } else {
+              // If employee no longer exists or there is an error, clear session
+              handleLogout();
+            }
+          });
+      } catch {
+        handleLogout();
+      }
+    }
+  }, []);
+
+  const handleLogin = (employee: Employee) => {
+    setCurrentUser(employee);
+    localStorage.setItem('current_user_session', JSON.stringify(employee));
+    setCurrentAuditUser(employee.id, employee.name);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setCurrentPage('dashboard');
+    localStorage.removeItem('current_user_session');
+    setCurrentAuditUser('', '');
+  };
+
+  const navigateTo = (page: Page) => {
+    if (page === currentPage) return;
+    setPageTransition(true);
+    
+    // Clear any previous pending navigation timeouts to prevent race conditions
+    if (navTimeoutRef.current) {
+      clearTimeout(navTimeoutRef.current);
+    }
+
+    navTimeoutRef.current = setTimeout(() => {
+      setCurrentPage(page);
+      setPageTransition(false);
+      navTimeoutRef.current = null;
+    }, 150);
+    
+    setSidebarOpen(false);
+  };
+
+  if (updateRequired && updateInfo?.force_update) {
+    return <UpdateModal />;
+  }
+
+  // ── Loading Screen ──
+  if (loading) {
+    return (
+      <>
+        {updateRequired && <UpdateModal />}
+        <div className="min-h-screen bg-gradient-to-br from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] flex items-center justify-center font-sans">
+          <div className="flex flex-col items-center animate-pulse">
+            <div className="relative mb-6">
+              <img
+                src="/icon.png"
+                alt="Attendify"
+                className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-3xl shadow-2xl"
+              />
+              <div className="absolute -inset-4 bg-white/20 blur-2xl rounded-full -z-10" />
+            </div>
+            <h2 className="text-3xl font-black text-white tracking-tight">Attendify</h2>
+            <div className="mt-4 flex items-center gap-2">
+              <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
+              <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
+            </div>
+            <p className="mt-4 text-blue-200 text-xs font-bold tracking-widest">INITIALIZING...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <>
+        {updateRequired && <UpdateModal />}
+        <LoginScreen onLogin={handleLogin} />
+      </>
+    );
+  }
+
+  setCurrentAuditUser(currentUser.id, currentUser.name);
+
+  const visibleNav = NAV_ITEMS.filter(item => {
+    if (item.key === 'dashboard' || item.key === 'history') return true;
+    if (item.key === 'ai-search')  return hasAccess(currentUser.id, 'ai');
+    if (item.key === 'analytics')  return hasAccess(currentUser.id, 'analytics');
+    if (item.key === 'settings')   return hasAccess(currentUser.id, 'settings');
+    if (item.key === 'leave')      return true;
+    if (item.key === 'correction') return true;
+    if (item.key === 'profile')    return true;
+    return false;
+  });
+
+  return (
+    <>
+      {updateRequired && <UpdateModal />}
+
+      {status === 'denied' && showSettingsDialog && showDialog && (
+        <LocationPermissionDialog
+          onOpenSettings={openAppSettings}
+          onRetry={checkPermission}
+          onClose={() => setShowDialog(false)}
+        />
+      )}
+
+      <div className="min-h-screen bg-slate-50 font-sans">
+
+        {/* ===== MOBILE HEADER ===== */}
+        <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+          <div className="flex items-center justify-between px-4 py-3">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-95"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                {sidebarOpen
+                  ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  : <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+                }
+              </svg>
+            </button>
+
+            {/* 🎯 MOBILE HEADER — Logo + Text */}
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/icon.png"
+                alt="Attendify"
+                className="w-12 h-12 md:w-14 md:h-14 object-cover rounded-xl shadow-md"
+              />
+              <span className="text-slate-800 font-black text-base tracking-tight">Attendify</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+  <NotificationBell currentUser={currentUser} />
+  <div className="w-9 h-9 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center text-[10px] font-black text-white shadow-md shadow-blue-500/20">
+    {getInitials(currentUser.name)}
+  </div>
+</div>
+          </div>
+        </header>
+
+        {sidebarOpen && (
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* ===== SIDEBAR ===== */}
+        <aside className={`
+          fixed top-0 left-0 z-50 h-full w-64
+          bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#0f172a]
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:translate-x-0 shadow-2xl
+        `}>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#1E40AF]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col h-full relative z-10">
+
+            {/* 🎯 SIDEBAR BRAND — Clean Logo + Text */}
+<div className="px-5 py-6 border-b border-white/5">
+  <div className="flex items-center gap-3">
+    <img
+      src="/icon.png"
+      alt="Attendify"
+      className="w-12 h-12 md:w-14 md:h-14 object-cover rounded-xl shadow-md"
+    />
+    <div className="flex flex-col">
+      <h1 className="text-xl font-extrabold text-white leading-tight">Attendify</h1>
+      <p className="text-xs font-semibold text-slate-400 leading-tight mt-0.5">V3.0</p>
+    </div>
+  </div>
+</div>
+
+            <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+              {visibleNav.map(item => {
+                const isActive = currentPage === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => navigateTo(item.key)}
+                    className={`
+                      w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold
+                      transition-all duration-200 group relative
+                      ${isActive
+                        ? 'bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white shadow-lg shadow-blue-900/40'
+                        : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                      }
+                    `}
+                  >
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
+                    )}
+                    <span className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                    {isActive && (
+                      <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="p-3 border-t border-white/5">
+              <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-2xl border border-white/5">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center text-xs font-black text-white shadow-md shadow-blue-900/40 shrink-0">
+                  {getInitials(currentUser.name)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-sm font-bold truncate">{currentUser.name}</p>
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest capitalize">{currentUser.role}</p>
+                </div>
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0" title="Online" />
+</div>
+
+
+<p className="text-center text-slate-700 text-[9px] font-bold mt-3 tracking-widest">
+                © {new Date().getFullYear()} ATTENDIFY INC.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <main className="lg:ml-64 min-h-screen">
+          <div className={`
+            p-4 lg:p-6 pt-20 lg:pt-6 pb-24 lg:pb-6
+            max-w-5xl mx-auto
+            transition-all duration-150
+            ${pageTransition ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}
+          `}>
+            {currentPage === 'dashboard'  && <Dashboard       currentUser={currentUser} onLogout={handleLogout} />}
+            {currentPage === 'history'    && <History          currentUser={currentUser} />}
+            {currentPage === 'ai-search'  && <AISearch         currentUser={currentUser} />}
+            {currentPage === 'analytics'  && <Analytics        currentUser={currentUser} />}
+            {currentPage === 'settings'   && <Settings         currentUser={currentUser} onLogout={handleLogout} />}
+            {currentPage === 'leave'      && <LeaveManagement  currentUser={currentUser} />}
+            {currentPage === 'correction' && <CorrectionRequest currentUser={currentUser} />}
+            {currentPage === 'profile'    && <EmployeeProfile  currentUser={currentUser} />}
+          </div>
+        </main>
+
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg">
+          <div className="flex items-stretch px-2 py-2 gap-1">
+            {visibleNav.map(item => {
+              const isActive = currentPage === item.key;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => navigateTo(item.key)}
+                  className={`
+                    flex-1 flex flex-col items-center justify-center gap-1
+                    py-2 px-1 rounded-2xl text-xs font-bold
+                    transition-all duration-200 active:scale-95
+                    ${isActive
+                      ? 'bg-gradient-to-br from-[#1E40AF]/10 to-[#2563EB]/10 text-[#1E40AF]'
+                      : 'text-slate-400 hover:text-slate-600'
+                    }
+                  `}
+                >
+                  <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>
+                    {item.icon}
+                  </div>
+                  <span className="text-[9px] font-black tracking-wide">
+                    {item.label.split(' ')[0]}
+                  </span>
+                  {isActive && (
+                    <div className="w-4 h-0.5 bg-[#1E40AF] rounded-full" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
+
+      <style>{`
+        @keyframes slideDown {
+          from { opacity: 0; transform: translate(-50%, -16px); }
+          to   { opacity: 1; transform: translate(-50%, 0); }
+        }
+        @keyframes scaleUp {
+          from { opacity: 0; transform: scale(0.94); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-6px); }
+          40%, 80% { transform: translateX(6px); }
+        }
+        .animate-slide-down { animation: slideDown 0.35s ease-out forwards; }
+        .animate-scale-up   { animation: scaleUp  0.25s ease-out forwards; }
+        .animate-fade-in    { animation: fadeIn   0.4s  ease-out forwards; }
+        .animate-shake      { animation: shake    0.4s  ease    forwards; }
+
+        ::-webkit-scrollbar       { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .mobile-safe { padding-bottom: env(safe-area-inset-bottom, 8px); }
+      `}</style>
+    </>
+  );
+}// src/App.tsx
+
+import { useState, useEffect } from 'react';
+import { Employee } from './types';
+import { initializeApp, hasAccess, setCurrentAuditUser } from './store';
+import LoginScreen from './components/LoginScreen';
+import Dashboard from './components/Dashboard';
+import History from './components/History';
+import AISearch from './components/AISearch';
+import Analytics from './components/Analytics';
+import Settings from './components/Settings';
+import LeaveManagement from './components/LeaveManagement';
+import CorrectionRequest from './components/CorrectionRequest';
+import EmployeeProfile from './components/EmployeeProfile';
+import UpdateModal from './components/UpdateModal';
+import { useAppUpdate } from './hooks/useAppUpdate';
+import { useLocationPermission } from './hooks/useLocationPermission';
+import LocationPermissionDialog from './components/LocationPermissionDialog';
+import NotificationBell from './components/NotificationBell';
+import WeatherWidget from './components/WeatherWidget';
+type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile';
+
+const getInitials = (name: string) =>
+  name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+
+const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
+  {
+    key: 'dashboard',
+    label: 'Dashboard',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      </svg>
+    ),
+  },
+  {
+    key: 'history',
+    label: 'History',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'ai-search',
+    label: 'AI Search',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'analytics',
+    label: 'Analytics',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'leave',
+    label: 'Leave',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+      </svg>
+    ),
+  },
+  {
+    key: 'correction',
+    label: 'Correction',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'profile',
+    label: 'Profile',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'settings',
+    label: 'Settings',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
+];
+
+export default function App() {
+  const { updateRequired, updateInfo } = useAppUpdate();
+  const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission();
+
+  const [currentUser, setCurrentUser]       = useState<Employee | null>(null);
+  const [currentPage, setCurrentPage]       = useState<Page>('dashboard');
+  const [sidebarOpen, setSidebarOpen]       = useState(false);
+  const [loading, setLoading]               = useState(true);
+  const [showDialog, setShowDialog]         = useState(true);
+  const [pageTransition, setPageTransition] = useState(false);
 
   useEffect(() => {
     initializeApp().finally(() => setLoading(false));
