@@ -31,20 +31,20 @@ task clean(type: Delete) {
 
 
 
-// Force Java 17 for ALL modules (matches GitHub Actions JDK 17)
-allprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            project.android {
+// Force Java 17 + Kotlin JVM 17 for ALL modules (matches GitHub Actions JDK 17)
+subprojects {
+    afterEvaluate {
+        if (it.hasProperty('android')) {
+            it.android {
                 compileOptions {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
                 }
             }
         }
-        project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-            kotlinOptions {
-                jvmTarget = '17'
+        it.tasks.configureEach { task ->
+            if (task.class.name.contains('KotlinCompile')) {
+                task.kotlinOptions.jvmTarget = '17'
             }
         }
     }
