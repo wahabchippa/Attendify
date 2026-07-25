@@ -407,120 +407,91 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
           </div>
         </div>
 
-        {/* ═══ ACCESS CONTROL — Clean Matrix Panel ═══ */}
+        {/* ═══ ACCESS CONTROL ═══ */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <SectionHeader
             icon={<svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>}
             title="Access Control"
-            subtitle="Toggle permissions for each employee"
+            subtitle="Toggle features ON/OFF per employee"
           />
-          <div className="p-4">
-            {(() => {
-              const ac = getAccessControl();
-              const featureGroups = [
-                { group: 'Views & Reports', items: [
-                  { key: 'settings', label: 'Settings', icon: '⚙️' },
-                  { key: 'analytics', label: 'Analytics', icon: '📊' },
-                  { key: 'ai', label: 'AI Search', icon: '🤖' },
-                  { key: 'view_all', label: 'View All', icon: '👁️' },
-                  { key: 'ot', label: 'Overtime', icon: '⏱️' },
-                  { key: 'audit_view', label: 'Audit Log', icon: '📋' },
-                  { key: 'alerts_view', label: 'Alerts', icon: '🚨' },
-                ]},
-                { group: 'Admin Features', items: [
-                  { key: 'gps_map', label: 'GPS Map', icon: '🗺️' },
-                  { key: 'push_notifications', label: 'Push Alerts', icon: '🔔' },
-                  { key: 'secret_override', label: 'Override', icon: '🛡️' },
-                ]},
-                { group: 'Employee Management', items: [
-                  { key: 'add_employee', label: 'Add Employee', icon: '➕' },
-                  { key: 'remove_employee', label: 'Remove', icon: '🗑️' },
-                  { key: 'pin_change', label: 'Change PIN', icon: '🔑' },
-                  { key: 'timings', label: 'Timings', icon: '⏰' },
-                ]},
-                { group: 'Approvals', items: [
-                  { key: 'wfh_approve', label: 'WFH', icon: '🏠' },
-                  { key: 'leave_manage', label: 'Leave', icon: '📅' },
-                  { key: 'corrections_manage', label: 'Corrections', icon: '✏️' },
-                ]},
-              ];
-
-              return (
-                <div className="space-y-6">
-                  {featureGroups.map(group => (
-                    <div key={group.group}>
-                      <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">{group.group}</h4>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="border-b border-slate-100">
-                              <th className="text-left py-2 pr-4 font-bold text-slate-500 w-32">Feature</th>
-                              {employees.map(emp => (
-                                <th key={emp.id} className="text-center py-2 px-1 min-w-[60px]">
-                                  <div className={`w-7 h-7 mx-auto rounded-lg flex items-center justify-center text-white text-[8px] font-black ${emp.role === 'admin' ? 'bg-blue-600' : emp.role === 'manager' ? 'bg-purple-600' : 'bg-slate-400'}`}>
-                                    {getInitials(emp.name)}
-                                  </div>
-                                  <p className="text-[9px] font-bold text-slate-500 mt-1 truncate">{emp.name.split(' ')[0]}</p>
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {group.items.map(feat => (
-                              <tr key={feat.key} className="border-b border-slate-50 hover:bg-slate-50/50">
-                                <td className="py-2 pr-4">
-                                  <span className="flex items-center gap-1.5">
-                                    <span>{feat.icon}</span>
-                                    <span className="font-bold text-slate-700">{feat.label}</span>
-                                  </span>
-                                </td>
-                                {employees.map(emp => {
-                                  const hasIt = (ac[feat.key] || []).includes(emp.id);
-                                  return (
-                                    <td key={emp.id} className="text-center py-2 px-1">
-                                      <button
-                                        onClick={() => {
-                                          if (hasIt) revokeAccess(emp.id, feat.key);
-                                          else grantAccess(emp.id, feat.key);
-                                          refreshEmps();
-                                        }}
-                                        className={`w-8 h-8 rounded-lg mx-auto flex items-center justify-center transition-all text-sm ${
-                                          hasIt
-                                            ? 'bg-emerald-100 text-emerald-600 hover:bg-red-100 hover:text-red-500'
-                                            : 'bg-slate-100 text-slate-300 hover:bg-blue-100 hover:text-blue-500'
-                                        }`}
-                                        title={hasIt ? `Revoke ${feat.label} from ${emp.name}` : `Grant ${feat.label} to ${emp.name}`}
-                                      >
-                                        {hasIt ? '✓' : '○'}
-                                      </button>
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Legend */}
-                  <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
-                    <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
-                      <span className="w-5 h-5 bg-emerald-100 text-emerald-600 rounded flex items-center justify-center text-[10px]">✓</span> Has Access
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
-                      <span className="w-5 h-5 bg-slate-100 text-slate-300 rounded flex items-center justify-center text-[10px]">○</span> No Access
-                    </span>
-                    <span className="text-[10px] text-slate-400 ml-auto">Click to toggle</span>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
+          {(() => {
+            const ac = getAccessControl();
+            const feats: {key:string;label:string;icon:string}[] = [
+              {key:'settings',label:'Settings',icon:'⚙️'},
+              {key:'analytics',label:'Analytics',icon:'📊'},
+              {key:'ai',label:'AI',icon:'🤖'},
+              {key:'view_all',label:'View All',icon:'👁️'},
+              {key:'gps_map',label:'GPS Map',icon:'🗺️'},
+              {key:'push_notifications',label:'Alerts',icon:'🔔'},
+              {key:'wfh_approve',label:'WFH',icon:'🏠'},
+              {key:'leave_manage',label:'Leaves',icon:'📅'},
+              {key:'corrections_manage',label:'Corrections',icon:'✏️'},
+              {key:'ot',label:'OT',icon:'⏱️'},
+              {key:'add_employee',label:'Add Emp',icon:'➕'},
+              {key:'remove_employee',label:'Remove',icon:'🗑️'},
+              {key:'pin_change',label:'PINs',icon:'🔑'},
+              {key:'timings',label:'Timings',icon:'⏰'},
+              {key:'secret_override',label:'Override',icon:'🛡️'},
+              {key:'audit_view',label:'Audit',icon:'📋'},
+              {key:'alerts_view',label:'Alert View',icon:'🚨'},
+            ];
+            return (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left min-w-[700px]">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-100">
+                      <th className="px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-50 z-10 w-40">Employee</th>
+                      {feats.map(f => (
+                        <th key={f.key} className="px-1 py-3 text-center" title={f.label}>
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className="text-sm">{f.icon}</span>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase leading-tight">{f.label}</span>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {employees.map(emp => {
+                      const count = feats.filter(f => (ac[f.key]||[]).includes(emp.id)).length;
+                      return (
+                        <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-4 py-2.5 sticky left-0 bg-white z-10">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-[9px] font-black shrink-0 ${emp.role==='admin'?'bg-blue-600':emp.role==='manager'?'bg-purple-600':'bg-slate-400'}`}>
+                                {getInitials(emp.name)}
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-slate-800 whitespace-nowrap">{emp.name}</p>
+                                <p className="text-[9px] text-slate-400 font-bold uppercase">{emp.role} · {count}/{feats.length}</p>
+                              </div>
+                            </div>
+                          </td>
+                          {feats.map(f => {
+                            const on = (ac[f.key]||[]).includes(emp.id);
+                            return (
+                              <td key={f.key} className="px-1 py-2.5 text-center">
+                                <button
+                                  onClick={() => { if(on) revokeAccess(emp.id,f.key); else grantAccess(emp.id,f.key); refreshEmps(); }}
+                                  className={`w-8 h-5 rounded-full transition-all relative ${on ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                  title={on ? `Revoke ${f.label} from ${emp.name}` : `Grant ${f.label} to ${emp.name}`}
+                                >
+                                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${on ? 'left-3.5' : 'left-0.5'}`} />
+                                </button>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
         </div>
 
-        {/* Edit Modal */}
+                {/* Edit Modal */}
         {secretEditRecord?._editing && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
             <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-lg border border-slate-200 animate-scale-up">
