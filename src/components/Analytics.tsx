@@ -367,7 +367,13 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
               <YAxis type="category" dataKey="name" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} width={55} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
-              <B      {isAdmin && (() => {
+              <Bar dataKey="Hours" fill="#2563EB" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
+
+      {isAdmin && (() => {
         // OT data filtered by period and employee
         const now = new Date();
         const otStartDate = otPeriod === 'week' 
