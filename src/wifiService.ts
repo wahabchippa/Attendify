@@ -29,29 +29,29 @@ interface GeoFence {
   fakeIP:    string;
 }
 
-const OFFICE_FENCES: GeoFence[] = [
-  {
-    name:    'QC Center',
-    lat:     24.856917,
-    lng:     67.111833,
-    radiusM: 150,
-    fakeIP:  '202.141.254.126',
-  },
-  {
-    name:    'PK Zone',
-    lat:     24.825222,
-    lng:     67.247472,
-    radiusM: 800,
-    fakeIP:  '103.93.12.229',
-  },
-  {
-    name:    'Z House',
-    lat:     24.882889,
-    lng:     67.073278,
-    radiusM: 500,
-    fakeIP:  '103.93.12.229',
-  },
+// Default fences — overridden by admin settings in store
+const DEFAULT_FENCES: GeoFence[] = [
+  { name: 'QC Center', lat: 24.856917, lng: 67.111833, radiusM: 150, fakeIP: '202.141.254.126' },
+  { name: 'PK Zone',   lat: 24.825222, lng: 67.247472, radiusM: 800, fakeIP: '103.93.12.229' },
+  { name: 'Z House',   lat: 24.882889, lng: 67.073278, radiusM: 500, fakeIP: '103.93.12.229' },
 ];
+
+function getOfficeFences(): GeoFence[] {
+  try {
+    const { getOfficeLocations } = require('./store');
+    const locs = getOfficeLocations();
+    if (locs && locs.length > 0 && locs[0].lat) {
+      return locs.filter((l: any) => l.is_active && l.lat && l.lng).map((l: any) => ({
+        name: l.name,
+        lat: l.lat,
+        lng: l.lng,
+        radiusM: l.radius || 200,
+        fakeIP: l.ip_address,
+      }));
+    }
+  } catch {}
+  return DEFAULT_FENCES;
+}
 
 // =============================================
 // HELPERS
@@ -209,7 +209,7 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
 
   // ── Step 4: Check all fences in parallel ──
   const fenceResults = await Promise.all(
-    OFFICE_FENCES.map(fence => checkFence(fence, pos))
+    getOfficeFences().map(fence => checkFence(fence, pos))
   );
 
   // Find first matching fence

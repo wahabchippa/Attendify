@@ -90,16 +90,23 @@ export interface OfficeLocation {
   name: string;
   ip_address: string;
   is_active: boolean;
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }
 
 const DEFAULT_LOCATIONS: OfficeLocation[] = [
-  { id: 1, name: 'PK Zone',   ip_address: '103.93.12.229',   is_active: true },
-  { id: 2, name: 'QC Center', ip_address: '202.141.254.126', is_active: true },
-  { id: 3, name: 'QC Center', ip_address: '157.10.30.235',   is_active: true },
+  { id: 1, name: 'PK Zone',   ip_address: '103.93.12.229',   is_active: true, lat: 24.825222, lng: 67.247472, radius: 800 },
+  { id: 2, name: 'QC Center', ip_address: '202.141.254.126', is_active: true, lat: 24.856917, lng: 67.111833, radius: 150 },
+  { id: 3, name: 'Z House',   ip_address: '103.93.12.229',   is_active: true, lat: 24.882889, lng: 67.073278, radius: 500 },
 ];
 
 export function getOfficeLocations(): OfficeLocation[] {
   return cacheGet('c_locations', DEFAULT_LOCATIONS);
+}
+
+export function saveOfficeLocations(locs: OfficeLocation[]): void {
+  cacheSet('c_locations', locs);
 }
 
 export function getLocationFromIP(ip: string): string {

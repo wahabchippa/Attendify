@@ -1,14 +1,25 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Employee, AttendanceRecord } from '../types';
-import { getEmployees, getAttendanceEmployees, getAttendanceRecords, getPKTDateString, syncAll, getEmployeeLocations, EmployeeLocationData } from '../store';
+import { getEmployees, getAttendanceEmployees, getAttendanceRecords, getPKTDateString, syncAll, getEmployeeLocations, getOfficeLocations, EmployeeLocationData } from '../store';
 
 interface GPSLiveMapProps { currentUser: Employee; }
 
-const OFFICES = [
-  { name: 'QC Center', lat: 24.856917, lng: 67.111833, radius: 150, color: '#2563EB' },
-  { name: 'PK Zone',   lat: 24.825222, lng: 67.247472, radius: 800, color: '#10b981' },
-  { name: 'Z House',   lat: 24.882889, lng: 67.073278, radius: 500, color: '#8b5cf6' },
-];
+const COLORS = ['#2563EB', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'];
+function getOffices() {
+  try {
+    const locs = getOfficeLocations();
+    if (locs && locs.length > 0 && locs[0].lat) {
+      return locs.filter(l => l.is_active && l.lat && l.lng).map((l, i) => ({
+        name: l.name, lat: l.lat!, lng: l.lng!, radius: l.radius || 200, color: COLORS[i % COLORS.length],
+      }));
+    }
+  } catch {}
+  return [
+    { name: 'QC Center', lat: 24.856917, lng: 67.111833, radius: 150, color: '#2563EB' },
+    { name: 'PK Zone',   lat: 24.825222, lng: 67.247472, radius: 800, color: '#10b981' },
+    { name: 'Z House',   lat: 24.882889, lng: 67.073278, radius: 500, color: '#8b5cf6' },
+  ];
+}
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000; const dLat = (lat2-lat1)*Math.PI/180; const dLng = (lng2-lng1)*Math.PI/180;
@@ -59,7 +70,7 @@ export default function GPSLiveMap({ currentUser }: GPSLiveMapProps) {
         const map = L.map(mapContainerRef.current, {center:[24.855,67.15],zoom:12,zoomControl:false});
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map);
         L.control.zoom({position:'topright'}).addTo(map);
-        OFFICES.forEach(o => {
+        getOffices().forEach(o => {
           L.circle([o.lat,o.lng],{radius:o.radius,color:o.color,fillColor:o.color,fillOpacity:0.08,weight:2,dashArray:'6,4'}).addTo(map);
           L.marker([o.lat,o.lng],{icon:L.divIcon({className:'',html:`<div style="background:${o.color};color:white;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.25);border:2px solid white">🏢 ${o.name}</div>`,iconSize:[0,0],iconAnchor:[40,12]})}).addTo(map);
         });
@@ -117,7 +128,7 @@ export default function GPSLiveMap({ currentUser }: GPSLiveMapProps) {
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
           <div ref={mapContainerRef} className="w-full h-[400px] lg:h-[500px]"/>
           <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-3">
-            {OFFICES.map(o=>(<span key={o.name} className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500"><span className="w-2 h-2 rounded-full" style={{background:o.color}}/>{o.name}</span>))}
+            {getOffices().map(o=>(<span key={o.name} className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500"><span className="w-2 h-2 rounded-full" style={{background:o.color}}/>{o.name}</span>))}
             <span className="flex items-center gap-1.5 text-[10px] font-semibold text-blue-600"><span className="w-2 h-2 rounded-full bg-blue-500 ring-2 ring-blue-200"/>You</span>
             <span className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-600"><span className="w-2 h-2 rounded-full bg-emerald-500"/>Employee</span>
           </div>
@@ -130,7 +141,7 @@ export default function GPSLiveMap({ currentUser }: GPSLiveMapProps) {
               const status=rec?(rec.checkOut?'checked-out':rec.status):'absent';
               const checkIn=rec?.checkIn?new Date(rec.checkIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):null;
               const loc=empLocations.find(l=>l.empId===emp.id);
-              const nearest=loc?OFFICES.map(o=>({...o,dist:haversine(loc.latitude,loc.longitude,o.lat,o.lng)})).sort((a,b)=>a.dist-b.dist)[0]:null;
+              const nearest=loc?getOffices().map(o=>({...o,dist:haversine(loc.latitude,loc.longitude,o.lat,o.lng)})).sort((a,b)=>a.dist-b.dist)[0]:null;
               return (
                 <div key={emp.id} className={`px-4 py-2.5 hover:bg-slate-50/50 transition-colors cursor-pointer ${selectedEmp===emp.id?'bg-blue-50':''}`}
                   onClick={()=>{setSelectedEmp(selectedEmp===emp.id?null:emp.id);if(loc&&mapRef.current)mapRef.current.map.flyTo([loc.latitude,loc.longitude],15,{duration:0.5});}}>
@@ -157,7 +168,7 @@ export default function GPSLiveMap({ currentUser }: GPSLiveMapProps) {
       </div>
       {myLocation&&(
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {OFFICES.map(o=>{const dist=haversine(myLocation.lat,myLocation.lng,o.lat,o.lng);const inside=dist<=o.radius;return(
+          {getOffices().map(o=>{const dist=haversine(myLocation.lat,myLocation.lng,o.lat,o.lng);const inside=dist<=o.radius;return(
             <div key={o.name} className={`rounded-xl p-3 border ${inside?'bg-emerald-50 border-emerald-200':'bg-slate-50 border-slate-200'}`}>
               <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{background:o.color}}/><span className="text-xs font-black text-slate-800">{o.name}</span>{inside&&<span className="ml-auto text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">INSIDE</span>}</div>
               <p className={`text-lg font-black mt-1 ${inside?'text-emerald-600':'text-slate-600'}`}>{formatDist(dist)}</p>

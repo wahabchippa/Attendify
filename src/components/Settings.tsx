@@ -7,7 +7,7 @@ import {
   getAllEmployeeTimings, saveAllEmployeeTimings, EmployeeTiming,
   updateEmployeePin, addEmployee, removeEmployee, getAttendanceRecords,
   saveAttendanceRecords, updateAttendanceRecord, getLocationFromIP,
-  hasAccess, getAccessControl, grantAccess, revokeAccess, getOfficeLocations,
+  hasAccess, getAccessControl, grantAccess, revokeAccess, getOfficeLocations, saveOfficeLocations,
   bindEmployeeDevice, getHolidays, addHoliday, removeHoliday, Holiday
 } from '../store';
 import { format, parseISO } from 'date-fns';
@@ -842,89 +842,81 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
       )}
 
       {/* ═══ LOCATIONS ═══ */}
-      {activeTab === 'locations' && (
-        <div className="space-y-4">
-          {/* Current Offices — from wifiService */}
+      {activeTab === 'locations' && (() => {
+        const offices = getOfficeLocations();
+        const updateOffice = (id: number, field: string, value: any) => {
+          const updated = offices.map(o => o.id === id ? { ...o, [field]: value } : o);
+          saveOfficeLocations(updated);
+          refreshEmps();
+        };
+        const addOffice = () => {
+          const newId = Math.max(...offices.map(o => o.id), 0) + 1;
+          saveOfficeLocations([...offices, { id: newId, name: 'New Office', ip_address: '', is_active: true, lat: 24.86, lng: 67.11, radius: 200 }]);
+          refreshEmps();
+        };
+        const removeOffice = (id: number) => {
+          if (!confirm('Remove this office?')) return;
+          saveOfficeLocations(offices.filter(o => o.id !== id));
+          refreshEmps();
+        };
+        return (
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             <SectionHeader
               icon={<svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>}
               title="Office Locations"
-              subtitle="GPS geofences for check-in verification"
+              subtitle="Set geofence radius and coordinates for check-in"
             />
-            <div className="p-5 space-y-3">
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-700 font-medium">
-                ⚠️ To change office locations, update the coordinates in <span className="font-black">src/wifiService.ts</span> (OFFICE_FENCES) and <span className="font-black">src/components/GPSLiveMap.tsx</span> (OFFICES). Supabase table: <span className="font-black">office_locations</span>
-              </div>
-              
-              {/* Show current offices */}
-              {[
-                { name: 'QC Center', lat: 24.856917, lng: 67.111833, radius: 150, ip: '202.141.254.126' },
-                { name: 'PK Zone', lat: 24.825222, lng: 67.247472, radius: 800, ip: '103.93.12.229' },
-                { name: 'Z House', lat: 24.882889, lng: 67.073278, radius: 500, ip: '103.93.12.229' },
-              ].map(office => (
-                <div key={office.name} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-black text-slate-800">🏢 {office.name}</h4>
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">ACTIVE</span>
+            <div className="p-4 space-y-3">
+              {offices.map(office => (
+                <div key={office.id} className={`rounded-2xl border p-4 ${office.is_active ? 'bg-slate-50 border-slate-200' : 'bg-red-50 border-red-200 opacity-60'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🏢</span>
+                      <input value={office.name} onChange={e => updateOffice(office.id, 'name', e.target.value)}
+                        className="text-sm font-black text-slate-800 bg-transparent border-b border-dashed border-slate-300 focus:border-blue-500 focus:outline-none px-1 py-0.5 w-32" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => updateOffice(office.id, 'is_active', !office.is_active)}
+                        className={`w-9 h-5 rounded-full transition-all relative ${office.is_active ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${office.is_active ? 'left-4' : 'left-0.5'}`} />
+                      </button>
+                      <button onClick={() => removeOffice(office.id)} className="text-red-400 hover:text-red-600 text-xs font-bold" title="Remove">✕</button>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    <div className="bg-white rounded-xl p-2 border border-slate-100">
-                      <p className="text-[9px] text-slate-400 font-bold uppercase">Latitude</p>
-                      <p className="font-black text-slate-700">{office.lat}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Latitude</label>
+                      <input type="number" step="0.000001" value={office.lat || ''} onChange={e => updateOffice(office.id, 'lat', parseFloat(e.target.value) || 0)}
+                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-700 focus:outline-none focus:border-blue-400" />
                     </div>
-                    <div className="bg-white rounded-xl p-2 border border-slate-100">
-                      <p className="text-[9px] text-slate-400 font-bold uppercase">Longitude</p>
-                      <p className="font-black text-slate-700">{office.lng}</p>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Longitude</label>
+                      <input type="number" step="0.000001" value={office.lng || ''} onChange={e => updateOffice(office.id, 'lng', parseFloat(e.target.value) || 0)}
+                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-700 focus:outline-none focus:border-blue-400" />
                     </div>
-                    <div className="bg-white rounded-xl p-2 border border-slate-100">
-                      <p className="text-[9px] text-slate-400 font-bold uppercase">Radius</p>
-                      <p className="font-black text-blue-600">{office.radius}m</p>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Radius (meters)</label>
+                      <input type="number" step="10" value={office.radius || 200} onChange={e => updateOffice(office.id, 'radius', parseInt(e.target.value) || 200)}
+                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-blue-600 focus:outline-none focus:border-blue-400" />
                     </div>
-                    <div className="bg-white rounded-xl p-2 border border-slate-100">
-                      <p className="text-[9px] text-slate-400 font-bold uppercase">IP Address</p>
-                      <p className="font-black text-slate-700 text-[10px]">{office.ip}</p>
+                    <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">IP Address</label>
+                      <input value={office.ip_address || ''} onChange={e => updateOffice(office.id, 'ip_address', e.target.value)}
+                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-600 focus:outline-none focus:border-blue-400" />
                     </div>
                   </div>
                 </div>
               ))}
-
-              {/* How to change */}
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                <h4 className="text-xs font-black text-blue-800 mb-2">📝 How to Change Locations</h4>
-                <ol className="text-[11px] text-blue-700 space-y-1.5 font-medium list-decimal list-inside">
-                  <li>Open Google Maps → Right-click your office → Copy coordinates</li>
-                  <li>Open <span className="font-black bg-blue-100 px-1 rounded">src/wifiService.ts</span> → Edit OFFICE_FENCES array</li>
-                  <li>Open <span className="font-black bg-blue-100 px-1 rounded">src/components/GPSLiveMap.tsx</span> → Edit OFFICES array</li>
-                  <li>Set <span className="font-black">name</span>, <span className="font-black">lat</span>, <span className="font-black">lng</span>, <span className="font-black">radiusM</span> (meters)</li>
-                  <li>Push to GitHub → Vercel auto-deploys</li>
-                </ol>
-                <div className="mt-3 bg-white rounded-xl p-3 border border-blue-100">
-                  <p className="text-[10px] font-black text-slate-600 mb-1">Example:</p>
-                  <pre className="text-[10px] text-blue-800 font-mono bg-blue-50 rounded-lg p-2 overflow-x-auto">{`{
-  name: 'New Office',
-  lat: 24.8600,    // from Google Maps
-  lng: 67.0700,    // from Google Maps  
-  radiusM: 300,    // 300 meters geofence
-  fakeIP: '1.2.3.4'
-}`}</pre>
-                </div>
-              </div>
-
-              {/* Supabase office_locations */}
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                <h4 className="text-xs font-black text-slate-700 mb-2">🗄️ Supabase: office_locations table</h4>
-                <p className="text-[11px] text-slate-500 font-medium mb-2">If you have offices in Supabase, they sync automatically on app load. Add rows to <span className="font-black">office_locations</span> table with columns:</p>
-                <div className="grid grid-cols-4 gap-1 text-[10px] font-bold">
-                  <span className="bg-white rounded px-2 py-1 border border-slate-200 text-slate-600">id (int)</span>
-                  <span className="bg-white rounded px-2 py-1 border border-slate-200 text-slate-600">name (text)</span>
-                  <span className="bg-white rounded px-2 py-1 border border-slate-200 text-slate-600">ip_address (text)</span>
-                  <span className="bg-white rounded px-2 py-1 border border-slate-200 text-slate-600">is_active (bool)</span>
-                </div>
+              <button onClick={addOffice} className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-2xl text-xs font-bold text-slate-400 hover:text-blue-600 hover:border-blue-300 transition-all">
+                + Add New Office
+              </button>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-[10px] text-blue-700 font-medium">
+                💡 <span className="font-bold">Tip:</span> Open Google Maps → Right-click your office → Copy coordinates → Paste lat/lng here. Set radius in meters (e.g., 200 = 200m geofence).
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Salary removed */}
 
