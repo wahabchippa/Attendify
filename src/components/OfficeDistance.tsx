@@ -14,10 +14,10 @@ export default function OfficeDistance({ distance, isInside, locationName }: Off
     }`}>
       <span className="text-base">📍</span>
       <div className="flex-1">
-        <p className={`text-xs font-black ${isInside ? 'text-emerald-700' : 'text-amber-700'}`}>
+        <p className={`text-xs font-semibold ${isInside ? 'text-emerald-700' : 'text-amber-700'}`}>
           {isInside ? `Inside ${locationName || 'Office'}` : `${distanceText} from office`}
         </p>
-        <p className="text-[10px] text-slate-500 font-medium">
+        <p className="text-[11px] text-slate-500 font-medium">
           {isInside ? '✓ You can check-in' : '⚠ Get closer to check-in'}
         </p>
       </div>

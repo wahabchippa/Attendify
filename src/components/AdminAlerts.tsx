@@ -160,7 +160,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
   ];
 
   return (
-    <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* ===== HEADER ===== */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 text-white relative overflow-hidden shadow-sm">
@@ -173,13 +173,13 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
               </svg>
               {stats.unread > 0 && (
-                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-black text-white border-2 border-white">
+                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[11px] font-medium text-white border-2 border-white">
                   {stats.unread > 99 ? '99+' : stats.unread}
                 </div>
               )}
             </div>
             <div>
-              <h2 className="text-lg font-black text-white tracking-tight">Smart Alerts</h2>
+              <h2 className="text-lg font-bold text-white tracking-tight">Smart Alerts</h2>
               <p className="text-slate-400 text-xs font-bold">Real-time security & attendance monitoring</p>
             </div>
           </div>
@@ -222,8 +222,8 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
         ].map(s => (
           <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-md p-4 border ${s.border} shadow-sm`}>
             <p className="text-lg mb-1">{s.icon}</p>
-            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{s.label}</p>
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">{s.label}</p>
           </div>
         ))}
       </div>
@@ -249,7 +249,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
             >
               {t.label}
               {t.count !== undefined && t.count > 0 && (
-                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded-full ${
                   activeTab === t.key ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
                 }`}>
                   {t.count}
@@ -305,7 +305,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
             </button>
           )}
 
-          <span className="text-[10px] font-bold text-slate-400 ml-auto">
+          <span className="text-xs font-medium text-slate-400 ml-auto">
             {filteredAlerts.length} alerts
           </span>
         </div>
@@ -371,7 +371,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className={`text-sm font-black ${isUnread ? 'text-slate-900' : 'text-slate-600'}`}>
+                            <p className={`text-sm font-bold ${isUnread ? 'text-slate-900' : 'text-slate-600'}`}>
                               {alert.title}
                             </p>
                             {isUnread && (
@@ -381,17 +381,17 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
 
                           {/* Badges */}
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black border ${typeCfg.bg} ${typeCfg.color} ${typeCfg.border}`}>
+                            <span className={`px-2 py-0.5 rounded-lg text-[11px] font-medium border ${typeCfg.bg} ${typeCfg.color} ${typeCfg.border}`}>
                               {typeCfg.label}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black border ${sevCfg.bg} ${sevCfg.color} ${sevCfg.border}`}>
+                            <span className={`px-2 py-0.5 rounded-lg text-[11px] font-medium border ${sevCfg.bg} ${sevCfg.color} ${sevCfg.border}`}>
                               {sevCfg.label}
                             </span>
                           </div>
                         </div>
 
                         {/* Time */}
-                        <span className="text-[10px] text-slate-400 font-medium shrink-0">
+                        <span className="text-[11px] text-slate-400 font-medium shrink-0">
                           {formatTime(alert.createdAt)}
                         </span>
                       </div>
@@ -404,11 +404,11 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                       {/* Employee info */}
                       {emp && (
                         <div className="flex items-center gap-2 mt-2">
-                          <div className="w-5 h-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center text-[8px] font-black text-white">
+                          <div className="w-5 h-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center text-[11px] font-medium text-white">
                             {getInitials(emp.name)}
                           </div>
-                          <span className="text-[10px] text-slate-500 font-bold">{emp.name}</span>
-                          <span className="text-[10px] text-slate-300 capitalize">· {emp.role}</span>
+                          <span className="text-[11px] text-slate-500 font-bold">{emp.name}</span>
+                          <span className="text-[11px] text-slate-300 capitalize">· {emp.role}</span>
                         </div>
                       )}
 
@@ -417,7 +417,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                         {isUnread && (
                           <button
                             onClick={() => handleMarkRead(alert.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded text-[10px] font-bold border border-slate-200 transition-all active:scale-95"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded text-xs font-medium border border-slate-200 transition-all active:scale-95"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -428,7 +428,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                         {!alert.isDismissed && (
                           <button
                             onClick={() => handleDismiss(alert.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded text-[10px] font-bold border border-slate-200 transition-all active:scale-95"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded text-xs font-medium border border-slate-200 transition-all active:scale-95"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -437,7 +437,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                           </button>
                         )}
                         {alert.readAt && (
-                          <span className="text-[9px] text-slate-300 font-medium ml-auto">
+                          <span className="text-[11px] text-slate-300 font-medium ml-auto">
                             Read {formatTime(alert.readAt)}
                           </span>
                         )}
@@ -452,8 +452,8 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
 
         {/* Footer */}
         {filteredAlerts.length > 0 && (
-          <div className="px-6 py-3 bg-gradient-to-r from-slate-50 to-blue-50/20 border-t border-slate-100 text-center">
-            <p className="text-[10px] font-bold text-slate-400">
+          <div className="px-5 py-3 bg-gradient-to-r from-slate-50 to-blue-50/20 border-t border-slate-100 text-center">
+            <p className="text-xs font-medium text-slate-400">
               Showing <span className="text-slate-900">{filteredAlerts.length}</span> of{' '}
               <span className="text-slate-900">{allAlerts.length}</span> total alerts
             </p>

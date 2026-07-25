@@ -17,7 +17,7 @@ export default function LocationPermissionDialog({
 
         {/* ===== TOP BANNER ===== */}
         <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-7 pt-8 pb-10 text-white text-center relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl" />
+          <div className="absolute -top-8 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl" />
           <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-indigo-400/20 rounded-full blur-lg" />
 
           {/* Icon */}
@@ -28,7 +28,7 @@ export default function LocationPermissionDialog({
             </svg>
           </div>
 
-          <h2 className="text-2xl font-black tracking-tight relative z-10">
+          <h2 className="text-2xl font-bold tracking-tight relative z-10">
             Location Required
           </h2>
           <p className="text-slate-400 text-xs font-bold mt-1 relative z-10">
@@ -37,7 +37,7 @@ export default function LocationPermissionDialog({
         </div>
 
         {/* ===== CONTENT ===== */}
-        <div className="px-7 py-6 space-y-5">
+        <div className="px-7 py-6 space-y-4">
 
           {/* Info card */}
           <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-4 flex items-start gap-3">
@@ -47,7 +47,7 @@ export default function LocationPermissionDialog({
               </svg>
             </div>
             <div>
-              <p className="text-amber-800 text-sm font-black">Location Access Denied</p>
+              <p className="text-amber-800 text-sm font-bold">Location Access Denied</p>
               <p className="text-amber-700 text-xs font-medium mt-0.5 leading-relaxed">
                 Attendify needs your location to verify you are in the office before marking attendance.
               </p>
@@ -56,7 +56,7 @@ export default function LocationPermissionDialog({
 
           {/* Steps */}
           <div className="space-y-2.5">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">How to enable:</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">How to enable:</p>
             {[
               { step: '1', text: 'Open phone Settings' },
               { step: '2', text: 'Go to App Permissions' },
@@ -64,7 +64,7 @@ export default function LocationPermissionDialog({
               { step: '4', text: 'Set to "Allow"' },
             ].map(item => (
               <div key={item.step} className="flex items-center gap-3 bg-slate-50 rounded px-3.5 py-2.5 border border-slate-100">
-                <div className="w-6 h-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm shadow-slate-900/10">
+                <div className="w-6 h-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-xs font-semibold shrink-0 shadow-sm shadow-slate-900/10">
                   {item.step}
                 </div>
                 <p className="text-slate-700 text-xs font-semibold">{item.text}</p>

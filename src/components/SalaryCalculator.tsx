@@ -218,10 +218,10 @@ const allEmployees = getEmployees();
   };
 
   const inputCls  = "w-full bg-slate-50 border border-slate-200 rounded px-3.5 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all";
-  const labelCls  = "block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5";
+  const labelCls  = "block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5";
 
   return (
-    <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* Notification */}
       {notification && (
@@ -244,7 +244,7 @@ const allEmployees = getEmployees();
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-black text-white tracking-tight">Salary Calculator</h2>
+              <h2 className="text-lg font-bold text-white tracking-tight">Salary Calculator</h2>
               <p className="text-emerald-100 text-xs font-bold">Monthly payroll & deductions</p>
             </div>
           </div>
@@ -315,7 +315,7 @@ const allEmployees = getEmployees();
               </svg>
             </div>
 
-            <p className="ml-auto text-[10px] font-bold text-slate-400">
+            <p className="ml-auto text-xs font-medium text-slate-400">
               {format(new Date(selectedMonth + '-01'), 'MMMM yyyy')}
             </p>
           </div>
@@ -331,8 +331,8 @@ const allEmployees = getEmployees();
               ].map(s => (
                 <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-md p-4 border ${s.border} shadow-sm`}>
                   <p className="text-lg mb-1">{s.icon}</p>
-                  <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
-                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{s.label}</p>
+                  <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                  <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -347,33 +347,33 @@ const allEmployees = getEmployees();
               return (
                 <div key={report.employeeId} className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                   {/* Employee Header */}
-                  <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/30">
+                  <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/30">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded flex items-center justify-center text-xs font-black shadow-md">
+                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded flex items-center justify-center text-xs font-semibold shadow-md">
                           {getInitials(report.employeeName)}
                         </div>
                         <div>
-                          <p className="text-sm font-black text-slate-800">{report.employeeName}</p>
-                          <p className="text-[10px] text-slate-400 font-medium capitalize">{emp?.role} · {format(new Date(selectedMonth + '-01'), 'MMMM yyyy')}</p>
+                          <p className="text-sm font-bold text-slate-800">{report.employeeName}</p>
+                          <p className="text-[11px] text-slate-400 font-medium capitalize">{emp?.role} · {format(new Date(selectedMonth + '-01'), 'MMMM yyyy')}</p>
                         </div>
                       </div>
                       {!hasConfig && (
-                        <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black rounded border border-amber-200">
+                        <span className="px-3 py-1 bg-amber-50 text-amber-600 text-xs font-semibold rounded border border-amber-200">
                           ⚠️ Config Missing
                         </span>
                       )}
                       {hasConfig && (
                         <div className="text-right">
                           <p className="text-emerald-600 font-black text-lg">{formatPKR(report.netPay)}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Net Pay</p>
+                          <p className="text-[11px] text-slate-400 font-medium">Net Pay</p>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {!hasConfig ? (
-                    <div className="p-6 text-center">
+                    <div className="p-5 text-center">
                       <p className="text-slate-400 text-sm font-medium mb-3">No salary config found for this employee.</p>
                       <button
                         onClick={() => { setActiveTab('config'); handleLoadConfig(report.employeeId); }}
@@ -386,7 +386,7 @@ const allEmployees = getEmployees();
                     <div className="p-5 space-y-4">
                       {/* Attendance Summary */}
                       <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Attendance</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Attendance</p>
                         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                           {[
                             { label: 'Present',  value: report.presentDays,  color: 'text-emerald-600' },
@@ -397,8 +397,8 @@ const allEmployees = getEmployees();
                             { label: 'Leave',    value: report.leaveDays,    color: 'text-purple-600' },
                           ].map(s => (
                             <div key={s.label} className="bg-slate-50 rounded p-2.5 text-center border border-slate-100">
-                              <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
-                              <p className="text-[9px] font-bold text-slate-400 mt-0.5">{s.label}</p>
+                              <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                              <p className="text-[11px] font-medium text-slate-400 mt-0.5">{s.label}</p>
                             </div>
                           ))}
                         </div>
@@ -406,7 +406,7 @@ const allEmployees = getEmployees();
 
                       {/* Salary Breakdown */}
                       <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Salary Breakdown</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Salary Breakdown</p>
                         <div className="bg-slate-50 rounded-md p-4 border border-slate-100 space-y-2.5">
                           {/* Base */}
                           <div className="flex justify-between text-sm">
@@ -520,20 +520,20 @@ const allEmployees = getEmployees();
                   <button
                     key={emp.id}
                     onClick={() => handleLoadConfig(emp.id)}
-                    className={`flex items-center gap-2.5 px-3.5 py-3 rounded-md border text-left transition-all active:scale-95 ${
+                    className={`flex items-center gap-2 px-3.5 py-3 rounded-md border text-left transition-all active:scale-95 ${
                       isSelected
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400 shadow-md'
                         : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-emerald-300'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded flex items-center justify-center text-[10px] font-black shrink-0 ${
+                    <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-semibold shrink-0 ${
                       isSelected ? 'bg-white/20 text-white' : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
                     }`}>
                       {getInitials(emp.name)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold truncate">{emp.name.split(' ')[0]}</p>
-                      <p className={`text-[9px] font-medium ${isSelected ? 'text-white/70' : hasConfig ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      <p className={`text-[11px] font-normal ${isSelected ? 'text-white/70' : hasConfig ? 'text-emerald-600' : 'text-amber-600'}`}>
                         {hasConfig ? '✓ Configured' : '⚠ Not set'}
                       </p>
                     </div>
@@ -546,24 +546,24 @@ const allEmployees = getEmployees();
           {/* Config Form */}
           {configForm && configEmpId && (
             <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/30">
+              <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/30">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded flex items-center justify-center text-xs font-black">
+                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded flex items-center justify-center text-xs font-semibold">
                     {getInitials(allEmployees.find(e => e.id === configEmpId)?.name || '')}
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-slate-800">
+                    <h3 className="text-sm font-bold text-slate-800">
                       {allEmployees.find(e => e.id === configEmpId)?.name}
                     </h3>
-                    <p className="text-[10px] text-slate-400 font-medium">Salary Configuration</p>
+                    <p className="text-[11px] text-slate-400 font-medium">Salary Configuration</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-5 space-y-5">
+              <div className="p-5 space-y-4">
                 {/* Base Salary */}
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">💰 Basic Pay</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">💰 Basic Pay</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className={labelCls}>Base Salary (PKR/month)</label>
@@ -600,7 +600,7 @@ const allEmployees = getEmployees();
 
                 {/* Deduction Rules */}
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">📉 Deduction Rules</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">📉 Deduction Rules</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className={labelCls}>Late Deduction (per incident)</label>
@@ -637,7 +637,7 @@ const allEmployees = getEmployees();
 
                 {/* OT Rates */}
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">⚡ Overtime Rates (PKR/hour)</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">⚡ Overtime Rates (PKR/hour)</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className={labelCls}>Regular OT Rate</label>
@@ -675,7 +675,7 @@ const allEmployees = getEmployees();
                 {/* Auto calculated preview */}
                 {configForm.baseSalary > 0 && (
                   <div className="bg-emerald-50 border border-emerald-200 rounded-md p-4 space-y-2">
-                    <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Auto Calculated</p>
+                    <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Auto Calculated</p>
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div className="flex justify-between">
                         <span className="text-emerald-600 font-medium">Per Day Salary</span>

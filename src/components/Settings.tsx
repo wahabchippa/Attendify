@@ -235,15 +235,15 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
   }: {
     icon: React.ReactNode; title: string; subtitle?: string; badge?: React.ReactNode
   }) => (
-    <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
+    <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-white border border-slate-200 rounded flex items-center justify-center shadow-sm">
             {icon}
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-800">{title}</h3>
-            {subtitle && <p className="text-[10px] text-slate-400 font-medium">{subtitle}</p>}
+            <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+            {subtitle && <p className="text-[11px] text-slate-400 font-medium">{subtitle}</p>}
           </div>
         </div>
         {badge}
@@ -253,7 +253,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
 
   const InputField = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <div>
-      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>
+      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">{label}</label>
       {children}
     </div>
   );
@@ -272,9 +272,9 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
       : allRecords.sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 100);
 
     return (
-      <div className="space-y-5 font-sans">
+      <div className="space-y-3 font-sans">
         <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 rounded-lg p-5 text-white relative overflow-hidden shadow-md">
-          <div className="absolute -top-10 -right-10 w-36 h-36 bg-white/5 rounded-full blur-xl" />
+          <div className="absolute -top-8 -right-10 w-36 h-36 bg-white/5 rounded-full blur-xl" />
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white/10 rounded-md flex items-center justify-center border border-white/10">
@@ -283,8 +283,8 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-black tracking-tight">Override Panel</h2>
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Full Record Control</p>
+                <h2 className="text-lg font-bold tracking-tight">Override Panel</h2>
+                <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Full Record Control</p>
               </div>
             </div>
             <button
@@ -385,23 +385,23 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                 };
                 return (
                   <div key={rec.id} className="flex flex-wrap items-center gap-2 py-3 px-4 bg-slate-50 rounded-md border border-slate-100 text-xs hover:border-slate-200 transition-all">
-                    <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-[9px] font-black shrink-0">
+                    <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-[11px] font-medium shrink-0">
                       {getInitials(emp?.name || '?')}
                     </div>
                     <span className="font-bold text-slate-700 w-24 truncate">{emp?.name || rec.employeeId}</span>
                     <span className="text-slate-400 font-medium w-20">{rec.date}</span>
-                    <span className={`px-2 py-1 rounded-lg text-[10px] font-black border ${statusColors[rec.status] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                    <span className={`px-2 py-1 rounded-lg text-xs font-semibold border ${statusColors[rec.status] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                       {rec.status === 'work-from-home' ? 'WFH' : rec.status.toUpperCase()}
                     </span>
                     <span className="text-slate-500 font-medium">{rec.totalHours || 0}h</span>
                     <span className="text-slate-900 font-bold">{getLocationFromIP(rec.ipAddress)}</span>
                     <div className="flex gap-1.5 ml-auto">
                       <button onClick={() => setSecretEditRecord({ ...rec, checkInTime: safeFormatTime(rec.checkIn), checkOutTime: safeFormatTime(rec.checkOut), _editing: true })}
-                        className="px-3 py-1.5 bg-slate-50 text-slate-900 rounded text-[10px] font-bold hover:bg-slate-100 border border-slate-200 transition-all active:scale-95">
+                        className="px-3 py-1.5 bg-slate-50 text-slate-900 rounded text-xs font-medium hover:bg-slate-100 border border-slate-200 transition-all active:scale-95">
                         Edit
                       </button>
                       <button onClick={() => handleSecretDelete(rec.id)}
-                        className="px-3 py-1.5 bg-red-50 text-red-600 rounded text-[10px] font-bold hover:bg-red-100 border border-red-200 transition-all active:scale-95">
+                        className="px-3 py-1.5 bg-red-50 text-red-600 rounded text-xs font-medium hover:bg-red-100 border border-red-200 transition-all active:scale-95">
                         Del
                       </button>
                     </div>
@@ -445,12 +445,12 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                 <table className="w-full text-left min-w-[700px]">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100">
-                      <th className="px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-50 z-10 w-40">Employee</th>
+                      <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide sticky left-0 bg-slate-50 z-10 w-40">Employee</th>
                       {feats.map(f => (
                         <th key={f.key} className="px-1 py-3 text-center" title={f.label}>
                           <div className="flex flex-col items-center gap-0.5">
                             <span className="text-sm">{f.icon}</span>
-                            <span className="text-[8px] font-bold text-slate-400 uppercase leading-tight">{f.label}</span>
+                            <span className="text-[11px] font-medium text-slate-400 uppercase leading-tight">{f.label}</span>
                           </div>
                         </th>
                       ))}
@@ -463,12 +463,12 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                         <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-4 py-2.5 sticky left-0 bg-white z-10">
                             <div className="flex items-center gap-2">
-                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-[9px] font-black shrink-0 ${emp.role==='admin'?'bg-slate-800':emp.role==='manager'?'bg-purple-600':'bg-slate-400'}`}>
+                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-[11px] font-medium shrink-0 ${emp.role==='admin'?'bg-slate-800':emp.role==='manager'?'bg-purple-600':'bg-slate-400'}`}>
                                 {getInitials(emp.name)}
                               </div>
                               <div>
                                 <p className="text-xs font-bold text-slate-800 whitespace-nowrap">{emp.name}</p>
-                                <p className="text-[9px] text-slate-400 font-bold uppercase">{emp.role} · {count}/{feats.length}</p>
+                                <p className="text-[11px] text-slate-400 font-bold uppercase">{emp.role} · {count}/{feats.length}</p>
                               </div>
                             </div>
                           </td>
@@ -502,7 +502,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
             <div className="bg-white rounded-md shadow-lg w-full max-w-md border border-slate-200 animate-scale-up max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
               <div className="p-5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-[10px] font-black">
+                <div className="w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-xs font-semibold">
                   {getInitials(employees.find(e => e.id === secretEditRecord.employeeId)?.name || '?')}
                 </div>
                 <div>
@@ -592,7 +592,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
   ].filter(t => t.show);
 
   return (
-    <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* ===== HEADER ===== */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 md:p-6 text-white relative overflow-hidden shadow-sm">
@@ -600,11 +600,11 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
         <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-indigo-400/20 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center border border-white/20 shadow-inner text-sm font-black">
+            <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center border border-white/20 shadow-inner text-sm font-bold">
               {getInitials(currentUser.name)}
             </div>
             <div>
-              <h2 className="text-lg font-black text-white tracking-tight">Settings</h2>
+              <h2 className="text-lg font-bold text-white tracking-tight">Settings</h2>
               <p className="text-slate-400 text-xs font-bold capitalize">{currentUser.name} · {currentUser.role}</p>
             </div>
           </div>
@@ -655,14 +655,14 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
               <div key={emp.id} className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
                 <SectionHeader
                   icon={
-                    <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-[9px] font-black">
+                    <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-[11px] font-medium">
                       {getInitials(emp.name)}
                     </div>
                   }
                   title={emp.name}
                   subtitle={emp.role}
                   badge={
-                    <button onClick={() => applyToAll(emp.id)} className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded text-[10px] font-bold border border-slate-200 transition-all active:scale-95">
+                    <button onClick={() => applyToAll(emp.id)} className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded text-xs font-medium border border-slate-200 transition-all active:scale-95">
                       Apply to All
                     </button>
                   }
@@ -710,12 +710,12 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
               if (currentUser.role !== 'admin' && emp.role === 'admin') return null;
               return (
                 <div key={emp.id} className="flex items-center gap-4 bg-slate-50 rounded-md p-4 border border-slate-100 hover:border-slate-200 transition-all">
-                  <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-xs font-black shadow-sm shrink-0">
+                  <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-xs font-semibold shadow-sm shrink-0">
                     {getInitials(emp.name)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-slate-800 font-bold text-sm truncate">{emp.name}</p>
-                    <p className="text-slate-400 text-[10px] font-medium capitalize">{emp.role}</p>
+                    <p className="text-slate-400 text-[11px] font-medium capitalize">{emp.role}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-slate-300 text-xs font-mono hidden sm:block">Current: {emp.pin}</span>
@@ -756,7 +756,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
               <div className="p-5 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <input placeholder="Full Name" value={newName} onChange={e => setNewName(e.target.value)} className={inputCls} />
-                  <input placeholder="4-digit PIN" maxLength={4} value={newPin} onChange={e => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))} className={`${inputCls} font-mono tracking-widest`} />
+                  <input placeholder="4-digit PIN" maxLength={4} value={newPin} onChange={e => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))} className={`${inputCls} font-mono tracking-wide`} />
                   <select value={newRole} onChange={e => setNewRole(e.target.value as any)} className={selectCls}>
                     <option value="employee">Employee</option>
                     {currentUser.role === 'admin' && <option value="admin">Admin</option>}
@@ -788,7 +788,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
               {employees.map(emp => (
                 <div key={emp.id} className="flex items-center justify-between bg-slate-50 rounded-md p-3.5 border border-slate-100 hover:border-slate-200 transition-all">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded flex items-center justify-center text-xs font-black text-white shadow-md ${
+                    <div className={`w-10 h-10 rounded flex items-center justify-center text-xs font-semibold text-white shadow-md ${
                       emp.role === 'admin'   ? 'bg-gradient-to-br from-purple-500 to-purple-700 shadow-purple-500/20' :
                       emp.role === 'manager' ? 'bg-gradient-to-br from-slate-900 to-slate-800 shadow-slate-900/10' :
                                               'bg-gradient-to-br from-slate-400 to-slate-600 shadow-slate-500/20'
@@ -797,20 +797,20 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                     </div>
                     <div>
                       <p className="text-slate-800 font-bold text-sm">{emp.name}</p>
-                      <p className="text-slate-400 text-[10px] font-medium capitalize">
+                      <p className="text-slate-400 text-[11px] font-medium capitalize">
                         {emp.role}{emp.device_id ? ' · 📱 Device Bound' : ''}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap justify-end">
-                    <span className={`px-2.5 py-1 rounded text-[10px] font-black border ${
+                    <span className={`px-2.5 py-1 rounded text-xs font-semibold border ${
                       emp.role === 'admin'   ? 'bg-purple-50 text-purple-600 border-purple-200' :
                       emp.role === 'manager' ? 'bg-slate-50 text-slate-900 border-slate-200' :
                                               'bg-slate-100 text-slate-600 border-slate-200'
                     }`}>{emp.role.toUpperCase()}</span>
                     {emp.device_id && emp.role !== 'admin' && currentUser.role !== 'employee' && (
                       <button onClick={() => handleResetDevice(emp.id, emp.name)}
-                        className="px-2.5 py-1 bg-amber-50 text-amber-600 rounded text-[10px] font-bold hover:bg-amber-100 border border-amber-200 transition-all active:scale-95">
+                        className="px-2.5 py-1 bg-amber-50 text-amber-600 rounded text-xs font-medium hover:bg-amber-100 border border-amber-200 transition-all active:scale-95">
                         🔄 Reset Device
                       </button>
                     )}
@@ -818,7 +818,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                       ((currentUser.id === 'emp-001' && emp.id !== currentUser.id) ||
                        (currentUser.id === 'emp-005' && emp.role === 'employee')) && (
                         <button onClick={() => { if (confirm(`Remove ${emp.name}?`)) { removeEmployee(emp.id); refreshEmps(); }}}
-                          className="px-2.5 py-1 bg-red-50 text-red-500 rounded text-[10px] font-bold hover:bg-red-100 border border-red-200 transition-all active:scale-95">
+                          className="px-2.5 py-1 bg-red-50 text-red-500 rounded text-xs font-medium hover:bg-red-100 border border-red-200 transition-all active:scale-95">
                           Remove
                         </button>
                       )
@@ -894,14 +894,14 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                       <div className="w-8 h-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-sm">📍</div>
                       <div>
                         <input value={office.name} onChange={e => updateField(office.id, 'name', e.target.value)}
-                          className="text-sm font-black text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-none px-0.5 py-0.5 w-36" />
-                        <p className="text-[10px] text-slate-400 font-mono">{office.lat}, {office.lng}</p>
+                          className="text-sm font-bold text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-none px-0.5 py-0.5 w-36" />
+                        <p className="text-[11px] text-slate-400 font-mono">{office.lat}, {office.lng}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">
-                        <p className="text-xl font-black text-slate-800">{office.radius || 200}m</p>
-                        <p className="text-[9px] text-slate-400 font-bold">RADIUS</p>
+                        <p className="text-xl font-bold text-slate-800">{office.radius || 200}m</p>
+                        <p className="text-[11px] text-slate-400 font-bold">RADIUS</p>
                       </div>
                       <button onClick={() => deleteOffice(office.id)}
                         className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-400 hover:text-red-600 transition-all border border-red-100" title="Delete office">
@@ -915,7 +915,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                     <input type="range" min="50" max="2000" step="50" value={office.radius || 200}
                       onChange={e => updateField(office.id, 'radius', parseInt(e.target.value))}
                       className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-600" />
-                    <div className="flex justify-between text-[9px] font-bold text-slate-300 mt-1">
+                    <div className="flex justify-between text-[11px] font-medium text-slate-300 mt-1">
                       <span>50m</span><span>500m</span><span>1km</span><span>2km</span>
                     </div>
                   </div>
@@ -924,7 +924,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   <div className="flex gap-1.5">
                     {[100, 200, 300, 500, 800, 1000].map(r => (
                       <button key={r} onClick={() => updateField(office.id, 'radius', r)}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                           (office.radius || 200) === r
                             ? 'bg-slate-800 text-white shadow-sm'
                             : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800'
@@ -941,12 +941,12 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   + Add New Office
                 </button>
                 <button onClick={resetDefaults}
-                  className="px-4 py-2.5 border border-slate-200 rounded-md text-[10px] font-bold text-slate-400 hover:text-red-500 hover:border-red-200 transition-all">
+                  className="px-4 py-2.5 border border-slate-200 rounded-md text-xs font-medium text-slate-400 hover:text-red-500 hover:border-red-200 transition-all">
                   ↻ Reset
                 </button>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200 rounded p-3 text-[10px] text-slate-800 font-medium">
+              <div className="bg-slate-50 border border-slate-200 rounded p-3 text-[11px] text-slate-800 font-medium">
                 💡 Radius = kitne meter tak check-in allow hai. Slider slide karo ya button dabao — save auto hota hai.
               </div>
             </div>
@@ -959,17 +959,17 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
       {/* ===== ABOUT ===== */}
       {activeTab === 'about' && (
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-10 text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center mx-auto mb-5 shadow-md shadow-blue-500/30">
+          <div className="p-8 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-md shadow-blue-500/30">
               <img src="/icon.png" alt="Attendify" className="w-16 h-16 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             </div>
             <h3 className="text-slate-900 font-black text-2xl tracking-tight">Attendify</h3>
             <p className="text-slate-400 text-sm mt-1 cursor-default select-none font-bold" onClick={handleSecretTap}>
               Version 3.0
             </p>
-            {canSecret && <p className="text-slate-200 text-[10px] mt-1 select-none">Tap 7× to unlock</p>}
+            {canSecret && <p className="text-slate-200 text-[11px] mt-1 select-none">Tap 7× to unlock</p>}
             <div className="mt-8 bg-slate-50 rounded-md p-5 text-left max-w-sm mx-auto border border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Features</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Features</p>
               <ul className="space-y-2">
                 {[
                   'Location-based tracking',
@@ -985,7 +985,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   'Smart admin alerts',
                   'GPS Live Map',
                 ].map((f, i) => (
-                  <li key={i} className="flex items-center gap-2.5 text-slate-600 text-sm font-medium">
+                  <li key={i} className="flex items-center gap-2 text-slate-600 text-sm font-medium">
                     <div className="w-4 h-4 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
                       <div className="w-1.5 h-1.5 bg-slate-900 rounded-full" />
                     </div>
@@ -994,7 +994,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                 ))}
               </ul>
             </div>
-            <p className="text-slate-300 text-[10px] font-bold mt-8">© {new Date().getFullYear()} Attendify Inc.</p>
+            <p className="text-slate-300 text-xs font-medium mt-8">© {new Date().getFullYear()} Attendify Inc.</p>
           </div>
         </div>
       )}
@@ -1007,7 +1007,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
             title="Manage Holidays"
             subtitle="Mark official holidays for automatic OT calculation"
             badge={
-              <span className="px-2.5 py-1 bg-purple-50 text-purple-600 text-[10px] font-black rounded border border-purple-200">
+              <span className="px-2.5 py-1 bg-purple-50 text-purple-600 text-xs font-semibold rounded border border-purple-200">
                 {holidays.length} marked
               </span>
             }
@@ -1039,13 +1039,13 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                       </div>
                       <div>
                         <p className="text-slate-800 text-sm font-bold">{h.name}</p>
-                        <p className="text-slate-400 text-[10px] font-medium">
+                        <p className="text-slate-400 text-[11px] font-medium">
                           {new Date(h.date + 'T00:00:00').toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                         </p>
                       </div>
                     </div>
                     <button onClick={() => handleRemoveHoliday(h.date)}
-                      className="px-3 py-1.5 bg-red-50 text-red-500 rounded text-[10px] font-bold hover:bg-red-100 border border-red-200 transition-all active:scale-95">
+                      className="px-3 py-1.5 bg-red-50 text-red-500 rounded text-xs font-medium hover:bg-red-100 border border-red-200 transition-all active:scale-95">
                       Remove
                     </button>
                   </div>

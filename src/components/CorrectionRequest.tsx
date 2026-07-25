@@ -290,7 +290,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
   const selectCls = "w-full appearance-none bg-slate-50 border border-slate-200 rounded px-3.5 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all cursor-pointer";
 
   return (
-    <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* Notification */}
       {notification && (
@@ -315,13 +315,13 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-black text-white tracking-tight">Attendance Correction</h2>
+              <h2 className="text-lg font-bold text-white tracking-tight">Attendance Correction</h2>
               <p className="text-slate-400 text-xs font-bold">Request fixes for attendance records</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {isAdmin && pendingCount > 0 && (
-              <div className="bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-full border border-red-400 animate-pulse">
+              <div className="bg-red-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-red-400 animate-pulse">
                 {pendingCount} Pending
               </div>
             )}
@@ -365,8 +365,8 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
       {/* ===== MY REQUESTS ===== */}
       {activeTab === 'my-requests' && (
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
-            <h3 className="text-sm font-black text-slate-800">My Correction Requests</h3>
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
+            <h3 className="text-sm font-bold text-slate-800">My Correction Requests</h3>
           </div>
           <div className="divide-y divide-slate-50">
             {myRequests.length === 0 ? (
@@ -388,20 +388,20 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-black text-slate-800">{req.date}</p>
-                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${stCfg.bg} ${stCfg.color} ${stCfg.border}`}>
+                          <p className="text-sm font-bold text-slate-800">{req.date}</p>
+                          <span className={`px-2 py-0.5 rounded-lg text-xs font-semibold border ${stCfg.bg} ${stCfg.color} ${stCfg.border}`}>
                             {stCfg.label}
                           </span>
                         </div>
                         {/* Status change */}
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${STATUS_STYLES[req.currentStatus] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                          <span className={`px-2 py-0.5 rounded-lg text-xs font-medium border ${STATUS_STYLES[req.currentStatus] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                             {STATUS_LABELS[req.currentStatus] || req.currentStatus}
                           </span>
                           <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                           </svg>
-                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${STATUS_STYLES[req.requestedStatus] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                          <span className={`px-2 py-0.5 rounded-lg text-xs font-medium border ${STATUS_STYLES[req.requestedStatus] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                             {STATUS_LABELS[req.requestedStatus] || req.requestedStatus}
                           </span>
                         </div>
@@ -421,7 +421,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                         )}
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-slate-400 text-[10px] font-medium">
+                        <p className="text-slate-400 text-[11px] font-medium">
                           {req.requestedAt ? format(parseISO(req.requestedAt), 'dd MMM') : '—'}
                         </p>
                       </div>
@@ -437,15 +437,15 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
       {/* ===== APPLY TAB ===== */}
       {activeTab === 'apply' && (
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
-            <h3 className="text-sm font-black text-slate-800">Request Attendance Correction</h3>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Select the date you want to correct</p>
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
+            <h3 className="text-sm font-bold text-slate-800">Request Attendance Correction</h3>
+            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Select the date you want to correct</p>
           </div>
-          <div className="p-6 space-y-5">
+          <div className="p-5 space-y-4">
 
             {/* Date picker */}
             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Select Date</label>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Select Date</label>
               <input
                 type="date"
                 value={selectedDate}
@@ -458,7 +458,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
             {/* Current record info */}
             {selectedDate && (
               <div className={`rounded-md p-4 border ${selectedRecord ? 'bg-slate-50 border-slate-200' : 'bg-amber-50 border-amber-200'}`}>
-                <p className="text-xs font-black mb-2 text-slate-700">
+                <p className="text-xs font-semibold mb-2 text-slate-700">
                   {selectedRecord ? '📋 Current Record Found:' : '⚠️ No Record Found for this date'}
                 </p>
                 {selectedRecord ? (
@@ -480,7 +480,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
             {selectedDate && (
               <>
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Requested Status</label>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Requested Status</label>
                   <select
                     value={requestedStatus}
                     onChange={e => setRequestedStatus(e.target.value as AttendanceStatus)}
@@ -498,7 +498,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
                       Requested Check In
                     </label>
                     <input
@@ -509,7 +509,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
                       Requested Check Out
                     </label>
                     <input
@@ -522,7 +522,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Reason</label>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Reason</label>
                   <textarea
                     value={reason}
                     onChange={e => setReason(e.target.value)}
@@ -605,7 +605,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                 </svg>
               </div>
 
-              <span className="ml-auto text-[10px] font-bold text-slate-400">
+              <span className="ml-auto text-xs font-medium text-slate-400">
                 {allRequests.length} requests
               </span>
             </div>
@@ -631,29 +631,29 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                     <div key={req.id} className="px-5 py-4 hover:bg-slate-50/80 transition-all">
                       <div className="flex items-start gap-3">
                         {/* Employee Avatar */}
-                        <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm">
+                        <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-xs font-semibold shrink-0 shadow-sm">
                           {getInitials(emp?.name || '?')}
                         </div>
 
                         <div className="flex-1 min-w-0">
                           {/* Header */}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-black text-slate-800">{emp?.name || 'Unknown'}</p>
+                            <p className="text-sm font-bold text-slate-800">{emp?.name || 'Unknown'}</p>
                             <span className="text-slate-400 text-xs font-medium">{req.date}</span>
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${stCfg.bg} ${stCfg.color} ${stCfg.border}`}>
+                            <span className={`px-2 py-0.5 rounded-lg text-xs font-semibold border ${stCfg.bg} ${stCfg.color} ${stCfg.border}`}>
                               {stCfg.icon} {stCfg.label}
                             </span>
                           </div>
 
                           {/* Status change */}
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${STATUS_STYLES[req.currentStatus] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                            <span className={`px-2 py-0.5 rounded-lg text-xs font-medium border ${STATUS_STYLES[req.currentStatus] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                               {STATUS_LABELS[req.currentStatus] || req.currentStatus}
                             </span>
                             <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                             </svg>
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${STATUS_STYLES[req.requestedStatus] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                            <span className={`px-2 py-0.5 rounded-lg text-xs font-medium border ${STATUS_STYLES[req.requestedStatus] || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                               {STATUS_LABELS[req.requestedStatus] || req.requestedStatus}
                             </span>
                           </div>
@@ -695,13 +695,13 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                                   <div className="flex gap-2">
                                     <button
                                       onClick={() => handleApprove(req)}
-                                      className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded text-xs font-black shadow-md shadow-emerald-500/20 transition-all active:scale-95"
+                                      className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded text-xs font-semibold shadow-md shadow-emerald-500/20 transition-all active:scale-95"
                                     >
                                       ✓ Approve & Apply
                                     </button>
                                     <button
                                       onClick={() => handleReject(req)}
-                                      className="flex-1 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded text-xs font-black shadow-md shadow-red-500/20 transition-all active:scale-95"
+                                      className="flex-1 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded text-xs font-semibold shadow-md shadow-red-500/20 transition-all active:scale-95"
                                     >
                                       ✕ Reject
                                     </button>
@@ -716,7 +716,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                               ) : (
                                 <button
                                   onClick={() => setReviewingId(req.id)}
-                                  className="px-4 py-2 bg-slate-900 hover:bg-[#1d4ed8] text-white rounded text-xs font-black transition-all active:scale-95 shadow-sm"
+                                  className="px-4 py-2 bg-slate-900 hover:bg-[#1d4ed8] text-white rounded text-xs font-semibold transition-all active:scale-95 shadow-sm"
                                 >
                                   Review Request →
                                 </button>
@@ -726,7 +726,7 @@ export default function CorrectionRequest({ currentUser }: CorrectionRequestProp
                         </div>
 
                         <div className="text-right shrink-0">
-                          <p className="text-slate-400 text-[10px] font-medium">
+                          <p className="text-slate-400 text-[11px] font-medium">
                             {req.requestedAt ? format(parseISO(req.requestedAt), 'dd MMM') : '—'}
                           </p>
                         </div>

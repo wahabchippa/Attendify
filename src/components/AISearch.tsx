@@ -156,13 +156,13 @@ export default function AISearch({ currentUser }: AISearchProps) {
 
       {/* ═══ HEADER ═══ */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-md p-4 mb-3 relative overflow-hidden shadow-lg">
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg" />
+        <div className="absolute -top-8 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/15 rounded flex items-center justify-center text-xl">🤖</div>
             <div>
-              <h2 className="text-base font-black text-white">AI Assistant</h2>
-              <p className="text-slate-400 text-[10px] font-bold">English & Urdu • Reports • PDF • WhatsApp</p>
+              <h2 className="text-base font-bold text-white">AI Assistant</h2>
+              <p className="text-slate-400 text-xs font-medium">English & Urdu • Reports • PDF • WhatsApp</p>
             </div>
           </div>
           <button onClick={clearChat} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 text-xs font-bold border border-white/10 transition-all">
@@ -210,18 +210,18 @@ export default function AISearch({ currentUser }: AISearchProps) {
               {msg.role === 'ai' && msg.exportable && (
                 <div className="flex items-center gap-1.5 mt-1.5 ml-1">
                   <button onClick={() => generatePDF(msg.content)} title="Download PDF"
-                    className="flex items-center gap-1 px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-[10px] font-bold transition-all border border-red-100">
+                    className="flex items-center gap-1 px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium transition-all border border-red-100">
                     📄 PDF
                   </button>
                   <button onClick={() => shareWhatsApp(msg.content)} title="Share on WhatsApp"
-                    className="flex items-center gap-1 px-2 py-1 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-[10px] font-bold transition-all border border-green-100">
+                    className="flex items-center gap-1 px-2 py-1 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs font-medium transition-all border border-green-100">
                     📱 WhatsApp
                   </button>
                   <button onClick={() => copyToClipboard(msg.content)} title="Copy text"
-                    className="flex items-center gap-1 px-2 py-1 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg text-[10px] font-bold transition-all border border-slate-200">
+                    className="flex items-center gap-1 px-2 py-1 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg text-xs font-medium transition-all border border-slate-200">
                     📋 Copy
                   </button>
-                  <span className="text-[9px] text-slate-300 ml-auto">
+                  <span className="text-[11px] text-slate-300 ml-auto">
                     {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -229,7 +229,7 @@ export default function AISearch({ currentUser }: AISearchProps) {
 
               {msg.role === 'ai' && !msg.exportable && (
                 <div className="ml-1 mt-1">
-                  <span className="text-[9px] text-slate-300">
+                  <span className="text-[11px] text-slate-300">
                     {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -237,7 +237,7 @@ export default function AISearch({ currentUser }: AISearchProps) {
 
               {msg.role === 'user' && (
                 <div className="text-right mt-0.5 mr-1">
-                  <span className="text-[9px] text-slate-300">
+                  <span className="text-[11px] text-slate-300">
                     {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -246,7 +246,7 @@ export default function AISearch({ currentUser }: AISearchProps) {
 
             {/* User Avatar */}
             {msg.role === 'user' && (
-              <div className="w-7 h-7 bg-slate-200 rounded-lg flex items-center justify-center ml-2 mt-0.5 shrink-0 text-[9px] font-black text-slate-600">
+              <div className="w-7 h-7 bg-slate-200 rounded-lg flex items-center justify-center ml-2 mt-0.5 shrink-0 text-[11px] font-medium text-slate-600">
                 {getInitials(currentUser.name)}
               </div>
             )}

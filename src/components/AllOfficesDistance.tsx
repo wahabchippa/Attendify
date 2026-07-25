@@ -133,12 +133,12 @@ export default function AllOfficesDistance() {
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <p className={`text-xs font-black ${
+            <p className={`text-xs font-semibold ${
               office.isInside ? 'text-emerald-700' : 'text-slate-700'
             }`}>
               {office.name}
             </p>
-            <p className={`text-[10px] font-medium ${
+            <p className={`text-[11px] font-medium ${
               office.isInside ? 'text-emerald-600' : 'text-slate-400'
             }`}>
               {office.isInside ? '✓ You are inside' : `${formatDist(office.distance)} away`}
@@ -146,7 +146,7 @@ export default function AllOfficesDistance() {
           </div>
 
           {/* Checkmark or distance badge */}
-          <div className={`shrink-0 px-2.5 py-1 rounded text-[10px] font-black border ${
+          <div className={`shrink-0 px-2.5 py-1 rounded text-xs font-semibold border ${
             office.isInside
               ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
               : 'bg-slate-100 text-slate-500 border-slate-200'

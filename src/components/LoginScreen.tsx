@@ -226,14 +226,14 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             <img src="/icon.png" alt="Attendify" className="h-24 w-auto object-contain mb-4 drop-shadow-lg" />
             <div className="absolute -inset-4 bg-white/5 blur-lg rounded-full -z-10" />
           </div>
-          <h2 className="text-3xl font-black text-white tracking-tight">Attendify</h2>
+          <h2 className="text-3xl font-bold text-white tracking-tight">Attendify</h2>
           <div className="mt-4 flex items-center gap-2">
             <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
             <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
             <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
           </div>
         </div>
-        <p className="mt-6 text-blue-100 font-bold text-sm tracking-widest animate-pulse">AUTHENTICATING...</p>
+        <p className="mt-6 text-blue-100 font-bold text-sm tracking-wide animate-pulse">AUTHENTICATING...</p>
       </div>
     );
   }
@@ -247,7 +247,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         <div className="w-full max-w-5xl bg-white rounded-lg shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-5 transition-all duration-500">
 
           {/* Left Panel */}
-          <div className="hidden md:flex md:col-span-2 bg-slate-900 p-10 flex-col justify-between text-white relative overflow-hidden">
+          <div className="hidden md:flex md:col-span-2 bg-slate-900 p-8 flex-col justify-between text-white relative overflow-hidden">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-sm blur-lg" />
             <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-white/5 rounded-sm blur-lg" />
 
@@ -270,17 +270,17 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           <div className="md:col-span-3 p-8 md:p-12 flex flex-col justify-center">
             <div className="md:hidden flex flex-col items-center mb-6">
               <img src="/icon.png" alt="Logo" className="h-16 w-auto object-contain mb-2" />
-              <h2 className="text-2xl font-black text-slate-900">Attendify</h2>
+              <h2 className="text-2xl font-bold text-slate-900">Attendify</h2>
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-black text-slate-900">Create Account</h2>
+              <h2 className="text-2xl font-bold text-slate-900">Create Account</h2>
               <p className="text-sm text-slate-400 font-medium mt-1">Submit your details for admin approval</p>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-6">
+            <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Full Name</label>
                 <div className="relative flex items-center h-12 border border-slate-200 rounded px-4 bg-slate-50/50 focus-within:border-[#1E40AF] focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                   <UserIcon />
                   <input
@@ -294,7 +294,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">4-Digit PIN</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">4-Digit PIN</label>
                 <div className="relative flex items-center h-12 border border-slate-200 rounded px-4 bg-slate-50/50 focus-within:border-[#1E40AF] focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                   <LockIcon />
                   <input
@@ -384,13 +384,13 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       <div className="w-full max-w-5xl bg-white rounded-lg shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-5 transition-all duration-500">
 
         {/* ===== LEFT BRANDING PANEL ===== */}
-        <div className="hidden md:flex md:col-span-2 bg-slate-900 p-10 flex-col justify-between text-white relative overflow-hidden">
+        <div className="hidden md:flex md:col-span-2 bg-slate-900 p-8 flex-col justify-between text-white relative overflow-hidden">
           <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-sm blur-lg" />
           <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-white/5 rounded-sm blur-lg" />
 
           <div className="flex items-center gap-3 bg-white/10  px-4 py-2 rounded border border-white/10 self-start z-10">
             <img src="/icon.png" alt="Attendify" className="h-10 w-auto object-contain" />
-            <span className="text-xl font-black tracking-tight">Attendify</span>
+            <span className="text-xl font-bold tracking-tight">Attendify</span>
           </div>
 
           <div className="z-10 space-y-4">
@@ -400,7 +400,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             </p>
             <div className="flex items-center gap-2 bg-white/10  px-3 py-1.5 rounded-full border border-white/10 w-fit">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold text-emerald-200 uppercase tracking-widest">System Online</span>
+              <span className="text-xs font-medium text-emerald-200 uppercase tracking-wide">System Online</span>
             </div>
           </div>
 
@@ -414,20 +414,20 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             {/* Mobile logo */}
             <div className="md:hidden flex flex-col items-center mb-8">
               <img src="/icon.png" alt="Attendify" className="h-16 w-auto object-contain mb-2" />
-              <h2 className="text-2xl font-black text-slate-900">Attendify</h2>
+              <h2 className="text-2xl font-bold text-slate-900">Attendify</h2>
             </div>
 
             {/* ===== PHASE 1: USER SELECTION ===== */}
             {phase === 'select' && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black text-slate-900">Welcome Back</h2>
+                  <h2 className="text-2xl font-bold text-slate-900">Welcome Back</h2>
                   <p className="text-sm text-slate-400 font-medium">Select your profile to continue</p>
                 </div>
 
                 {/* ✅ Fix: relative wrapper for dropdown */}
                 <div className="space-y-2 relative" ref={dropdownRef}>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Username</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Username</label>
                   <button
                     type="button"
                     onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -439,9 +439,9 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                           : 'border-slate-200'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 overflow-hidden">
+                    <div className="flex items-center gap-2 overflow-hidden">
                       {selectedEmployee ? (
-                        <div className="w-6 h-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-[9px] font-bold">
+                        <div className="w-6 h-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg flex items-center justify-center text-[11px] font-medium">
                           {getInitials(selectedEmployee.name)}
                         </div>
                       ) : (
@@ -484,7 +484,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                                     : 'hover:bg-slate-50 text-slate-700 font-medium'
                                 }`}
                               >
-                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${
+                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0 transition-colors ${
                                   isSelected ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'
                                 }`}>
                                   {getInitials(emp.name)}
@@ -501,7 +501,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                         ) : (
                           <div className="p-4 text-center">
                             <p className="text-xs font-semibold text-slate-400">No profiles found</p>
-                            <p className="text-[10px] text-slate-300 mt-0.5">Try a different search</p>
+                            <p className="text-[11px] text-slate-300 mt-0.5">Try a different search</p>
                           </div>
                         )}
                       </div>
@@ -511,7 +511,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
                 {/* PIN preview (disabled) */}
                 <div className="opacity-40 pointer-events-none space-y-2">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">PIN</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">PIN</label>
                   <div className="relative flex items-center h-12 border border-slate-200 rounded px-4 bg-slate-50/50">
                     <LockIcon />
                     <span className="ml-3 text-sm font-bold text-slate-400 tracking-[0.3em]">••••</span>
@@ -559,7 +559,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
             {/* ===== PHASE 2: PIN ENTRY ===== */}
             {phase === 'pin' && selectedEmployee && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Selected user card */}
                 <div className="flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/30 border border-slate-200 p-3.5 rounded">
                   <div className="flex items-center gap-3">
@@ -568,7 +568,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-800 leading-tight">{selectedEmployee.name}</p>
-                      <p className="text-[9px] text-slate-900 uppercase tracking-widest font-black mt-0.5">Authenticated User</p>
+                      <p className="text-[11px] text-slate-900 uppercase tracking-wide font-black mt-0.5">Authenticated User</p>
                     </div>
                   </div>
                   <button
@@ -584,12 +584,12 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 </div>
 
                 {/* PIN display */}
-                <div className="text-center space-y-5">
+                <div className="text-center space-y-4">
                   <div className="space-y-1">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-slate-100 rounded-md mb-2">
                       <LockIcon />
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Enter your 4-digit PIN</p>
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Enter your 4-digit PIN</p>
                   </div>
 
                   <div className={`flex justify-center gap-4 py-2 ${shake ? 'animate-shake' : ''}`}>
@@ -614,7 +614,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 </div>
 
                 {/* Number pad */}
-                <div className="grid grid-cols-3 gap-2.5 max-w-[280px] mx-auto">
+                <div className="grid grid-cols-3 gap-2 max-w-[280px] mx-auto">
                   {PAD_KEYS.map((key) => {
                     const isSpecial = key === "back" || key === "clear";
                     return (
@@ -653,7 +653,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           </div>
 
           {/* Footer */}
-          <div className="mt-8 text-center text-[10px] font-bold text-slate-400 tracking-wide">
+          <div className="mt-8 text-center text-xs font-medium text-slate-400 tracking-wide">
             © {new Date().getFullYear()} Attendify Inc. All rights reserved.
           </div>
         </div>

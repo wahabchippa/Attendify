@@ -505,12 +505,12 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900">Work From Home</h3>
+                <h3 className="text-xl font-bold text-slate-900">Work From Home</h3>
                 <p className="text-xs text-slate-400 font-medium">Submit your WFH request</p>
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Reason</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Reason</label>
               <textarea
                 value={wfhReason}
                 onChange={e => setWfhReason(e.target.value || "")}
@@ -540,7 +540,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
               </svg>
             </div>
-            <h3 className="text-xl font-black text-slate-900 mb-1">Quit Attendify?</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-1">Quit Attendify?</h3>
             <p className="text-slate-400 text-sm font-medium mb-6">You will be logged out of your session.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowQuitConfirm(false)} className="flex-1 py-3 rounded border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-[0.98]">Stay</button>
@@ -558,7 +558,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
             <div className="flex items-center justify-center w-20 h-20 mx-auto bg-red-100 rounded-lg mb-5">
               <span className="text-4xl">🚨</span>
             </div>
-            <h3 className="text-2xl font-black text-red-600 text-center mb-4">Security Violation</h3>
+            <h3 className="text-2xl font-bold text-red-600 text-center mb-4">Security Violation</h3>
             <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
               <p className="text-slate-700 text-sm text-center leading-relaxed font-medium">
                 ⚠️ You are <span className="font-black text-red-600">not connected</span> to office WiFi. Your check-out has been marked as <span className="font-black">'Unverified / Outside Office'</span> and an alert has been sent to Admin.
@@ -573,7 +573,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       )}
 
       {/* MAIN LAYOUT */}
-      <div className={`max-w-5xl mx-auto p-4 md:p-6 space-y-5 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+      <div className={`max-w-5xl mx-auto p-4 md:p-6 space-y-3 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
         {/* TOP HEADER BAR */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 md:p-6 text-white relative overflow-hidden shadow-sm">
@@ -581,16 +581,16 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
           <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/3 rounded-sm blur-md" />
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center text-sm font-black border border-white/20 shadow-inner">
+              <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center text-sm font-bold border border-white/20 shadow-inner">
                 {getInitials(currentUser.name)}
               </div>
               <div>
                 <p className="text-slate-400 text-xs font-bold tracking-wide">{getGreeting()}</p>
-                <h1 className="text-lg md:text-xl font-black tracking-tight leading-tight">{currentUser.name}</h1>
+                <h1 className="text-lg md:text-xl font-bold tracking-tight leading-tight">{currentUser.name}</h1>
                 {isAdmin && (
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-[9px] font-bold text-emerald-300 uppercase tracking-widest">
+                    <span className="text-[11px] font-medium text-emerald-300 uppercase tracking-wide">
                       {isManagerOnly ? 'Manager' : 'Admin'} Panel
                     </span>
                   </div>
@@ -615,11 +615,11 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         {/* ACCOUNT REQUESTS */}
         {canSeeAccountRequests && pendingAccounts.length > 0 && (
           <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
-            <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
+            <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <span className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" />
                 New Account Requests
-                <span className="ml-auto bg-slate-800 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{pendingAccounts.length}</span>
+                <span className="ml-auto bg-slate-800 text-white text-xs font-semibold px-2 py-0.5 rounded-full">{pendingAccounts.length}</span>
               </h3>
             </div>
             <div className="p-4 space-y-3">
@@ -627,12 +627,12 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 <div key={req.id} className="bg-slate-50 rounded-md p-4 border border-slate-100 hover:border-slate-200 transition-all">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-[10px] font-black shadow-sm">
+                      <div className="w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-xs font-semibold shadow-sm">
                         {getInitials(req.name)}
                       </div>
                       <div>
                         <p className="text-slate-800 font-bold text-sm">{req.name}</p>
-                        <p className="text-slate-400 text-[10px] font-medium">{safeFormatDate(req.requestedAt, 'dd MMM hh:mm a')}</p>
+                        <p className="text-slate-400 text-[11px] font-medium">{safeFormatDate(req.requestedAt, 'dd MMM hh:mm a')}</p>
                       </div>
                     </div>
                   </div>
@@ -651,10 +651,10 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         {/* ATTENDANCE CARD */}
         {canMarkAttendance && (
           <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-8 flex flex-col items-center">
+            <div className="px-5 py-8 flex flex-col items-center">
               <AnalogClock size={190} />
               <div className="mt-5 text-center">
-                <p className="text-4xl font-black text-slate-800 font-mono tracking-wider">
+                <p className="text-4xl font-black text-slate-800 font-mono tracking-wide">
                   {format(currentTime, 'hh:mm:ss')}
                   <span className="text-base text-slate-400 ml-2 font-bold tracking-normal">{format(currentTime, 'a')}</span>
                 </p>
@@ -667,7 +667,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               </div>
 
               {/* Location Badge */}
-              <div className={`mt-5 flex items-center gap-2.5 px-5 py-2.5 rounded-md text-sm font-bold border transition-all ${
+              <div className={`mt-5 flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-bold border transition-all ${
                 officeLocation === null && !gpsOff ? 'bg-slate-50 text-slate-500 border-slate-200'
                 : displayLabel.includes('Office') ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : displayLabel === '📍 Location Off' ? 'bg-amber-50 text-amber-700 border-amber-200'
@@ -747,13 +747,13 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                   <div className="space-y-4">
                     {todayRecord.checkIn && (
                       <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-md p-5 text-white shadow-lg shadow-slate-900/10">
-                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Today's Check-in</p>
-                        <p className="text-3xl font-black font-mono">{formatTime12hr(todayRecord.checkIn)}</p>
+                        <p className="text-slate-400 text-xs font-semibold uppercase tracking-wide mb-1">Today's Check-in</p>
+                        <p className="text-3xl font-bold font-mono">{formatTime12hr(todayRecord.checkIn)}</p>
                         <p className="text-blue-100 text-xs font-bold mt-1">📍 {getLocationFromIP(todayRecord.ipAddress)}</p>
                       </div>
                     )}
                     <div className="text-center flex flex-wrap items-center justify-center gap-2">
-                      <span className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-black border ${statusStyle(todayRecord.status)}`}>
+                      <span className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-bold border ${statusStyle(todayRecord.status)}`}>
                         {statusLabel(todayRecord.status)}
                       </span>
                       {todayRecord.notes?.includes('SUNDAY') && (
@@ -793,7 +793,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                       </button>
                     ) : (
                       <div className="text-center py-4 bg-emerald-50 border border-emerald-200 rounded-md">
-                        <p className="text-emerald-700 text-sm font-black flex items-center justify-center gap-2">
+                        <p className="text-emerald-700 text-sm font-bold flex items-center justify-center gap-2">
                           ✓ Day Complete — {typeof todayRecord.totalHours === 'number' ? todayRecord.totalHours.toFixed(1) : '0.0'}h
                         </p>
                         {showOT && todayRecord.notes?.includes('OT') && (
@@ -810,18 +810,18 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
                 {/* MANAGER ONLY HEADER */}
         {isManagerOnly && (
-          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+          <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center text-lg font-black text-white shadow-lg shadow-slate-900/10">
+              <div className="w-14 h-14 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center text-lg font-bold text-white shadow-lg shadow-slate-900/10">
                 {getInitials(currentUser.name)}
               </div>
               <div className="flex-1">
                 <p className="text-slate-400 text-xs font-bold">{getGreeting()}</p>
-                <h1 className="text-lg font-black text-slate-800">{currentUser.name}</h1>
-                <p className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Manager Panel</p>
+                <h1 className="text-lg font-bold text-slate-800">{currentUser.name}</h1>
+                <p className="text-slate-900 text-xs font-semibold uppercase tracking-wide">Manager Panel</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-black text-slate-800 font-mono">{format(currentTime, 'hh:mm')}</p>
+                <p className="text-2xl font-bold text-slate-800 font-mono">{format(currentTime, 'hh:mm')}</p>
                 <p className="text-slate-400 text-xs font-medium">{format(currentTime, 'EEEE, dd MMM yyyy')}</p>
               </div>
             </div>
@@ -836,11 +836,11 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         {/* PENDING WFH REQUESTS */}
         {isAdmin && pendingWFHRequests.length > 0 && (
           <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
-            <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-orange-50">
-              <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
+            <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-orange-50">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
                 Pending WFH Requests
-                <span className="ml-auto bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{pendingWFHRequests.length}</span>
+                <span className="ml-auto bg-amber-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">{pendingWFHRequests.length}</span>
               </h3>
             </div>
             <div className="p-4 space-y-3">
@@ -849,7 +849,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 return (
                   <div key={req.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 rounded-md p-4 border border-slate-100 hover:border-amber-200 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded flex items-center justify-center text-xs font-black shadow-md">
+                      <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded flex items-center justify-center text-xs font-semibold shadow-md">
                         {emp ? getInitials(emp.name) : '?'}
                       </div>
                       <div>
@@ -871,10 +871,10 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         {/* TODAY'S TEAM */}
         {isAdmin && (
           <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100">
+            <div className="px-5 py-4 border-b border-slate-100">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-black text-slate-800">Today's Team</h3>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{format(currentTime, 'dd MMM yyyy')}</span>
+                <h3 className="text-sm font-bold text-slate-800">Today's Team</h3>
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{format(currentTime, 'dd MMM yyyy')}</span>
               </div>
             </div>
             <div className="p-4 space-y-2">
@@ -887,12 +887,12 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 return (
                   <div key={emp.id} className="flex items-center justify-between py-3.5 px-4 bg-slate-50 rounded-md border border-slate-100 hover:border-slate-200 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded flex items-center justify-center text-xs font-black border shadow-sm ${rec ? 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-300' : 'bg-white text-slate-500 border-slate-200'}`}>
+                      <div className={`w-10 h-10 rounded flex items-center justify-center text-xs font-semibold border shadow-sm ${rec ? 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-300' : 'bg-white text-slate-500 border-slate-200'}`}>
                         {getInitials(emp.name)}
                       </div>
                       <div>
                         <p className="text-slate-800 text-sm font-bold">{emp.name}</p>
-                        <p className="text-slate-400 text-[10px] font-medium flex flex-wrap items-center gap-1">
+                        <p className="text-slate-400 text-[11px] font-medium flex flex-wrap items-center gap-1">
                           {rec && <span>{getLocationFromIP(rec.ipAddress)}</span>}
                           {isSunOT && <span className="text-purple-500">• Sunday OT</span>}
                           {rec?.notes?.includes('OUTSIDE OFFICE') && <span className="text-red-600 font-black animate-pulse">• ⚠️ Outside</span>}
@@ -902,18 +902,18 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                     <div className="text-right">
                       {rec ? (
                         <>
-                          <span className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-black border ${statusStyle(rec.status)}`}>
+                          <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-semibold border ${statusStyle(rec.status)}`}>
                             {rec.status === 'work-from-home' ? 'WFH' : rec.status.toUpperCase()}
                           </span>
-                          <p className="text-slate-400 text-[10px] font-medium mt-1">
+                          <p className="text-slate-400 text-[11px] font-medium mt-1">
                             {rec.checkIn ? formatTime12hr(rec.checkIn) : ''}
                             {showOT && otHrs > 0 ? ` • OT:+${otHrs.toFixed(1)}h` : ''}
                           </p>
                         </>
                       ) : wfhReq?.status === 'pending' ? (
-                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-50 text-amber-700 border border-amber-200">WFH PENDING</span>
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">WFH PENDING</span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-400 border border-slate-200">NOT IN</span>
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-400 border border-slate-200">NOT IN</span>
                       )}
                     </div>
                   </div>
@@ -934,9 +934,9 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               { label: 'Total', value: getAttendanceEmployees().length, color: 'text-slate-700', bg: 'from-slate-50 to-slate-100', border: 'border-slate-200', icon: '👥' },
             ].map(s => (
               <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-md p-4 text-center border ${s.border} shadow-sm hover:shadow-md transition-all`}>
-                <p className="text-[10px] font-bold text-slate-400 mb-1">{s.icon}</p>
-                <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
-                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{s.label}</p>
+                <p className="text-xs font-medium text-slate-400 mb-1">{s.icon}</p>
+                <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+                <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">{s.label}</p>
               </div>
             ))}
           </div>
@@ -950,7 +950,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         </div>
 
         <div className="text-center pb-6">
-          <p className="text-[10px] font-bold text-slate-400 tracking-wide">© {new Date().getFullYear()} Attendify Inc. All rights reserved.</p>
+          <p className="text-xs font-medium text-slate-400 tracking-wide">© {new Date().getFullYear()} Attendify Inc. All rights reserved.</p>
         </div>
       </div>
 

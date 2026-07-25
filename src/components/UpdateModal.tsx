@@ -42,7 +42,7 @@ export default function UpdateModal() {
 
         {/* ===== TOP GRADIENT BANNER ===== */}
         <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-7 pt-8 pb-10 text-white text-center relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl" />
+          <div className="absolute -top-8 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl" />
           <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-indigo-400/20 rounded-full blur-lg" />
 
           {/* App icon */}
@@ -53,12 +53,12 @@ export default function UpdateModal() {
               className="w-14 h-14 object-contain"
               onError={e => {
                 const parent = (e.target as HTMLImageElement).parentElement;
-                if (parent) parent.innerHTML = '<span class="text-white text-2xl font-black">Af</span>';
+                if (parent) parent.innerHTML = '<span class="text-white text-2xl font-bold">Af</span>';
               }}
             />
           </div>
 
-          <h2 className="text-2xl font-black tracking-tight relative z-10">
+          <h2 className="text-2xl font-bold tracking-tight relative z-10">
             Update Available
           </h2>
           <p className="text-slate-400 text-xs font-bold mt-1 relative z-10">
@@ -67,7 +67,7 @@ export default function UpdateModal() {
         </div>
 
         {/* ===== CONTENT ===== */}
-        <div className="px-7 py-6 space-y-5">
+        <div className="px-7 py-6 space-y-4">
 
           {/* Version info */}
           <div className="flex items-center justify-between bg-slate-50 rounded-md px-4 py-3 border border-slate-100">
@@ -78,12 +78,12 @@ export default function UpdateModal() {
                 </svg>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">New Version</p>
-                <p className="text-sm font-black text-slate-800">{updateInfo.version_name}</p>
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">New Version</p>
+                <p className="text-sm font-bold text-slate-800">{updateInfo.version_name}</p>
               </div>
             </div>
             {updateInfo.force_update && (
-              <span className="px-2.5 py-1 bg-red-50 text-red-600 text-[10px] font-black rounded border border-red-200 uppercase tracking-wide">
+              <span className="px-2.5 py-1 bg-red-50 text-red-600 text-xs font-semibold rounded border border-red-200 uppercase tracking-wide">
                 Required
               </span>
             )}
@@ -120,7 +120,7 @@ export default function UpdateModal() {
                 </div>
               </div>
 
-              <p className="text-center text-[10px] text-slate-400 font-bold">
+              <p className="text-center text-[11px] text-slate-400 font-bold">
                 Please keep the app open while downloading...
               </p>
             </div>
@@ -151,7 +151,7 @@ export default function UpdateModal() {
           {/* Copy link fallback */}
           {!downloading && !updateInfo.force_update && updateInfo.apk_url && (
             <div className="text-center border-t border-slate-100 pt-4">
-              <p className="text-[10px] text-slate-400 font-medium mb-2">Having trouble? Download manually:</p>
+              <p className="text-[11px] text-slate-400 font-medium mb-2">Having trouble? Download manually:</p>
               <button
                 onClick={handleCopyLink}
                 className={`inline-flex items-center gap-1.5 text-xs font-bold transition-all px-3 py-1.5 rounded border ${

@@ -208,7 +208,7 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
   const inputCls = "w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all";
 
   return (
-    <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* Notification */}
       {notification && (
@@ -233,12 +233,12 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-black text-white tracking-tight">Leave Management</h2>
+              <h2 className="text-lg font-bold text-white tracking-tight">Leave Management</h2>
               <p className="text-slate-400 text-xs font-bold">Apply & manage leave requests</p>
             </div>
           </div>
           {isAdmin && pendingCount > 0 && (
-            <div className="bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-full border border-red-400 animate-pulse">
+            <div className="bg-red-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-red-400 animate-pulse">
               {pendingCount} Pending
             </div>
           )}
@@ -275,8 +275,8 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
 
           {/* My Leave History */}
           <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
-              <h3 className="text-sm font-black text-slate-800">My Leave History</h3>
+            <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
+              <h3 className="text-sm font-bold text-slate-800">My Leave History</h3>
             </div>
             <div className="divide-y divide-slate-50">
               {myLeaves.length === 0 ? (
@@ -300,8 +300,8 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className={`text-sm font-black ${cfg.color}`}>{cfg.label} Leave</p>
-                              <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${stCfg.bg} ${stCfg.color} ${stCfg.border}`}>
+                              <p className={`text-sm font-bold ${cfg.color}`}>{cfg.label} Leave</p>
+                              <span className={`px-2 py-0.5 rounded-lg text-xs font-semibold border ${stCfg.bg} ${stCfg.color} ${stCfg.border}`}>
                                 {stCfg.icon} {stCfg.label}
                               </span>
                             </div>
@@ -318,7 +318,7 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-slate-400 text-[10px] font-medium">
+                          <p className="text-slate-400 text-[11px] font-medium">
                             {leave.requestedAt ? format(parseISO(leave.requestedAt), 'dd MMM') : '—'}
                           </p>
                         </div>
@@ -335,15 +335,15 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
       {/* ===== APPLY LEAVE ===== */}
       {activeTab === 'apply' && (
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
-            <h3 className="text-sm font-black text-slate-800">Apply for Leave</h3>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Fill the form below to submit a leave request</p>
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
+            <h3 className="text-sm font-bold text-slate-800">Apply for Leave</h3>
+            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Fill the form below to submit a leave request</p>
           </div>
 
-          <div className="p-6 space-y-5">
+          <div className="p-5 space-y-4">
             {/* Leave Type */}
             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Leave Type</label>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Leave Type</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {(Object.keys(LEAVE_TYPE_CONFIG) as LeaveType[]).map(type => {
                   const cfg = LEAVE_TYPE_CONFIG[type];
@@ -369,7 +369,7 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
             {/* Dates */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">From Date</label>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">From Date</label>
                 <input
                   type="date"
                   value={form.fromDate}
@@ -379,7 +379,7 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">To Date</label>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">To Date</label>
                 <input
                   type="date"
                   value={form.toDate}
@@ -407,7 +407,7 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
 
             {/* Reason */}
             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Reason</label>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Reason</label>
               <textarea
                 value={form.reason}
                 onChange={e => setForm(f => ({ ...f, reason: e.target.value }))}
@@ -492,7 +492,7 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
                 </svg>
               </div>
 
-              <span className="ml-auto text-[10px] font-bold text-slate-400">
+              <span className="ml-auto text-xs font-medium text-slate-400">
                 {allLeaves.length} records
               </span>
             </div>
@@ -519,18 +519,18 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
                     <div key={leave.id} className="px-5 py-4 hover:bg-slate-50/80 transition-all">
                       <div className="flex items-start gap-3">
                         {/* Employee Avatar */}
-                        <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm">
+                        <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-xs font-semibold shrink-0 shadow-sm">
                           {getInitials(emp?.name || '?')}
                         </div>
 
                         <div className="flex-1 min-w-0">
                           {/* Top row */}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-black text-slate-800">{emp?.name || 'Unknown'}</p>
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
+                            <p className="text-sm font-bold text-slate-800">{emp?.name || 'Unknown'}</p>
+                            <span className={`px-2 py-0.5 rounded-lg text-xs font-semibold border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
                               {cfg.icon} {cfg.label}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${stCfg.bg} ${stCfg.color} ${stCfg.border}`}>
+                            <span className={`px-2 py-0.5 rounded-lg text-xs font-semibold border ${stCfg.bg} ${stCfg.color} ${stCfg.border}`}>
                               {stCfg.icon} {stCfg.label}
                             </span>
                           </div>
@@ -568,13 +568,13 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
                                   <div className="flex gap-2">
                                     <button
                                       onClick={() => handleApprove(leave)}
-                                      className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded text-xs font-black shadow-md shadow-emerald-500/20 transition-all active:scale-95"
+                                      className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded text-xs font-semibold shadow-md shadow-emerald-500/20 transition-all active:scale-95"
                                     >
                                       ✓ Approve
                                     </button>
                                     <button
                                       onClick={() => handleReject(leave)}
-                                      className="flex-1 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded text-xs font-black shadow-md shadow-red-500/20 transition-all active:scale-95"
+                                      className="flex-1 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded text-xs font-semibold shadow-md shadow-red-500/20 transition-all active:scale-95"
                                     >
                                       ✕ Reject
                                     </button>
@@ -589,7 +589,7 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
                               ) : (
                                 <button
                                   onClick={() => setReviewingId(leave.id)}
-                                  className="px-4 py-2 bg-slate-900 hover:bg-[#1d4ed8] text-white rounded text-xs font-black transition-all active:scale-95 shadow-sm"
+                                  className="px-4 py-2 bg-slate-900 hover:bg-[#1d4ed8] text-white rounded text-xs font-semibold transition-all active:scale-95 shadow-sm"
                                 >
                                   Review Request →
                                 </button>
@@ -600,11 +600,11 @@ export default function LeaveManagement({ currentUser }: LeaveManagementProps) {
 
                         {/* Date requested */}
                         <div className="text-right shrink-0">
-                          <p className="text-slate-400 text-[10px] font-medium">
+                          <p className="text-slate-400 text-[11px] font-medium">
                             {leave.requestedAt ? format(parseISO(leave.requestedAt), 'dd MMM') : '—'}
                           </p>
                           {leave.reviewedAt && (
-                            <p className="text-slate-300 text-[9px] font-medium mt-0.5">
+                            <p className="text-slate-300 text-[11px] font-normal mt-0.5">
                               Reviewed {format(parseISO(leave.reviewedAt), 'dd MMM')}
                             </p>
                           )}

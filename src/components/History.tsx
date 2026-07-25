@@ -146,7 +146,7 @@ export default function History({ currentUser }: HistoryProps) {
   };
 
   return (
-    <div className={`space-y-4 font-sans transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
 
       {/* ═══ TOP BAR ═══ */}
       <div className="bg-white rounded-md border border-slate-200 shadow-sm p-4">
@@ -169,7 +169,7 @@ export default function History({ currentUser }: HistoryProps) {
             <button onClick={goPrev} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all shrink-0">
               <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <button onClick={goToday} className="px-3 py-1.5 text-[10px] font-bold text-slate-800 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all shrink-0">Today</button>
+            <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium text-slate-800 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all shrink-0">Today</button>
             <p className="text-sm font-bold text-slate-800 truncate">{navLabel}</p>
             <button onClick={goNext} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all shrink-0">
               <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
@@ -201,8 +201,8 @@ export default function History({ currentUser }: HistoryProps) {
           { label: 'Hours',   val: `${stats.totalHours}h`, color: 'text-slate-800', bg: 'bg-slate-50', border: 'border-slate-200' },
         ].map(s => (
           <div key={s.label} className={`${s.bg} ${s.border} border rounded p-2.5 text-center`}>
-            <p className={`text-lg font-black ${s.color} leading-none`}>{s.val}</p>
-            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{s.label}</p>
+            <p className={`text-lg font-bold ${s.color} leading-none`}>{s.val}</p>
+            <p className="text-xs font-medium text-slate-400 mt-1 uppercase">{s.label}</p>
           </div>
         ))}
       </div>
@@ -215,11 +215,11 @@ export default function History({ currentUser }: HistoryProps) {
           {/* Selected Employee Banner */}
           {selectedEmployee !== 'all' && (
             <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[9px] font-black">
+              <div className="w-7 h-7 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[11px] font-medium">
                 {getInitials(getEmpName(selectedEmployee))}
               </div>
               <p className="text-sm font-bold text-slate-900">{getEmpName(selectedEmployee)}</p>
-              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-[10px] font-bold text-slate-700 hover:text-slate-900 bg-slate-100 px-2 py-0.5 rounded">✕ Clear</button>
+              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-xs font-medium text-slate-700 hover:text-slate-900 bg-slate-100 px-2 py-0.5 rounded">✕ Clear</button>
             </div>
           )}
           {dailyRecords.length === 0 ? (
@@ -236,7 +236,7 @@ export default function History({ currentUser }: HistoryProps) {
                   <div key={r.id} className="p-4 hover:bg-slate-50/50 transition-colors">
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
-                      <div className="w-10 h-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded flex items-center justify-center text-white text-xs font-black shrink-0 shadow-sm">
+                      <div className="w-10 h-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded flex items-center justify-center text-white text-xs font-semibold shrink-0 shadow-sm">
                         {getInitials(getEmpName(r.employeeId))}
                       </div>
 
@@ -244,7 +244,7 @@ export default function History({ currentUser }: HistoryProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-sm font-bold text-slate-800 truncate">{getEmpName(r.employeeId)}</p>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${s.bg} ${s.text}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${s.bg} ${s.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
                             {s.label}
                           </span>
@@ -266,8 +266,8 @@ export default function History({ currentUser }: HistoryProps) {
                       {/* Hours badge */}
                       {r.totalHours > 0 && (
                         <div className="text-right shrink-0 hidden sm:block">
-                          <p className="text-lg font-black text-slate-800">{r.totalHours.toFixed(1)}</p>
-                          <p className="text-[10px] text-slate-400 font-bold">HOURS</p>
+                          <p className="text-lg font-bold text-slate-800">{r.totalHours.toFixed(1)}</p>
+                          <p className="text-[11px] text-slate-400 font-bold">HOURS</p>
                         </div>
                       )}
                     </div>
@@ -286,16 +286,16 @@ export default function History({ currentUser }: HistoryProps) {
         <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
           {/* Day headers */}
           <div className="grid grid-cols-[140px_repeat(7,1fr)] border-b border-slate-100 bg-slate-50/80">
-            <div className="p-3 text-[10px] font-bold text-slate-400 uppercase">Employee</div>
+            <div className="p-3 text-xs font-medium text-slate-400 uppercase">Employee</div>
             {weekDays.map(day => {
               const isT = isToday(day);
               const isSun = day.getDay() === 0;
               return (
                 <div key={day.toISOString()} className={`p-2 text-center border-l border-slate-100 ${isT ? 'bg-slate-50' : ''}`}>
-                  <p className={`text-[10px] font-bold uppercase ${isSun ? 'text-red-400' : isT ? 'text-slate-800' : 'text-slate-400'}`}>
+                  <p className={`text-xs font-medium uppercase ${isSun ? 'text-red-400' : isT ? 'text-slate-800' : 'text-slate-400'}`}>
                     {format(day, 'EEE')}
                   </p>
-                  <p className={`text-sm font-black ${isT ? 'text-slate-800' : 'text-slate-700'}`}>
+                  <p className={`text-sm font-bold ${isT ? 'text-slate-800' : 'text-slate-700'}`}>
                     {format(day, 'd')}
                   </p>
                 </div>
@@ -307,9 +307,9 @@ export default function History({ currentUser }: HistoryProps) {
           {/* Selected employee indicator */}
           {selectedEmployee !== 'all' && (
             <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
-              <div className="w-6 h-6 bg-slate-800 rounded-md flex items-center justify-center text-white text-[8px] font-black">{getInitials(getEmpName(selectedEmployee))}</div>
+              <div className="w-6 h-6 bg-slate-800 rounded-md flex items-center justify-center text-white text-[11px] font-medium">{getInitials(getEmpName(selectedEmployee))}</div>
               <p className="text-xs font-bold text-slate-900">Showing: {getEmpName(selectedEmployee)}</p>
-              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-[10px] font-bold text-slate-700 hover:text-slate-900">Show All ×</button>
+              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-xs font-medium text-slate-700 hover:text-slate-900">Show All ×</button>
             </div>
           )}
           {getWeeklyEmployeeData().length === 0 ? (
@@ -322,7 +322,7 @@ export default function History({ currentUser }: HistoryProps) {
                 <div key={row.empId} className="grid grid-cols-[140px_repeat(7,1fr)] hover:bg-slate-50/30 transition-colors">
                   {/* Employee name */}
                   <div className="p-3 flex items-center gap-2 border-r border-slate-100">
-                    <div className="w-7 h-7 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[9px] font-black shrink-0">
+                    <div className="w-7 h-7 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[11px] font-medium shrink-0">
                       {getInitials(row.name)}
                     </div>
                     <p className="text-xs font-bold text-slate-700 truncate">{row.name}</p>
@@ -338,9 +338,9 @@ export default function History({ currentUser }: HistoryProps) {
                       return (
                         <div key={i} className={`p-2 border-l border-slate-100 flex items-center justify-center ${isT ? 'bg-slate-50/50' : isSun ? 'bg-slate-50/50' : ''}`}>
                           {isSun ? (
-                            <span className="text-[10px] text-slate-300 font-medium">OFF</span>
+                            <span className="text-[11px] text-slate-300 font-medium">OFF</span>
                           ) : (
-                            <span className="text-[10px] text-slate-300">—</span>
+                            <span className="text-[11px] text-slate-300">—</span>
                           )}
                         </div>
                       );
@@ -351,10 +351,10 @@ export default function History({ currentUser }: HistoryProps) {
                       <div key={i} className={`p-1.5 border-l border-slate-100 flex items-center justify-center ${isT ? 'bg-slate-50/50' : ''}`}>
                         <div className={`w-full rounded-lg p-1.5 text-center ${s.bg}`} title={`${s.label} | ${safeFmt(rec.checkIn, 'hh:mm a')} - ${safeFmt(rec.checkOut, 'hh:mm a')} | ${rec.totalHours.toFixed(1)}h`}>
                           <div className={`w-5 h-5 rounded-full ${s.dot} mx-auto flex items-center justify-center`}>
-                            <span className="text-white text-[9px] font-black">{s.icon}</span>
+                            <span className="text-white text-[11px] font-medium">{s.icon}</span>
                           </div>
                           {rec.totalHours > 0 && (
-                            <p className={`text-[9px] font-bold mt-0.5 ${s.text}`}>{rec.totalHours.toFixed(1)}h</p>
+                            <p className={`text-[11px] font-medium mt-0.5 ${s.text}`}>{rec.totalHours.toFixed(1)}h</p>
                           )}
                         </div>
                       </div>
@@ -368,7 +368,7 @@ export default function History({ currentUser }: HistoryProps) {
           {/* Legend */}
           <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-3">
             {Object.entries(STATUS_CONFIG).slice(0, 5).map(([key, val]) => (
-              <span key={key} className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
+              <span key={key} className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
                 <span className={`w-2 h-2 rounded-full ${val.dot}`} />
                 {val.label}
               </span>
@@ -421,7 +421,7 @@ export default function History({ currentUser }: HistoryProps) {
               {/* Weekday headers */}
               <div className="grid grid-cols-7 mb-2">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
-                  <div key={d} className={`text-center text-[10px] font-bold uppercase py-1 ${i === 0 ? 'text-red-400' : 'text-slate-400'}`}>{d}</div>
+                  <div key={d} className={`text-center text-xs font-medium uppercase py-1 ${i === 0 ? 'text-red-400' : 'text-slate-400'}`}>{d}</div>
                 ))}
               </div>
 
@@ -457,7 +457,7 @@ export default function History({ currentUser }: HistoryProps) {
                       <span className={`text-xs font-bold ${isT ? 'text-slate-900' : dayColor}`}>{format(day, 'd')}</span>
                       {dotEl}
                       {info && selectedEmployee === 'all' && (
-                        <span className="text-[8px] font-bold text-slate-400">{info.count}/{info.total}</span>
+                        <span className="text-[11px] font-medium text-slate-400">{info.count}/{info.total}</span>
                       )}
                     </div>
                   );
@@ -467,12 +467,12 @@ export default function History({ currentUser }: HistoryProps) {
               {/* Legend */}
               <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-slate-100">
                 {Object.entries(STATUS_CONFIG).slice(0, 5).map(([key, val]) => (
-                  <span key={key} className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
+                  <span key={key} className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
                     <span className={`w-2 h-2 rounded-full ${val.dot}`} />
                     {val.label}
                   </span>
                 ))}
-                <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
                   <span className="w-2 h-2 rounded-full bg-slate-900 ring-1 ring-slate-400" />
                   Today
                 </span>
@@ -483,25 +483,25 @@ export default function History({ currentUser }: HistoryProps) {
             {selectedEmployee === 'all' && empSummaries.length > 0 && (
               <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
-                  <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Monthly Summary — {format(currentDate, 'MMMM yyyy')}</h3>
+                  <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Monthly Summary — {format(currentDate, 'MMMM yyyy')}</h3>
                 </div>
                 <div className="divide-y divide-slate-50">
                   {empSummaries.map(es => (
                     <div key={es.emp.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 transition-colors">
-                      <div className="w-8 h-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[9px] font-black shrink-0">
+                      <div className="w-8 h-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[11px] font-medium shrink-0">
                         {getInitials(es.emp.name)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-slate-800 truncate">{es.emp.name}</p>
                         <div className="flex gap-3 mt-0.5">
-                          <span className="text-[10px] font-bold text-emerald-600">{es.present} present</span>
-                          <span className="text-[10px] font-bold text-red-500">{es.absent} absent</span>
-                          <span className="text-[10px] font-bold text-slate-800">{es.hours}h worked</span>
+                          <span className="text-xs font-medium text-emerald-600">{es.present} present</span>
+                          <span className="text-xs font-medium text-red-500">{es.absent} absent</span>
+                          <span className="text-xs font-medium text-slate-800">{es.hours}h worked</span>
                         </div>
                       </div>
                       {/* Attendance % bar */}
                       <div className="w-20 shrink-0 text-right">
-                        <p className={`text-sm font-black ${es.attendance >= 80 ? 'text-emerald-600' : es.attendance >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                        <p className={`text-sm font-bold ${es.attendance >= 80 ? 'text-emerald-600' : es.attendance >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
                           {es.attendance}%
                         </p>
                         <div className="w-full h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden">
@@ -519,7 +519,7 @@ export default function History({ currentUser }: HistoryProps) {
             {selectedEmployee !== 'all' && (
               <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
-                  <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                  <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
                     {getEmpName(targetEmpId)} — {format(currentDate, 'MMMM yyyy')}
                   </h3>
                 </div>
@@ -533,22 +533,22 @@ export default function History({ currentUser }: HistoryProps) {
                         <div key={r.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50/50 transition-colors">
                           <div className={`w-7 h-7 rounded-lg ${s.bg} flex items-center justify-center`}>
                             <span className={`w-3 h-3 rounded-full ${s.dot} flex items-center justify-center`}>
-                              <span className="text-white text-[7px] font-black">{s.icon}</span>
+                              <span className="text-white text-[11px] font-medium">{s.icon}</span>
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold text-slate-700">{safeFmt(r.date + 'T00:00:00', 'EEE, dd MMM')}</p>
                             {r.status !== 'absent' ? (
-                              <p className="text-[10px] text-slate-400">
+                              <p className="text-[11px] text-slate-400">
                                 {safeFmt(r.checkIn, 'hh:mm a')} → {safeFmt(r.checkOut, 'hh:mm a')}
                               </p>
                             ) : (
-                              <p className="text-[10px] text-red-400">Absent</p>
+                              <p className="text-[11px] text-red-400">Absent</p>
                             )}
                           </div>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${s.bg} ${s.text}`}>{s.label}</span>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${s.bg} ${s.text}`}>{s.label}</span>
                           {r.totalHours > 0 && (
-                            <span className="text-xs font-black text-slate-700 w-12 text-right">{r.totalHours.toFixed(1)}h</span>
+                            <span className="text-xs font-semibold text-slate-700 w-12 text-right">{r.totalHours.toFixed(1)}h</span>
                           )}
                         </div>
                       );

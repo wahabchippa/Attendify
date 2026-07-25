@@ -110,17 +110,17 @@ export default function GPSLiveMap({ currentUser }: GPSLiveMapProps) {
   const getStatusText=(s:string)=>({present:'text-emerald-600',late:'text-amber-600',absent:'text-red-500','checked-out':'text-slate-500'}[s]||'text-slate-500');
 
   return (
-    <div className={`space-y-4 font-sans transition-all duration-500 ${mounted?'opacity-100 translate-y-0':'opacity-0 translate-y-4'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-500 ${mounted?'opacity-100 translate-y-0':'opacity-0 translate-y-4'}`}>
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-md p-4 text-white relative overflow-hidden shadow-lg">
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg"/>
+        <div className="absolute -top-8 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg"/>
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3"><div className="w-10 h-10 bg-white/15 rounded flex items-center justify-center text-xl">🗺️</div><div><h2 className="text-base font-black">GPS Live Map</h2><p className="text-slate-400 text-[10px] font-bold">{trackedCount>0?`📡 ${trackedCount} employee${trackedCount>1?'s':''} tracked live`:'Office locations & tracking'}</p></div></div>
+          <div className="flex items-center gap-3"><div className="w-10 h-10 bg-white/15 rounded flex items-center justify-center text-xl">🗺️</div><div><h2 className="text-base font-bold">GPS Live Map</h2><p className="text-slate-400 text-xs font-medium">{trackedCount>0?`📡 ${trackedCount} employee${trackedCount>1?'s':''} tracked live`:'Office locations & tracking'}</p></div></div>
           <button onClick={loadData} disabled={refreshing} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold border border-white/10 transition-all disabled:opacity-50">{refreshing?'⟳ ...':'🔄 Refresh'}</button>
         </div>
       </div>
       <div className="grid grid-cols-5 gap-2">
         {[{l:'PRESENT',v:presentCount,c:'text-emerald-600',b:'bg-emerald-50 border-emerald-100'},{l:'LATE',v:lateCount,c:'text-amber-600',b:'bg-amber-50 border-amber-100'},{l:'ABSENT',v:absentCount,c:'text-red-600',b:'bg-red-50 border-red-100'},{l:'WORKING',v:workingNow,c:'text-slate-800',b:'bg-slate-50 border-slate-200'},{l:'TRACKED',v:trackedCount,c:'text-purple-600',b:'bg-purple-50 border-purple-100'}].map(s=>(
-          <div key={s.l} className={`${s.b} border rounded p-2 text-center`}><p className={`text-lg font-black ${s.c} leading-none`}>{s.v}</p><p className="text-[9px] font-bold text-slate-400 mt-0.5">{s.l}</p></div>
+          <div key={s.l} className={`${s.b} border rounded p-2 text-center`}><p className={`text-lg font-bold ${s.c} leading-none`}>{s.v}</p><p className="text-[11px] font-medium text-slate-400 mt-0.5">{s.l}</p></div>
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -128,13 +128,13 @@ export default function GPSLiveMap({ currentUser }: GPSLiveMapProps) {
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
           <div ref={mapContainerRef} className="w-full h-[400px] lg:h-[500px]"/>
           <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-3">
-            {getOffices().map(o=>(<span key={o.name} className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500"><span className="w-2 h-2 rounded-full" style={{background:o.color}}/>{o.name}</span>))}
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-800"><span className="w-2 h-2 rounded-full bg-slate-500 ring-2 ring-blue-200"/>You</span>
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-600"><span className="w-2 h-2 rounded-full bg-emerald-500"/>Employee</span>
+            {getOffices().map(o=>(<span key={o.name} className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><span className="w-2 h-2 rounded-full" style={{background:o.color}}/>{o.name}</span>))}
+            <span className="flex items-center gap-1.5 text-xs font-medium text-slate-800"><span className="w-2 h-2 rounded-full bg-slate-500 ring-2 ring-blue-200"/>You</span>
+            <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600"><span className="w-2 h-2 rounded-full bg-emerald-500"/>Employee</span>
           </div>
         </div>
         <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-100"><h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Team Status</h3></div>
+          <div className="px-4 py-3 bg-slate-50 border-b border-slate-100"><h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Team Status</h3></div>
           <div className="flex-1 overflow-y-auto max-h-[460px] divide-y divide-slate-50">
             {employees.map(emp=>{
               const rec=todayRecords.find(r=>r.employeeId===emp.id);
@@ -146,18 +146,18 @@ export default function GPSLiveMap({ currentUser }: GPSLiveMapProps) {
                 <div key={emp.id} className={`px-4 py-2.5 hover:bg-slate-50/50 transition-colors cursor-pointer ${selectedEmp===emp.id?'bg-slate-50':''}`}
                   onClick={()=>{setSelectedEmp(selectedEmp===emp.id?null:emp.id);if(loc&&mapRef.current)mapRef.current.map.flyTo([loc.latitude,loc.longitude],15,{duration:0.5});}}>
                   <div className="flex items-center gap-2.5">
-                    <div className="relative"><div className="w-8 h-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[9px] font-black">{getInitials(emp.name)}</div><span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(status)}`}/></div>
-                    <div className="flex-1 min-w-0"><p className="text-xs font-bold text-slate-800 truncate">{emp.name}</p><div className="flex items-center gap-1.5"><span className={`text-[10px] font-bold capitalize ${getStatusText(status)}`}>{status==='checked-out'?'Done':status}</span>{checkIn&&<span className="text-[10px] text-slate-400">• {checkIn}</span>}</div></div>
+                    <div className="relative"><div className="w-8 h-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[11px] font-medium">{getInitials(emp.name)}</div><span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(status)}`}/></div>
+                    <div className="flex-1 min-w-0"><p className="text-xs font-bold text-slate-800 truncate">{emp.name}</p><div className="flex items-center gap-1.5"><span className={`text-xs font-medium capitalize ${getStatusText(status)}`}>{status==='checked-out'?'Done':status}</span>{checkIn&&<span className="text-[11px] text-slate-400">• {checkIn}</span>}</div></div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {loc&&status!=='absent'&&<span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">📍</span>}
-                      {rec&&!rec.checkOut&&<span className="text-[9px] font-bold text-slate-800 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">LIVE</span>}
+                      {loc&&status!=='absent'&&<span className="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">📍</span>}
+                      {rec&&!rec.checkOut&&<span className="text-[11px] font-medium text-slate-800 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">LIVE</span>}
                     </div>
                   </div>
                   {selectedEmp===emp.id&&(
                     <div className="mt-2 ml-10 space-y-1 pb-1">
-                      {rec&&<><p className="text-[10px] text-slate-500">In: <span className="font-bold text-slate-700">{checkIn||'—'}</span></p>{rec.checkOut&&<p className="text-[10px] text-slate-500">Out: <span className="font-bold text-slate-700">{new Date(rec.checkOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span></p>}{rec.totalHours>0&&<p className="text-[10px] text-slate-500">Hours: <span className="font-bold text-slate-800">{rec.totalHours.toFixed(1)}h</span></p>}</>}
-                      {loc&&nearest?<p className="text-[10px] text-slate-500">📍 {nearest.dist<=nearest.radius?<span className="text-emerald-600 font-bold">Inside {nearest.name}</span>:<span>{formatDist(nearest.dist)} from {nearest.name}</span>}</p>:status!=='absent'?<p className="text-[10px] text-slate-400 italic">No GPS data</p>:null}
-                      {!rec&&<p className="text-[10px] text-red-400 font-medium">Absent today</p>}
+                      {rec&&<><p className="text-[11px] text-slate-500">In: <span className="font-bold text-slate-700">{checkIn||'—'}</span></p>{rec.checkOut&&<p className="text-[11px] text-slate-500">Out: <span className="font-bold text-slate-700">{new Date(rec.checkOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</span></p>}{rec.totalHours>0&&<p className="text-[11px] text-slate-500">Hours: <span className="font-bold text-slate-800">{rec.totalHours.toFixed(1)}h</span></p>}</>}
+                      {loc&&nearest?<p className="text-[11px] text-slate-500">📍 {nearest.dist<=nearest.radius?<span className="text-emerald-600 font-bold">Inside {nearest.name}</span>:<span>{formatDist(nearest.dist)} from {nearest.name}</span>}</p>:status!=='absent'?<p className="text-[11px] text-slate-400 italic">No GPS data</p>:null}
+                      {!rec&&<p className="text-[11px] text-red-400 font-medium">Absent today</p>}
                     </div>
                   )}
                 </div>
@@ -170,8 +170,8 @@ export default function GPSLiveMap({ currentUser }: GPSLiveMapProps) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {getOffices().map(o=>{const dist=haversine(myLocation.lat,myLocation.lng,o.lat,o.lng);const inside=dist<=o.radius;return(
             <div key={o.name} className={`rounded p-3 border ${inside?'bg-emerald-50 border-emerald-200':'bg-slate-50 border-slate-200'}`}>
-              <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{background:o.color}}/><span className="text-xs font-black text-slate-800">{o.name}</span>{inside&&<span className="ml-auto text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">INSIDE</span>}</div>
-              <p className={`text-lg font-black mt-1 ${inside?'text-emerald-600':'text-slate-600'}`}>{formatDist(dist)}</p>
+              <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{background:o.color}}/><span className="text-xs font-semibold text-slate-800">{o.name}</span>{inside&&<span className="ml-auto text-xs font-medium text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">INSIDE</span>}</div>
+              <p className={`text-lg font-bold mt-1 ${inside?'text-emerald-600':'text-slate-600'}`}>{formatDist(dist)}</p>
             </div>
           );})}
         </div>

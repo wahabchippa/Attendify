@@ -201,14 +201,14 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
     <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
       <div className="flex items-center gap-2 mb-5">
         {icon && <div className="w-8 h-8 bg-slate-50 rounded flex items-center justify-center">{icon}</div>}
-        <h3 className="text-sm font-black text-slate-800">{title}</h3>
+        <h3 className="text-sm font-bold text-slate-800">{title}</h3>
       </div>
       <div className="h-64">{children}</div>
     </div>
   );
 
   return (
-    <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* ===== HEADER ===== */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 md:p-6 text-white relative overflow-hidden shadow-sm">
@@ -222,7 +222,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-black text-white tracking-tight">Analytics & Reports</h2>
+              <h2 className="text-lg font-bold text-white tracking-tight">Analytics & Reports</h2>
               <p className="text-slate-400 text-xs font-bold">Performance overview & insights</p>
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="text-white text-xs font-black px-1 min-w-[80px] text-center">
+            <span className="text-white text-xs font-semibold px-1 min-w-[80px] text-center">
               {format(new Date(selectedMonth.year, selectedMonth.month - 1), 'MMM yyyy')}
             </span>
             <button
@@ -261,8 +261,8 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
                 {kpi.icon}
               </div>
             </div>
-            <p className={`text-3xl font-black ${kpi.color}`}>{kpi.value}</p>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{kpi.label}</p>
+            <p className={`text-3xl font-bold ${kpi.color}`}>{kpi.value}</p>
+            <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">{kpi.label}</p>
           </div>
         ))}
       </div>
@@ -408,10 +408,10 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
           {/* Header */}
           <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-slate-100">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <span>⚡</span> Overtime Details
               </h3>
-              {totalAllOT > 0 && <span className="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">Total: +{totalAllOT}h</span>}
+              {totalAllOT > 0 && <span className="bg-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">Total: +{totalAllOT}h</span>}
             </div>
           </div>
 
@@ -421,14 +421,14 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
             <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0.5">
               {(['week','month','all'] as const).map(p => (
                 <button key={p} onClick={() => setOtPeriod(p)}
-                  className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all capitalize ${otPeriod===p ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all capitalize ${otPeriod===p ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
                   {p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'All Time'}
                 </button>
               ))}
             </div>
             {/* Employee */}
             <select value={otEmployee} onChange={e => setOtEmployee(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-semibold focus:outline-none">
+              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none">
               <option value="all">All Employees</option>
               {getAttendanceEmployees().map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
             </select>
@@ -445,9 +445,9 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
                 {/* OT Calendar (when single employee selected) */}
                 {calTargetEmp && otPeriod === 'month' && (
                   <div className="bg-purple-50 rounded-md p-3 border border-purple-100 mb-3">
-                    <p className="text-[10px] font-black text-purple-600 uppercase tracking-wider mb-2">{format(calMonth, 'MMMM yyyy')} — OT Calendar</p>
+                    <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">{format(calMonth, 'MMMM yyyy')} — OT Calendar</p>
                     <div className="grid grid-cols-7 gap-0.5 mb-1">
-                      {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-center text-[8px] font-bold text-purple-400">{d}</div>)}
+                      {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-center text-[11px] font-medium text-purple-400">{d}</div>)}
                     </div>
                     <div className="grid grid-cols-7 gap-0.5">
                       {Array.from({length: calDays[0]?.getDay() || 0}).map((_,i) => <div key={`e${i}`} />)}
@@ -459,11 +459,11 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
                         const otHrs = hasOT ? (rec.notes?.includes('SUNDAY') || rec.notes?.includes('HOLIDAY') ? rec.totalHours : Math.max(0, rec.totalHours - t.minHoursForFullDay)) : 0;
                         const isSun = day.getDay() === 0;
                         return (
-                          <div key={ds} className={`aspect-square rounded-md flex flex-col items-center justify-center text-[9px] ${
+                          <div key={ds} className={`aspect-square rounded-md flex flex-col items-center justify-center text-[11px] ${
                             hasOT ? 'bg-purple-200 text-purple-800 font-black' : isSun ? 'bg-slate-100 text-slate-300' : 'bg-purple-50 text-purple-300'
                           }`} title={hasOT ? `+${otHrs.toFixed(1)}h OT` : ''}>
                             <span>{format(day,'d')}</span>
-                            {hasOT && <span className="text-[7px] font-black">+{otHrs.toFixed(1)}</span>}
+                            {hasOT && <span className="text-[11px] font-medium">+{otHrs.toFixed(1)}</span>}
                           </div>
                         );
                       })}
@@ -476,20 +476,20 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
                   <div key={emp.id} className="bg-slate-50 rounded-md p-4 border border-slate-100">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 bg-slate-800 text-white rounded flex items-center justify-center text-[10px] font-black">
+                        <div className="w-9 h-9 bg-slate-800 text-white rounded flex items-center justify-center text-xs font-semibold">
                           {getInitials(emp.name)}
                         </div>
                         <div>
                           <p className="text-slate-800 font-bold text-sm">{emp.name}</p>
-                          <p className="text-slate-400 text-[10px] font-bold">{otRecs.length} session{otRecs.length!==1?'s':''}</p>
+                          <p className="text-slate-400 text-xs font-medium">{otRecs.length} session{otRecs.length!==1?'s':''}</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-purple-600 font-black text-lg">+{totalOT}h</p>
                         <div className="flex flex-wrap gap-1 mt-0.5 justify-end">
-                          {sundayOT > 0 && <span className="text-[9px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-bold">Sun:{sundayOT}h</span>}
-                          {holidayOT > 0 && <span className="text-[9px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded font-bold">Hol:{holidayOT}h</span>}
-                          {regularOT > 0 && <span className="text-[9px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-bold">Reg:{regularOT}h</span>}
+                          {sundayOT > 0 && <span className="text-[11px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-bold">Sun:{sundayOT}h</span>}
+                          {holidayOT > 0 && <span className="text-[11px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded font-bold">Hol:{holidayOT}h</span>}
+                          {regularOT > 0 && <span className="text-[11px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-bold">Reg:{regularOT}h</span>}
                         </div>
                       </div>
                     </div>

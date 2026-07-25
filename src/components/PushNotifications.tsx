@@ -120,7 +120,7 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
   };
 
   return (
-    <div className={`space-y-4 font-sans transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
       {/* Toast */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded shadow-md text-sm font-bold text-white animate-slide-in ${
@@ -130,17 +130,17 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
 
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-md p-4 text-white relative overflow-hidden shadow-lg">
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg" />
+        <div className="absolute -top-8 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/15 rounded flex items-center justify-center text-xl">🔔</div>
             <div>
-              <h2 className="text-base font-black">Push Notifications</h2>
-              <p className="text-slate-400 text-[10px] font-bold">Send alerts & reminders to team</p>
+              <h2 className="text-base font-bold">Push Notifications</h2>
+              <p className="text-slate-400 text-xs font-medium">Send alerts & reminders to team</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${
+            <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
               permissionStatus === 'granted' ? 'bg-emerald-400/20 text-emerald-200' :
               permissionStatus === 'denied' ? 'bg-red-400/20 text-red-200' : 'bg-amber-400/20 text-amber-200'
             }`}>
@@ -166,27 +166,27 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
 
       {/* Quick Actions */}
       <div className="bg-white rounded-md border border-slate-200 shadow-sm p-4">
-        <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-3">⚡ Quick Actions</h3>
+        <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-3">⚡ Quick Actions</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <button onClick={sendCheckInReminder} className="p-3 bg-slate-50 hover:bg-slate-50 border border-slate-200 hover:border-slate-200 rounded transition-all text-left group">
             <span className="text-xl block mb-1">⏰</span>
             <p className="text-[11px] font-bold text-slate-700 group-hover:text-slate-900">Check-In Reminder</p>
-            <p className="text-[9px] text-slate-400">Alert absent employees</p>
+            <p className="text-[11px] text-slate-400">Alert absent employees</p>
           </button>
           <button onClick={sendLateWarning} className="p-3 bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-200 rounded transition-all text-left group">
             <span className="text-xl block mb-1">⚠️</span>
             <p className="text-[11px] font-bold text-slate-700 group-hover:text-amber-700">Late Warning</p>
-            <p className="text-[9px] text-slate-400">Alert late arrivals</p>
+            <p className="text-[11px] text-slate-400">Alert late arrivals</p>
           </button>
           <button onClick={sendCheckOutReminder} className="p-3 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 rounded transition-all text-left group">
             <span className="text-xl block mb-1">🚪</span>
             <p className="text-[11px] font-bold text-slate-700 group-hover:text-emerald-700">Check-Out Reminder</p>
-            <p className="text-[9px] text-slate-400">Remind still working</p>
+            <p className="text-[11px] text-slate-400">Remind still working</p>
           </button>
           <button onClick={sendDaySummary} className="p-3 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded transition-all text-left group">
             <span className="text-xl block mb-1">📊</span>
             <p className="text-[11px] font-bold text-slate-700 group-hover:text-purple-700">Day Summary</p>
-            <p className="text-[9px] text-slate-400">Full day report</p>
+            <p className="text-[11px] text-slate-400">Full day report</p>
           </button>
         </div>
       </div>
@@ -194,7 +194,7 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
       {/* Custom Notification Composer */}
       <div className="bg-white rounded-md border border-slate-200 shadow-sm p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">✏️ Custom Notification</h3>
+          <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">✏️ Custom Notification</h3>
           <button onClick={() => setShowComposer(!showComposer)}
             className="text-xs font-bold text-slate-800 hover:text-slate-900">{showComposer ? 'Hide' : 'Compose'}</button>
         </div>
@@ -222,18 +222,18 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
       {logs.length > 0 && (
         <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">📜 Recent Notifications</h3>
-            <button onClick={() => setLogs([])} className="text-[10px] font-bold text-red-500 hover:text-red-700">Clear</button>
+            <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">📜 Recent Notifications</h3>
+            <button onClick={() => setLogs([])} className="text-xs font-medium text-red-500 hover:text-red-700">Clear</button>
           </div>
           <div className="divide-y divide-slate-50 max-h-64 overflow-y-auto">
             {logs.map(log => (
               <div key={log.id} className="px-4 py-3 hover:bg-slate-50/50">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-bold text-slate-800">{log.title}</p>
-                  <span className="text-[10px] text-slate-400">{log.sentAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="text-[11px] text-slate-400">{log.sentAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5">{log.body}</p>
-                <p className="text-[10px] text-slate-700 font-bold mt-0.5">→ {log.sentTo}</p>
+                <p className="text-[11px] text-slate-700 font-bold mt-0.5">→ {log.sentTo}</p>
               </div>
             ))}
           </div>

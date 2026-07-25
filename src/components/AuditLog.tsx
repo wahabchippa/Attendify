@@ -168,7 +168,7 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
   };
 
   return (
-    <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+    <div className={`space-y-3 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* ===== HEADER ===== */}
       <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] rounded-lg p-5 text-white relative overflow-hidden shadow-md">
@@ -182,7 +182,7 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-black text-white tracking-tight">Audit Log</h2>
+              <h2 className="text-lg font-bold text-white tracking-tight">Audit Log</h2>
               <p className="text-slate-400 text-xs font-bold">Complete activity trail</p>
             </div>
           </div>
@@ -209,8 +209,8 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
         ].map(s => (
           <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-md p-4 border ${s.border} shadow-sm`}>
             <p className="text-lg mb-1">{s.icon}</p>
-            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{s.label}</p>
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">{s.label}</p>
           </div>
         ))}
       </div>
@@ -293,7 +293,7 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
           </div>
 
           {/* Records count */}
-          <span className="ml-auto text-[10px] font-bold text-slate-400 self-center">
+          <span className="ml-auto text-xs font-medium text-slate-400 self-center">
             {filteredLogs.length} records
           </span>
         </div>
@@ -337,8 +337,8 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
                       <div className="flex-1 min-w-0">
                         {/* Top row */}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`text-xs font-black ${cfg.color}`}>{cfg.label}</span>
-                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black border ${sevCfg.bg} ${sevCfg.color} ${sevCfg.border}`}>
+                          <span className={`text-xs font-semibold ${cfg.color}`}>{cfg.label}</span>
+                          <span className={`px-2 py-0.5 rounded-lg text-[11px] font-medium border ${sevCfg.bg} ${sevCfg.color} ${sevCfg.border}`}>
                             {sevCfg.label}
                           </span>
                         </div>
@@ -352,16 +352,16 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
                         <div className="flex items-center gap-3 mt-1 flex-wrap">
                           {log.performedByName && (
                             <div className="flex items-center gap-1">
-                              <div className="w-4 h-4 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center text-[7px] font-black text-white">
+                              <div className="w-4 h-4 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center text-[11px] font-medium text-white">
                                 {getInitials(log.performedByName)}
                               </div>
-                              <span className="text-[10px] text-slate-500 font-medium">{log.performedByName}</span>
+                              <span className="text-[11px] text-slate-500 font-medium">{log.performedByName}</span>
                             </div>
                           )}
                           {log.targetEmployeeName && log.targetEmployeeName !== log.performedByName && (
-                            <span className="text-[10px] text-slate-400 font-medium">→ {log.targetEmployeeName}</span>
+                            <span className="text-[11px] text-slate-400 font-medium">→ {log.targetEmployeeName}</span>
                           )}
-                          <span className="text-[10px] text-slate-400 font-medium ml-auto">
+                          <span className="text-[11px] text-slate-400 font-medium ml-auto">
                             {log.timestamp ? formatTimestamp(log.timestamp) : '—'}
                           </span>
                         </div>
@@ -399,7 +399,7 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
                         {log.oldValue && (
                           <div className="text-xs">
                             <span className="text-slate-400 font-medium block mb-1">Old Value</span>
-                            <code className="bg-red-50 text-red-700 px-2 py-1 rounded-lg text-[10px] block border border-red-100 break-all">
+                            <code className="bg-red-50 text-red-700 px-2 py-1 rounded-lg text-[11px] block border border-red-100 break-all">
                               {log.oldValue}
                             </code>
                           </div>
@@ -408,7 +408,7 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
                         {log.newValue && (
                           <div className="text-xs">
                             <span className="text-slate-400 font-medium block mb-1">New Value</span>
-                            <code className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg text-[10px] block border border-emerald-100 break-all">
+                            <code className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg text-[11px] block border border-emerald-100 break-all">
                               {log.newValue}
                             </code>
                           </div>
@@ -428,7 +428,7 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
 
                         <div className="flex justify-between text-xs">
                           <span className="text-slate-400 font-medium">Log ID</span>
-                          <span className="text-slate-400 font-mono text-[10px]">{log.id}</span>
+                          <span className="text-slate-400 font-mono text-[11px]">{log.id}</span>
                         </div>
                       </div>
                     </div>
@@ -441,8 +441,8 @@ export default function AuditLog({ currentUser }: AuditLogProps) {
 
         {/* Footer */}
         {filteredLogs.length > 0 && (
-          <div className="px-6 py-3 bg-gradient-to-r from-slate-50 to-blue-50/20 border-t border-slate-100 text-center">
-            <p className="text-[10px] font-bold text-slate-400">
+          <div className="px-5 py-3 bg-gradient-to-r from-slate-50 to-blue-50/20 border-t border-slate-100 text-center">
+            <p className="text-xs font-medium text-slate-400">
               Showing <span className="text-slate-900">{filteredLogs.length}</span> of <span className="text-slate-900">{allLogs.length}</span> total logs
             </p>
           </div>

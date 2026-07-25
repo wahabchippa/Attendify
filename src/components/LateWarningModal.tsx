@@ -42,9 +42,9 @@ export default function LateWarningModal({ isOpen, minutesLate, onSubmit, onSkip
   return createPortal(
     <div className="fixed inset-0 z-[1200] flex items-center justify-center overflow-y-auto overscroll-contain bg-black/60 p-4 ">
       <div className="my-auto w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg bg-white shadow-lg">
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5 text-center text-white">
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-5 text-center text-white">
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-md bg-white/20 text-3xl">⚠️</div>
-          <h2 className="text-xl font-black">You Are Late!</h2>
+          <h2 className="text-xl font-bold">You Are Late!</h2>
           <p className="mt-1 text-sm font-bold text-amber-100">{minutesLate} minutes late today</p>
         </div>
         <div className="p-6">
@@ -81,7 +81,7 @@ export default function LateWarningModal({ isOpen, minutesLate, onSubmit, onSkip
             <button
               onClick={handleSubmit}
               disabled={!selected || (selected === 'Other' && !customReason.trim())}
-              className="flex-1 rounded bg-gradient-to-r from-amber-500 to-orange-500 py-3 text-sm font-black text-white disabled:opacity-50"
+              className="flex-1 rounded bg-gradient-to-r from-amber-500 to-orange-500 py-3 text-sm font-bold text-white disabled:opacity-50"
             >
               Submit
             </button>

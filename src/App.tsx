@@ -204,13 +204,13 @@ export default function App() {
               />
               <div className="absolute -inset-4 bg-white/15 blur-lg rounded-full -z-10" />
             </div>
-            <h2 className="text-3xl font-black text-white tracking-tight">Attendify</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">Attendify</h2>
             <div className="mt-4 flex items-center gap-2">
               <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
               <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
             </div>
-            <p className="mt-4 text-slate-400 text-xs font-bold tracking-widest">INITIALIZING...</p>
+            <p className="mt-4 text-slate-400 text-xs font-bold tracking-wide">INITIALIZING...</p>
           </div>
         </div>
       </>
@@ -283,7 +283,7 @@ export default function App() {
 
             <div className="flex items-center gap-2">
   <NotificationBell currentUser={currentUser} />
-  <div className="w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-[10px] font-black text-white shadow-sm">
+  <div className="w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-xs font-semibold text-white shadow-sm">
     {getInitials(currentUser.name)}
   </div>
 </div>
@@ -358,18 +358,18 @@ export default function App() {
 
             <div className="p-3 border-t border-white/5">
               <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-md border border-white/5">
-                <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-xs font-black text-white shadow-md shadow-blue-900/40 shrink-0">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-xs font-semibold text-white shadow-md shadow-blue-900/40 shrink-0">
                   {getInitials(currentUser.name)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-sm font-bold truncate">{currentUser.name}</p>
-                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest capitalize">{currentUser.role}</p>
+                  <p className="text-slate-500 text-xs font-medium uppercase tracking-wide capitalize">{currentUser.role}</p>
                 </div>
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shrink-0" title="Online" />
 </div>
 
 
-<p className="text-center text-slate-700 text-[9px] font-bold mt-3 tracking-widest">
+<p className="text-center text-slate-700 text-[11px] font-medium mt-3 tracking-wide">
                 © {new Date().getFullYear()} ATTENDIFY INC.
               </p>
             </div>
@@ -417,7 +417,7 @@ export default function App() {
                   <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>
                     {item.icon}
                   </div>
-                  <span className="text-[9px] font-black tracking-wide">
+                  <span className="text-[11px] font-medium tracking-wide">
                     {item.label.split(' ')[0]}
                   </span>
                   {isActive && (
