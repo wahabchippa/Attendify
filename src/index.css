@@ -1,73 +1,115 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #0f172a;
-  --primary-accent: #334155;
-  --bg-main: #f1f5f9;
+  --primary: #2563eb;
+  --primary-light: #3b82f6;
+  --bg-main: #f8fafc;
   --bg-card: #ffffff;
-  --bg-sidebar: #0f172a;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
+  --bg-sidebar: #1e293b;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
   --text-muted: #94a3b8;
   --border: #e2e8f0;
-  --success: #22c55e;
-  --warning: #eab308;
+  --success: #10b981;
+  --warning: #f59e0b;
   --danger: #ef4444;
 }
 
-* { box-sizing: border-box; margin: 0; }
+* {
+  box-sizing: border-box;
+}
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-main);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.011em;
-  line-height: 1.5;
 }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 1px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-::selection { background: rgba(15, 23, 42, 0.08); color: #0f172a; }
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Selection */
+::selection {
+  background: rgba(37, 99, 235, 0.15);
+  color: #1e293b;
+}
 
 /* Animations */
-@keyframes slide-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes scale-up { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
-@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-.animate-slide-in { animation: slide-in 0.2s ease-out; }
-.animate-fade-in { animation: fade-in 0.15s ease-out; }
-.animate-scale-up { animation: scale-up 0.15s ease-out forwards; }
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
-/* Inputs */
-input[type="date"], input[type="time"], input[type="month"] { color-scheme: light; }
-input, select, textarea { font-family: inherit; }
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
 
-*:focus-visible { outline: 1.5px solid var(--primary); outline-offset: 1px; }
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
 
-/* Cards */
-.card-shadow { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); }
+/* Fix for date/time inputs */
+input[type="date"],
+input[type="time"],
+input[type="month"] {
+  color-scheme: light;
+}
 
-/* Range slider */
-input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 1px; background: #e2e8f0; }
-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 2px; background: #0f172a; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
-/* Toggle switch smooth transition */
-button .absolute { transition: left 0.15s ease; }
+/* Card shadow */
+.card-shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+}
 
-/* Table */
-table { border-collapse: collapse; }
-th, td { text-align: left; }
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
 
-/* Scrollbar thin */
-.scrollbar-thin::-webkit-scrollbar { width: 3px; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 1px; }
-
-@media (max-width: 768px) { html { font-size: 14px; } }
-@supports (padding-bottom: env(safe-area-inset-bottom)) { .mobile-safe { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); } }
+/* Safe area for mobile */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-safe {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+}
