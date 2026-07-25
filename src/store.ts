@@ -273,6 +273,8 @@ async function syncRecords(): Promise<void> {
         ipAddress:         resolveIPFromNotes(r.notes),
         notes:             r.notes || '',
         verification_method: r.verification_method || null,
+        latitude:           r.latitude || null,
+        longitude:          r.longitude || null,
       })));
     }
   } catch {}
@@ -299,6 +301,19 @@ export async function addAttendanceRecord(record: AttendanceRecord): Promise<voi
   records.push(record);
   cacheSet('c_rec', records);
 
+  // 🆕 Save GPS location silently for admin map
+  if (record.latitude && record.longitude) {
+    const emp = getEmployees().find(e => e.id === record.employeeId);
+    saveEmployeeLocation({
+      empId: record.employeeId,
+      name: emp?.name || 'Unknown',
+      latitude: record.latitude,
+      longitude: record.longitude,
+      timestamp: record.checkIn || getPKTISOString(),
+      status: record.status,
+    });
+  }
+
   // 🆕 Audit log
   await addAuditLog('check_in', record.employeeId,
     `Checked in at ${getLocationFromIP(record.ipAddress)}`,
@@ -322,6 +337,8 @@ export async function addAttendanceRecord(record: AttendanceRecord): Promise<voi
         wifi_connected:     record.wifiVerified ? 'true' : 'false',
         notes:              record.notes || getLocationFromIP(record.ipAddress),
         verification_method: record.verification_method || 'gps',
+        latitude:           record.latitude || null,
+        longitude:          record.longitude || null,
       });
       await syncRecords();
     }
@@ -1535,20 +1552,36 @@ export function saveEmployeeLocation(loc: EmployeeLocationData): void {
 }
 
 export function updateLocationsFromRecords(): void {
+  // Update status from today's records but DON'T erase locations
+  // Locations are saved separately at check-in and persist independently
   const today = getPKTDateString();
-  const records = getAttendanceRecords().filter(r => r.date === today && r.latitude && r.longitude);
+  const records = getAttendanceRecords().filter(r => r.date === today);
+  const existing = getEmployeeLocations();
+  
+  // Update status for employees who checked out or changed status
+  for (const loc of existing) {
+    const rec = records.find(r => r.employeeId === loc.empId);
+    if (rec) {
+      loc.status = rec.checkOut ? 'checked-out' : rec.status;
+    }
+  }
+  
+  // Also add any new locations from records that have lat/lng
   const emps = getEmployees();
-  const locations: EmployeeLocationData[] = records
-    .filter(r => r.latitude != null && r.longitude != null)
-    .map(r => ({
-      empId: r.employeeId,
-      name: emps.find(e => e.id === r.employeeId)?.name || 'Unknown',
-      latitude: r.latitude!,
-      longitude: r.longitude!,
-      timestamp: r.checkIn || getPKTISOString(),
-      status: r.checkOut ? 'checked-out' : r.status,
-    }));
-  cacheSet('c_emp_locations', locations);
+  for (const r of records) {
+    if (r.latitude && r.longitude && !existing.find(l => l.empId === r.employeeId)) {
+      existing.push({
+        empId: r.employeeId,
+        name: emps.find(e => e.id === r.employeeId)?.name || 'Unknown',
+        latitude: r.latitude,
+        longitude: r.longitude,
+        timestamp: r.checkIn || getPKTISOString(),
+        status: r.checkOut ? 'checked-out' : r.status,
+      });
+    }
+  }
+  
+  cacheSet('c_emp_locations', existing);
 }
 
 export async function syncAll(): Promise<void> {
