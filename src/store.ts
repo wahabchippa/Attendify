@@ -1621,7 +1621,8 @@ export async function initializeApp(): Promise<void> {
   }
 }
 
-// Runs after every sync — adds absent records locally for days with no check-in
+// Runs after every sync — adds absent records for working days with no check-in
+// ONLY marks absent from the date of first attendance record (not before app was used)
 function markAbsentsLocally(): void {
   try {
     const employees = getAttendanceEmployees();
@@ -1629,9 +1630,18 @@ function markAbsentsLocally(): void {
     const records = getAttendanceRecords();
     const holidays_list = getHolidays();
     const today = getPKTDate();
+
+    // Find the earliest REAL attendance record (not auto-absent)
+    const realRecords = records.filter(r => r.status !== 'absent' && r.checkIn);
+    if (realRecords.length === 0) return; // No real records yet — don't mark anything absent
+
+    // Find the earliest date any employee actually checked in
+    const dates = realRecords.map(r => r.date).sort();
+    const firstRecordDate = dates[0]; // e.g. '2026-07-20'
+
     let added = false;
 
-    for (let dayOffset = 0; dayOffset <= 60; dayOffset++) {
+    for (let dayOffset = 1; dayOffset <= 60; dayOffset++) {
       const checkDate = new Date(today);
       checkDate.setDate(checkDate.getDate() - dayOffset);
       const dateStr = [
@@ -1640,12 +1650,13 @@ function markAbsentsLocally(): void {
         String(checkDate.getDate()).padStart(2, '0'),
       ].join('-');
 
+      // Don't go before the first real record — app wasn't in use before that
+      if (dateStr < firstRecordDate) break;
+
       // Skip Sunday
       if (checkDate.getDay() === 0) continue;
       // Skip holidays
       if (holidays_list.some(h => h.date === dateStr)) continue;
-      // Skip today (today's absent is calculated live in Dashboard)
-      if (dayOffset === 0) continue;
 
       for (const emp of employees) {
         const hasRecord = records.some(r => r.employeeId === emp.id && r.date === dateStr);
