@@ -844,19 +844,17 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
       {/* ═══ LOCATIONS ═══ */}
       {activeTab === 'locations' && (() => {
         const offices = getOfficeLocations();
-        const updateOffice = (id: number, field: string, value: any) => {
-          const updated = offices.map(o => o.id === id ? { ...o, [field]: value } : o);
+        const updateRadius = (id: number, radius: number) => {
+          const updated = offices.map(o => o.id === id ? { ...o, radius } : o);
           saveOfficeLocations(updated);
           refreshEmps();
         };
-        const addOffice = () => {
-          const newId = Math.max(...offices.map(o => o.id), 0) + 1;
-          saveOfficeLocations([...offices, { id: newId, name: 'New Office', ip_address: '', is_active: true, lat: 24.86, lng: 67.11, radius: 200 }]);
-          refreshEmps();
-        };
-        const removeOffice = (id: number) => {
-          if (!confirm('Remove this office?')) return;
-          saveOfficeLocations(offices.filter(o => o.id !== id));
+        const resetDefaults = () => {
+          saveOfficeLocations([
+            { id: 1, name: 'PK Zone',   ip_address: '103.93.12.229',   is_active: true, lat: 24.825222, lng: 67.247472, radius: 800 },
+            { id: 2, name: 'QC Center', ip_address: '202.141.254.126', is_active: true, lat: 24.856917, lng: 67.111833, radius: 150 },
+            { id: 3, name: 'Z House',   ip_address: '103.93.12.229',   is_active: true, lat: 24.882889, lng: 67.073278, radius: 500 },
+          ]);
           refreshEmps();
         };
         return (
@@ -864,55 +862,61 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
             <SectionHeader
               icon={<svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>}
               title="Office Locations"
-              subtitle="Set geofence radius and coordinates for check-in"
+              subtitle="Set check-in radius (meters) for each office"
             />
             <div className="p-4 space-y-3">
               {offices.map(office => (
-                <div key={office.id} className={`rounded-2xl border p-4 ${office.is_active ? 'bg-slate-50 border-slate-200' : 'bg-red-50 border-red-200 opacity-60'}`}>
+                <div key={office.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🏢</span>
-                      <input value={office.name} onChange={e => updateOffice(office.id, 'name', e.target.value)}
-                        className="text-sm font-black text-slate-800 bg-transparent border-b border-dashed border-slate-300 focus:border-blue-500 focus:outline-none px-1 py-0.5 w-32" />
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white text-sm">📍</div>
+                      <div>
+                        <p className="text-sm font-black text-slate-800">{office.name}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">{office.lat}, {office.lng}</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => updateOffice(office.id, 'is_active', !office.is_active)}
-                        className={`w-9 h-5 rounded-full transition-all relative ${office.is_active ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${office.is_active ? 'left-4' : 'left-0.5'}`} />
-                      </button>
-                      <button onClick={() => removeOffice(office.id)} className="text-red-400 hover:text-red-600 text-xs font-bold" title="Remove">✕</button>
+                    <div className="text-right">
+                      <p className="text-xl font-black text-blue-600">{office.radius || 200}m</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Check-in Radius</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Latitude</label>
-                      <input type="number" step="0.000001" value={office.lat || ''} onChange={e => updateOffice(office.id, 'lat', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-700 focus:outline-none focus:border-blue-400" />
+
+                  {/* Radius Slider */}
+                  <div className="space-y-2">
+                    <input
+                      type="range"
+                      min="50"
+                      max="2000"
+                      step="50"
+                      value={office.radius || 200}
+                      onChange={e => updateRadius(office.id, parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-600"
+                    />
+                    <div className="flex justify-between text-[9px] font-bold text-slate-400">
+                      <span>50m</span>
+                      <span>500m</span>
+                      <span>1000m</span>
+                      <span>2000m</span>
                     </div>
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Longitude</label>
-                      <input type="number" step="0.000001" value={office.lng || ''} onChange={e => updateOffice(office.id, 'lng', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-700 focus:outline-none focus:border-blue-400" />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Radius (meters)</label>
-                      <input type="number" step="10" value={office.radius || 200} onChange={e => updateOffice(office.id, 'radius', parseInt(e.target.value) || 200)}
-                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-blue-600 focus:outline-none focus:border-blue-400" />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">IP Address</label>
-                      <input value={office.ip_address || ''} onChange={e => updateOffice(office.id, 'ip_address', e.target.value)}
-                        className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-600 focus:outline-none focus:border-blue-400" />
-                    </div>
+                  </div>
+
+                  {/* Quick preset buttons */}
+                  <div className="flex gap-1.5 mt-3">
+                    {[100, 200, 300, 500, 800, 1000].map(r => (
+                      <button key={r} onClick={() => updateRadius(office.id, r)}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                          (office.radius || 200) === r
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white border border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600'
+                        }`}>{r}m</button>
+                    ))}
                   </div>
                 </div>
               ))}
-              <button onClick={addOffice} className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-2xl text-xs font-bold text-slate-400 hover:text-blue-600 hover:border-blue-300 transition-all">
-                + Add New Office
+
+              <button onClick={resetDefaults} className="w-full py-2 text-[10px] font-bold text-slate-400 hover:text-red-500 transition-all">
+                ↻ Reset to Default Locations
               </button>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-[10px] text-blue-700 font-medium">
-                💡 <span className="font-bold">Tip:</span> Open Google Maps → Right-click your office → Copy coordinates → Paste lat/lng here. Set radius in meters (e.g., 200 = 200m geofence).
-              </div>
             </div>
           </div>
         );

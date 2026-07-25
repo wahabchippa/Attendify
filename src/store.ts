@@ -102,7 +102,13 @@ const DEFAULT_LOCATIONS: OfficeLocation[] = [
 ];
 
 export function getOfficeLocations(): OfficeLocation[] {
-  return cacheGet('c_locations', DEFAULT_LOCATIONS);
+  const cached = cacheGet<OfficeLocation[]>('c_locations', []);
+  // If cached data is old format (no lat/lng) or has duplicates, reset to defaults
+  if (!cached || cached.length === 0 || !cached[0]?.lat) {
+    cacheSet('c_locations', DEFAULT_LOCATIONS);
+    return DEFAULT_LOCATIONS;
+  }
+  return cached;
 }
 
 export function saveOfficeLocations(locs: OfficeLocation[]): void {
