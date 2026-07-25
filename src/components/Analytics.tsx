@@ -6,518 +6,516 @@ import { getAttendanceEmployees, getAttendanceRecords, getEmployeeTiming, getLoc
 import { generateEmployeeSummary } from '../aiSearch';
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from 'date-fns';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend
+ BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+ PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend
 } from 'recharts';
 
 interface AnalyticsProps {
-  currentUser: Employee;
+ currentUser: Employee;
 }
 
 const getInitials = (name: string) =>
-  name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+ name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 
 // Royal Blue theme colors for charts
-const CHART_COLORS = ['#10b981', '#f59e0b', '#ef4444', '#2563EB', '#8b5cf6'];
+const CHART_COLORS = ['#10b981', '#f59e0b', '#ef4444', '#1e293b', '#8b5cf6'];
 
 const tooltipStyle = {
-  backgroundColor: '#ffffff',
-  border: '1px solid #e2e8f0',
-  borderRadius: '12px',
-  padding: '10px 14px',
-  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
-  fontSize: '12px',
-  fontWeight: '600',
+ backgroundColor: '#ffffff',
+ border: '1px solid #e2e8f0',
+ borderRadius: '12px',
+ padding: '10px 14px',
+ boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+ fontSize: '12px',
+ fontWeight: '600',
 };
 
 export default function Analytics({ currentUser }: AnalyticsProps) {
-  const isAdmin = currentUser.role === 'admin' || currentUser.role === 'manager';
-  const [mounted, setMounted] = useState(false);
+ const isAdmin = currentUser.role === 'admin' || currentUser.role === 'manager';
+ const [mounted, setMounted] = useState(false);
 
-  // ✅ Fix: Month selector with navigation
-  const [otPeriod, setOtPeriod] = useState<'week'|'month'|'all'>('month');
-  const [otEmployee, setOtEmployee] = useState('all');
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const now = new Date();
-    return { year: now.getFullYear(), month: now.getMonth() + 1 };
-  });
+ // ✅ Fix: Month selector with navigation
+ const [otPeriod, setOtPeriod] = useState<'week'|'month'|'all'>('month');
+ const [otEmployee, setOtEmployee] = useState('all');
+ const [selectedMonth, setSelectedMonth] = useState(() => {
+ const now = new Date();
+ return { year: now.getFullYear(), month: now.getMonth() + 1 };
+ });
 
-  useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(timer);
-  }, []);
+ useEffect(() => {
+ const timer = setTimeout(() => setMounted(true), 50);
+ return () => clearTimeout(timer);
+ }, []);
 
-  const allRecords = useMemo(() => getAttendanceRecords(), []);
+ const allRecords = useMemo(() => getAttendanceRecords(), []);
 
-  // ✅ Fix: memoized
-  const employeesToShow = useMemo(() =>
-    isAdmin
-      ? getAttendanceEmployees()
-      : getAttendanceEmployees().filter(e => e.id === currentUser.id),
-    [isAdmin, currentUser.id]
-  );
+ // ✅ Fix: memoized
+ const employeesToShow = useMemo(() =>
+ isAdmin
+ ? getAttendanceEmployees()
+ : getAttendanceEmployees().filter(e => e.id === currentUser.id),
+ [isAdmin, currentUser.id]
+ );
 
-  const summaries = useMemo(() =>
-    employeesToShow.map(emp =>
-      generateEmployeeSummary(emp.id, allRecords, selectedMonth.year, selectedMonth.month)
-    ),
-    [allRecords, selectedMonth, employeesToShow]
-  );
+ const summaries = useMemo(() =>
+ employeesToShow.map(emp =>
+ generateEmployeeSummary(emp.id, allRecords, selectedMonth.year, selectedMonth.month)
+ ),
+ [allRecords, selectedMonth, employeesToShow]
+ );
 
-  const employeeChartData = useMemo(() =>
-    summaries.map(s => ({
-      name: s.employeeName.split(' ')[0],
-      Present: s.presentDays - s.lateDays,
-      Late: s.lateDays,
-      Absent: s.absentDays,
-    })),
-    [summaries]
-  );
+ const employeeChartData = useMemo(() =>
+ summaries.map(s => ({
+ name: s.employeeName.split(' ')[0],
+ Present: s.presentDays - s.lateDays,
+ Late: s.lateDays,
+ Absent: s.absentDays,
+ })),
+ [summaries]
+ );
 
-  const hoursChartData = useMemo(() =>
-    summaries.map(s => ({
-      name: s.employeeName.split(' ')[0],
-      'Total Hours': parseFloat(s.totalHours.toFixed(1)),
-      'Avg/Day': parseFloat(s.avgHoursPerDay.toFixed(1)),
-    })),
-    [summaries]
-  );
+ const hoursChartData = useMemo(() =>
+ summaries.map(s => ({
+ name: s.employeeName.split(' ')[0],
+ 'Total Hours': parseFloat(s.totalHours.toFixed(1)),
+ 'Avg/Day': parseFloat(s.avgHoursPerDay.toFixed(1)),
+ })),
+ [summaries]
+ );
 
-  const pieData = useMemo(() => {
-    const totalPresent = summaries.reduce((sum, s) => sum + s.presentDays - s.lateDays, 0);
-    const totalLate = summaries.reduce((sum, s) => sum + s.lateDays, 0);
-    const totalAbsent = summaries.reduce((sum, s) => sum + s.absentDays, 0);
-    return [
-      { name: 'On Time', value: totalPresent },
-      { name: 'Late',    value: totalLate },
-      { name: 'Absent',  value: totalAbsent },
-    ].filter(d => d.value > 0);
-  }, [summaries]);
+ const pieData = useMemo(() => {
+ const totalPresent = summaries.reduce((sum, s) => sum + s.presentDays - s.lateDays, 0);
+ const totalLate = summaries.reduce((sum, s) => sum + s.lateDays, 0);
+ const totalAbsent = summaries.reduce((sum, s) => sum + s.absentDays, 0);
+ return [
+ { name: 'On Time', value: totalPresent },
+ { name: 'Late', value: totalLate },
+ { name: 'Absent', value: totalAbsent },
+ ].filter(d => d.value > 0);
+ }, [summaries]);
 
-  const trendData = useMemo(() => {
-    const days: { date: string; present: number; late: number }[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = subDays(new Date(), i);
-      const dateStr = format(d, 'yyyy-MM-dd');
-      // ✅ Fix: Only skip Saturday (Sunday is OT day in this system)
-      if (d.getDay() === 6) continue;
-      const dayRecords = allRecords.filter(r => r.date === dateStr);
-      days.push({
-        date: format(d, 'dd'),
-        present: dayRecords.filter(r => r.status === 'present' || r.status === 'work-from-home').length,
-        late: dayRecords.filter(r => r.status === 'late').length,
-      });
-    }
-    return days;
-  }, [allRecords]);
+ const trendData = useMemo(() => {
+ const days: { date: string; present: number; late: number }[] = [];
+ for (let i = 29; i >= 0; i--) {
+ const d = subDays(new Date(), i);
+ const dateStr = format(d, 'yyyy-MM-dd');
+ // ✅ Fix: Only skip Saturday (Sunday is OT day in this system)
+ if (d.getDay() === 6) continue;
+ const dayRecords = allRecords.filter(r => r.date === dateStr);
+ days.push({
+ date: format(d, 'dd'),
+ present: dayRecords.filter(r => r.status === 'present' || r.status === 'work-from-home').length,
+ late: dayRecords.filter(r => r.status === 'late').length,
+ });
+ }
+ return days;
+ }, [allRecords]);
 
-  // Leaderboard removed
+ // Leaderboard removed
 
-  // ✅ OT Data — extracted from IIFE
-  const otData = useMemo(() => {
-    return getAttendanceEmployees().map(emp => {
-      const t = getEmployeeTiming(emp.id);
-      const recs = allRecords.filter(r => r.employeeId === emp.id && r.totalHours > 0);
-      const otRecs = recs.filter(r => r.totalHours > t.minHoursForFullDay || r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY'));
-      const sundayOT = otRecs.filter(r => r.notes?.includes('SUNDAY')).reduce((s, r) => s + r.totalHours, 0);
-      const holidayOT = otRecs.filter(r => r.notes?.includes('HOLIDAY')).reduce((s, r) => s + r.totalHours, 0);
-      const regularOT = otRecs
-        .filter(r => !r.notes?.includes('SUNDAY') && !r.notes?.includes('HOLIDAY'))
-        .reduce((s, r) => s + Math.max(0, r.totalHours - t.minHoursForFullDay), 0);
-      return {
-        emp,
-        otRecs,
-        sundayOT: Math.round(sundayOT * 100) / 100,
-        holidayOT: Math.round(holidayOT * 100) / 100,
-        regularOT: Math.round(regularOT * 100) / 100,
-        totalOT: Math.round((sundayOT + holidayOT + regularOT) * 100) / 100,
-      };
-    }).filter(d => d.totalOT > 0);
-  }, [allRecords]);
+ // ✅ OT Data — extracted from IIFE
+ const otData = useMemo(() => {
+ return getAttendanceEmployees().map(emp => {
+ const t = getEmployeeTiming(emp.id);
+ const recs = allRecords.filter(r => r.employeeId === emp.id && r.totalHours > 0);
+ const otRecs = recs.filter(r => r.totalHours > t.minHoursForFullDay || r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY'));
+ const sundayOT = otRecs.filter(r => r.notes?.includes('SUNDAY')).reduce((s, r) => s + r.totalHours, 0);
+ const holidayOT = otRecs.filter(r => r.notes?.includes('HOLIDAY')).reduce((s, r) => s + r.totalHours, 0);
+ const regularOT = otRecs
+ .filter(r => !r.notes?.includes('SUNDAY') && !r.notes?.includes('HOLIDAY'))
+ .reduce((s, r) => s + Math.max(0, r.totalHours - t.minHoursForFullDay), 0);
+ return {
+ emp,
+ otRecs,
+ sundayOT: Math.round(sundayOT * 100) / 100,
+ holidayOT: Math.round(holidayOT * 100) / 100,
+ regularOT: Math.round(regularOT * 100) / 100,
+ totalOT: Math.round((sundayOT + holidayOT + regularOT) * 100) / 100,
+ };
+ }).filter(d => d.totalOT > 0);
+ }, [allRecords]);
 
-  const navigateMonth = (dir: -1 | 1) => {
-    setSelectedMonth(prev => {
-      let m = prev.month + dir;
-      let y = prev.year;
-      if (m > 12) { m = 1; y++; }
-      if (m < 1) { m = 12; y--; }
-      return { year: y, month: m };
-    });
-  };
+ const navigateMonth = (dir: -1 | 1) => {
+ setSelectedMonth(prev => {
+ let m = prev.month + dir;
+ let y = prev.year;
+ if (m > 12) { m = 1; y++; }
+ if (m < 1) { m = 12; y--; }
+ return { year: y, month: m };
+ });
+ };
 
-  const kpis = [
-    {
-      label: 'Avg On-Time',
-      value: `${summaries.length > 0 ? Math.round(summaries.reduce((s, a) => s + a.onTimePercentage, 0) / summaries.length) : 0}%`,
-      color: 'text-slate-900',
-      bg: 'from-blue-50 to-indigo-50',
-      border: 'border-slate-200',
-      icon: (
-        <svg className="w-5 h-5 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-    },
-    {
-      label: 'Total Hours',
-      value: `${Math.round(summaries.reduce((s, a) => s + a.totalHours, 0))}h`,
-      color: 'text-emerald-600',
-      bg: 'from-emerald-50 to-green-50',
-      border: 'border-emerald-200',
-      icon: (
-        <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-    },
-    {
-      label: 'Late Entries',
-      value: summaries.reduce((s, a) => s + a.lateDays, 0),
-      color: 'text-amber-600',
-      bg: 'from-amber-50 to-yellow-50',
-      border: 'border-amber-200',
-      icon: (
-        <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
-        </svg>
-      ),
-    },
-    {
-      label: 'Absent Days',
-      value: summaries.reduce((s, a) => s + a.absentDays, 0),
-      color: 'text-red-600',
-      bg: 'from-red-50 to-rose-50',
-      border: 'border-red-200',
-      icon: (
-        <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-    },
-  ];
+ const kpis = [
+ {
+ label: 'Avg On-Time',
+ value: `${summaries.length > 0 ? Math.round(summaries.reduce((s, a) => s + a.onTimePercentage, 0) / summaries.length) : 0}%`,
+ color: 'text-slate-900',
+ bg: 'from-blue-50 to-indigo-50',
+ border: 'border-slate-200',
+ icon: (
+ <svg className="w-5 h-5 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+ </svg>
+ ),
+ },
+ {
+ label: 'Total Hours',
+ value: `${Math.round(summaries.reduce((s, a) => s + a.totalHours, 0))}h`,
+ color: 'text-emerald-600',
+ bg: 'from-emerald-50 to-green-50',
+ border: 'border-emerald-200',
+ icon: (
+ <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+ </svg>
+ ),
+ },
+ {
+ label: 'Late Entries',
+ value: summaries.reduce((s, a) => s + a.lateDays, 0),
+ color: 'text-amber-600',
+ bg: 'from-amber-50 to-yellow-50',
+ border: 'border-amber-200',
+ icon: (
+ <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+ </svg>
+ ),
+ },
+ {
+ label: 'Absent Days',
+ value: summaries.reduce((s, a) => s + a.absentDays, 0),
+ color: 'text-red-600',
+ bg: 'from-red-50 to-rose-50',
+ border: 'border-red-200',
+ icon: (
+ <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+ </svg>
+ ),
+ },
+ ];
 
-  // Shared chart card wrapper
-  const ChartCard = ({ title, children, icon }: { title: string; children: React.ReactNode; icon?: React.ReactNode }) => (
-    <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
-      <div className="flex items-center gap-2 mb-5">
-        {icon && <div className="w-8 h-8 bg-slate-50 rounded flex items-center justify-center">{icon}</div>}
-        <h3 className="text-sm font-bold text-slate-800">{title}</h3>
-      </div>
-      <div className="h-64">{children}</div>
-    </div>
-  );
+ // Shared chart card wrapper
+ const ChartCard = ({ title, children, icon }: { title: string; children: React.ReactNode; icon?: React.ReactNode }) => (
+ <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
+ <div className="flex items-center gap-2 mb-5">
+ {icon && <div className="w-8 h-8 bg-slate-50 rounded flex items-center justify-center">{icon}</div>}
+ <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+ </div>
+ <div className="h-64">{children}</div>
+ </div>
+ );
 
-  return (
-    <div className={`space-y-3 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+ return (
+ <div className={`space-y-3 font-sans transition-all duration-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
-      {/* ===== HEADER ===== */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 md:p-6 text-white relative overflow-hidden shadow-sm">
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-xl" />
-        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-indigo-400/20 rounded-full blur-lg" />
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center border border-white/20">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">Analytics & Reports</h2>
-              <p className="text-slate-400 text-xs font-bold">Performance overview & insights</p>
-            </div>
-          </div>
+ {/* ===== HEADER ===== */}
+ <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 md:p-6 text-white relative overflow-hidden shadow-sm">
+ <div className="relative z-10 flex items-center justify-between">
+ <div className="flex items-center gap-3.5">
+ <div className="w-12 h-12 bg-white/15 rounded-md flex items-center justify-center border border-white/20">
+ <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+ </svg>
+ </div>
+ <div>
+ <h2 className="text-lg font-bold text-white tracking-tight">Analytics & Reports</h2>
+ <p className="text-slate-400 text-xs font-bold">Performance overview & insights</p>
+ </div>
+ </div>
 
-          {/* ✅ Month Navigator */}
-          <div className="flex items-center gap-2 bg-white/10  rounded-md px-3 py-2 border border-white/10">
-            <button
-              onClick={() => navigateMonth(-1)}
-              className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center transition-all active:scale-95"
-            >
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span className="text-white text-xs font-semibold px-1 min-w-[80px] text-center">
-              {format(new Date(selectedMonth.year, selectedMonth.month - 1), 'MMM yyyy')}
-            </span>
-            <button
-              onClick={() => navigateMonth(1)}
-              className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center transition-all active:scale-95"
-            >
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+ {/* ✅ Month Navigator */}
+ <div className="flex items-center gap-2 bg-white/10 rounded-md px-3 py-2 border border-white/10">
+ <button
+ onClick={() => navigateMonth(-1)}
+ className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center transition-all active:scale-[0.97]"
+ >
+ <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+ </svg>
+ </button>
+ <span className="text-white text-xs font-semibold px-1 min-w-[80px] text-center">
+ {format(new Date(selectedMonth.year, selectedMonth.month - 1), 'MMM yyyy')}
+ </span>
+ <button
+ onClick={() => navigateMonth(1)}
+ className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center transition-all active:scale-[0.97]"
+ >
+ <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+ </svg>
+ </button>
+ </div>
+ </div>
+ </div>
 
-      {/* ===== KPI CARDS ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {kpis.map(kpi => (
-          <div key={kpi.label} className={`bg-gradient-to-br ${kpi.bg} rounded-lg p-5 border ${kpi.border} shadow-sm hover:shadow-md transition-all`}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 bg-white rounded flex items-center justify-center shadow-sm">
-                {kpi.icon}
-              </div>
-            </div>
-            <p className={`text-3xl font-bold ${kpi.color}`}>{kpi.value}</p>
-            <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">{kpi.label}</p>
-          </div>
-        ))}
-      </div>
+ {/* ===== KPI CARDS ===== */}
+ <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+ {kpis.map(kpi => (
+ <div key={kpi.label} className={`bg-gradient-to-br ${kpi.bg} rounded-lg p-5 border ${kpi.border} shadow-sm hover:shadow-md transition-all`}>
+ <div className="flex items-center justify-between mb-3">
+ <div className="w-9 h-9 bg-white rounded flex items-center justify-center shadow-sm">
+ {kpi.icon}
+ </div>
+ </div>
+ <p className={`text-3xl font-bold ${kpi.color}`}>{kpi.value}</p>
+ <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">{kpi.label}</p>
+ </div>
+ ))}
+ </div>
 
-      {/* Leaderboard removed */}
+ {/* Leaderboard removed */}
 
-      {/* ===== CHARTS ROW 1 ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard
-          title="Overview by Employee"
-          icon={
-            <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-            </svg>
-          }
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={employeeChartData} barSize={14}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(30,64,175,0.04)' }} />
-              <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
-              <Bar dataKey="Present" fill="#10b981" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Late" fill="#f59e0b" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Absent" fill="#ef4444" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
+ {/* ===== CHARTS ROW 1 ===== */}
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+ <ChartCard
+ title="Overview by Employee"
+ icon={
+ <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+ </svg>
+ }
+ >
+ <ResponsiveContainer width="100%" height="100%">
+ <BarChart data={employeeChartData} barSize={14}>
+ <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+ <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} />
+ <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+ <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(30,64,175,0.04)' }} />
+ <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
+ <Bar dataKey="Present" fill="#10b981" radius={[6, 6, 0, 0]} />
+ <Bar dataKey="Late" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+ <Bar dataKey="Absent" fill="#ef4444" radius={[6, 6, 0, 0]} />
+ </BarChart>
+ </ResponsiveContainer>
+ </ChartCard>
 
-        <ChartCard
-          title="Status Distribution"
-          icon={
-            <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
-            </svg>
-          }
-        >
-          {pieData.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-slate-300 text-sm font-bold">No data available</div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={85}
-                  paddingAngle={4}
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  labelLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
-                >
-                  {pieData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="none" />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
-      </div>
+ <ChartCard
+ title="Status Distribution"
+ icon={
+ <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+ <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+ </svg>
+ }
+ >
+ {pieData.length === 0 ? (
+ <div className="h-full flex items-center justify-center text-slate-300 text-sm font-bold">No data available</div>
+ ) : (
+ <ResponsiveContainer width="100%" height="100%">
+ <PieChart>
+ <Pie
+ data={pieData}
+ cx="50%"
+ cy="50%"
+ innerRadius={55}
+ outerRadius={85}
+ paddingAngle={4}
+ dataKey="value"
+ label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+ labelLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
+ >
+ {pieData.map((_, index) => (
+ <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="none" />
+ ))}
+ </Pie>
+ <Tooltip contentStyle={tooltipStyle} />
+ </PieChart>
+ </ResponsiveContainer>
+ )}
+ </ChartCard>
+ </div>
 
-      {/* ===== CHARTS ROW 2 ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard
-          title="30-Day Attendance Trend"
-          icon={
-            <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
-            </svg>
-          }
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
-              <Line type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2.5} dot={false} name="Present" activeDot={{ r: 5, fill: '#10b981' }} />
-              <Line type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2.5} dot={false} name="Late" activeDot={{ r: 5, fill: '#f59e0b' }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
+ {/* ===== CHARTS ROW 2 ===== */}
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+ <ChartCard
+ title="30-Day Attendance Trend"
+ icon={
+ <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+ </svg>
+ }
+ >
+ <ResponsiveContainer width="100%" height="100%">
+ <LineChart data={trendData}>
+ <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+ <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} />
+ <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+ <Tooltip contentStyle={tooltipStyle} />
+ <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
+ <Line type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2.5} dot={false} name="Present" activeDot={{ r: 5, fill: '#10b981' }} />
+ <Line type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2.5} dot={false} name="Late" activeDot={{ r: 5, fill: '#f59e0b' }} />
+ </LineChart>
+ </ResponsiveContainer>
+ </ChartCard>
 
-        <ChartCard
-          title="Hours Worked by Employee"
-          icon={
-            <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          }
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={hoursChartData} layout="vertical" barSize={12}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-              <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} width={55} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
-              <Bar dataKey="Hours" fill="#2563EB" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
+ <ChartCard
+ title="Hours Worked by Employee"
+ icon={
+ <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+ </svg>
+ }
+ >
+ <ResponsiveContainer width="100%" height="100%">
+ <BarChart data={hoursChartData} layout="vertical" barSize={12}>
+ <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+ <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+ <YAxis type="category" dataKey="name" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} width={55} axisLine={false} tickLine={false} />
+ <Tooltip contentStyle={tooltipStyle} />
+ <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
+ <Bar dataKey="Hours" fill="#1e293b" radius={[0, 6, 6, 0]} />
+ </BarChart>
+ </ResponsiveContainer>
+ </ChartCard>
+ </div>
 
-      {isAdmin && (() => {
-        // OT data filtered by period and employee
-        const now = new Date();
-        const otStartDate = otPeriod === 'week' 
-          ? format(startOfWeek(now, {weekStartsOn:1}), 'yyyy-MM-dd')
-          : otPeriod === 'month'
-            ? format(startOfMonth(now), 'yyyy-MM-dd')
-            : '2000-01-01';
-        const otEndDate = format(now, 'yyyy-MM-dd');
+ {isAdmin && (() => {
+ // OT data filtered by period and employee
+ const now = new Date();
+ const otStartDate = otPeriod === 'week' 
+ ? format(startOfWeek(now, {weekStartsOn:1}), 'yyyy-MM-dd')
+ : otPeriod === 'month'
+ ? format(startOfMonth(now), 'yyyy-MM-dd')
+ : '2000-01-01';
+ const otEndDate = format(now, 'yyyy-MM-dd');
 
-        const filteredOT = getAttendanceEmployees()
-          .filter(emp => otEmployee === 'all' || emp.id === otEmployee)
-          .map(emp => {
-            const t = getEmployeeTiming(emp.id);
-            const recs = allRecords.filter(r => r.employeeId === emp.id && r.totalHours > 0 && r.date >= otStartDate && r.date <= otEndDate);
-            const otRecs = recs.filter(r => r.totalHours > t.minHoursForFullDay || r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY'));
-            const sundayOT = otRecs.filter(r => r.notes?.includes('SUNDAY')).reduce((s, r) => s + r.totalHours, 0);
-            const holidayOT = otRecs.filter(r => r.notes?.includes('HOLIDAY')).reduce((s, r) => s + r.totalHours, 0);
-            const regularOT = otRecs.filter(r => !r.notes?.includes('SUNDAY') && !r.notes?.includes('HOLIDAY'))
-              .reduce((s, r) => s + Math.max(0, r.totalHours - t.minHoursForFullDay), 0);
-            return { emp, otRecs, sundayOT: Math.round(sundayOT*100)/100, holidayOT: Math.round(holidayOT*100)/100, regularOT: Math.round(regularOT*100)/100, totalOT: Math.round((sundayOT+holidayOT+regularOT)*100)/100 };
-          }).filter(d => d.totalOT > 0);
+ const filteredOT = getAttendanceEmployees()
+ .filter(emp => otEmployee === 'all' || emp.id === otEmployee)
+ .map(emp => {
+ const t = getEmployeeTiming(emp.id);
+ const recs = allRecords.filter(r => r.employeeId === emp.id && r.totalHours > 0 && r.date >= otStartDate && r.date <= otEndDate);
+ const otRecs = recs.filter(r => r.totalHours > t.minHoursForFullDay || r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY'));
+ const sundayOT = otRecs.filter(r => r.notes?.includes('SUNDAY')).reduce((s, r) => s + r.totalHours, 0);
+ const holidayOT = otRecs.filter(r => r.notes?.includes('HOLIDAY')).reduce((s, r) => s + r.totalHours, 0);
+ const regularOT = otRecs.filter(r => !r.notes?.includes('SUNDAY') && !r.notes?.includes('HOLIDAY'))
+ .reduce((s, r) => s + Math.max(0, r.totalHours - t.minHoursForFullDay), 0);
+ return { emp, otRecs, sundayOT: Math.round(sundayOT*100)/100, holidayOT: Math.round(holidayOT*100)/100, regularOT: Math.round(regularOT*100)/100, totalOT: Math.round((sundayOT+holidayOT+regularOT)*100)/100 };
+ }).filter(d => d.totalOT > 0);
 
-        const totalAllOT = Math.round(filteredOT.reduce((s,d) => s + d.totalOT, 0) * 100) / 100;
+ const totalAllOT = Math.round(filteredOT.reduce((s,d) => s + d.totalOT, 0) * 100) / 100;
 
-        // Calendar data for the month
-        const calMonth = startOfMonth(now);
-        const calDays = eachDayOfInterval({ start: calMonth, end: endOfMonth(now) });
-        const calTargetEmp = otEmployee !== 'all' ? otEmployee : null;
+ // Calendar data for the month
+ const calMonth = startOfMonth(now);
+ const calDays = eachDayOfInterval({ start: calMonth, end: endOfMonth(now) });
+ const calTargetEmp = otEmployee !== 'all' ? otEmployee : null;
 
-        return (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-          {/* Header */}
-          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-slate-100">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span>⚡</span> Overtime Details
-              </h3>
-              {totalAllOT > 0 && <span className="bg-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">Total: +{totalAllOT}h</span>}
-            </div>
-          </div>
+ return (
+ <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+ {/* Header */}
+ <div className="px-5 py-4 border-b border-slate-100 bg-slate-50">
+ <div className="flex items-center justify-between">
+ <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+ <span>⚡</span> Overtime Details
+ </h3>
+ {totalAllOT > 0 && <span className="bg-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">Total: +{totalAllOT}h</span>}
+ </div>
+ </div>
 
-          {/* Filters */}
-          <div className="px-5 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2">
-            {/* Period */}
-            <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0.5">
-              {(['week','month','all'] as const).map(p => (
-                <button key={p} onClick={() => setOtPeriod(p)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all capitalize ${otPeriod===p ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
-                  {p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'All Time'}
-                </button>
-              ))}
-            </div>
-            {/* Employee */}
-            <select value={otEmployee} onChange={e => setOtEmployee(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none">
-              <option value="all">All Employees</option>
-              {getAttendanceEmployees().map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-            </select>
-          </div>
+ {/* Filters */}
+ <div className="px-5 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2">
+ {/* Period */}
+ <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0.5">
+ {(['week','month','all'] as const).map(p => (
+ <button key={p} onClick={() => setOtPeriod(p)}
+ className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all capitalize ${otPeriod===p ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
+ {p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'All Time'}
+ </button>
+ ))}
+ </div>
+ {/* Employee */}
+ <select value={otEmployee} onChange={e => setOtEmployee(e.target.value)}
+ className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none">
+ <option value="all">All Employees</option>
+ {getAttendanceEmployees().map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+ </select>
+ </div>
 
-          <div className="p-4">
-            {filteredOT.length === 0 ? (
-              <div className="py-10 text-center">
-                <div className="text-3xl mb-2">⏱️</div>
-                <p className="text-slate-400 font-bold text-sm">No overtime for this period</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {/* OT Calendar (when single employee selected) */}
-                {calTargetEmp && otPeriod === 'month' && (
-                  <div className="bg-purple-50 rounded-md p-3 border border-purple-100 mb-3">
-                    <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">{format(calMonth, 'MMMM yyyy')} — OT Calendar</p>
-                    <div className="grid grid-cols-7 gap-0.5 mb-1">
-                      {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-center text-[11px] font-medium text-purple-400">{d}</div>)}
-                    </div>
-                    <div className="grid grid-cols-7 gap-0.5">
-                      {Array.from({length: calDays[0]?.getDay() || 0}).map((_,i) => <div key={`e${i}`} />)}
-                      {calDays.map(day => {
-                        const ds = format(day, 'yyyy-MM-dd');
-                        const t = getEmployeeTiming(calTargetEmp);
-                        const rec = allRecords.find(r => r.employeeId === calTargetEmp && r.date === ds && r.totalHours > 0);
-                        const hasOT = rec && (rec.totalHours > t.minHoursForFullDay || rec.notes?.includes('SUNDAY') || rec.notes?.includes('HOLIDAY'));
-                        const otHrs = hasOT ? (rec.notes?.includes('SUNDAY') || rec.notes?.includes('HOLIDAY') ? rec.totalHours : Math.max(0, rec.totalHours - t.minHoursForFullDay)) : 0;
-                        const isSun = day.getDay() === 0;
-                        return (
-                          <div key={ds} className={`aspect-square rounded-md flex flex-col items-center justify-center text-[11px] ${
-                            hasOT ? 'bg-purple-200 text-purple-800 font-black' : isSun ? 'bg-slate-100 text-slate-300' : 'bg-purple-50 text-purple-300'
-                          }`} title={hasOT ? `+${otHrs.toFixed(1)}h OT` : ''}>
-                            <span>{format(day,'d')}</span>
-                            {hasOT && <span className="text-[11px] font-medium">+{otHrs.toFixed(1)}</span>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+ <div className="p-4">
+ {filteredOT.length === 0 ? (
+ <div className="py-10 text-center">
+ <div className="text-3xl mb-2">⏱️</div>
+ <p className="text-slate-400 font-bold text-sm">No overtime for this period</p>
+ </div>
+ ) : (
+ <div className="space-y-3">
+ {/* OT Calendar (when single employee selected) */}
+ {calTargetEmp && otPeriod === 'month' && (
+ <div className="bg-purple-50 rounded-md p-3 border border-purple-100 mb-3">
+ <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">{format(calMonth, 'MMMM yyyy')} — OT Calendar</p>
+ <div className="grid grid-cols-7 gap-0.5 mb-1">
+ {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-center text-[11px] font-medium text-purple-400">{d}</div>)}
+ </div>
+ <div className="grid grid-cols-7 gap-0.5">
+ {Array.from({length: calDays[0]?.getDay() || 0}).map((_,i) => <div key={`e${i}`} />)}
+ {calDays.map(day => {
+ const ds = format(day, 'yyyy-MM-dd');
+ const t = getEmployeeTiming(calTargetEmp);
+ const rec = allRecords.find(r => r.employeeId === calTargetEmp && r.date === ds && r.totalHours > 0);
+ const hasOT = rec && (rec.totalHours > t.minHoursForFullDay || rec.notes?.includes('SUNDAY') || rec.notes?.includes('HOLIDAY'));
+ const otHrs = hasOT ? (rec.notes?.includes('SUNDAY') || rec.notes?.includes('HOLIDAY') ? rec.totalHours : Math.max(0, rec.totalHours - t.minHoursForFullDay)) : 0;
+ const isSun = day.getDay() === 0;
+ return (
+ <div key={ds} className={`aspect-square rounded-md flex flex-col items-center justify-center text-[11px] ${
+ hasOT ? 'bg-purple-200 text-purple-800 font-black' : isSun ? 'bg-slate-100 text-slate-300' : 'bg-purple-50 text-purple-300'
+ }`} title={hasOT ? `+${otHrs.toFixed(1)}h OT` : ''}>
+ <span>{format(day,'d')}</span>
+ {hasOT && <span className="text-[11px] font-medium">+{otHrs.toFixed(1)}</span>}
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ )}
 
-                {/* Employee OT Cards */}
-                {filteredOT.map(({ emp, otRecs, sundayOT, holidayOT, regularOT, totalOT }) => (
-                  <div key={emp.id} className="bg-slate-50 rounded-md p-4 border border-slate-100">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 bg-slate-800 text-white rounded flex items-center justify-center text-xs font-semibold">
-                          {getInitials(emp.name)}
-                        </div>
-                        <div>
-                          <p className="text-slate-800 font-bold text-sm">{emp.name}</p>
-                          <p className="text-slate-400 text-xs font-medium">{otRecs.length} session{otRecs.length!==1?'s':''}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-purple-600 font-black text-lg">+{totalOT}h</p>
-                        <div className="flex flex-wrap gap-1 mt-0.5 justify-end">
-                          {sundayOT > 0 && <span className="text-[11px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-bold">Sun:{sundayOT}h</span>}
-                          {holidayOT > 0 && <span className="text-[11px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded font-bold">Hol:{holidayOT}h</span>}
-                          {regularOT > 0 && <span className="text-[11px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-bold">Reg:{regularOT}h</span>}
-                        </div>
-                      </div>
-                    </div>
-                    {/* Session list */}
-                    <div className="space-y-1">
-                      {otRecs.map(r => {
-                        const isSun = r.notes?.includes('SUNDAY');
-                        const isHol = r.notes?.includes('HOLIDAY');
-                        const ot = (isSun||isHol) ? r.totalHours : Math.round((r.totalHours-getEmployeeTiming(emp.id).minHoursForFullDay)*100)/100;
-                        return (
-                          <div key={r.id} className="flex items-center justify-between text-[11px] bg-white rounded px-3 py-2 border border-slate-100">
-                            <span className="text-slate-600 font-medium w-24">{format(new Date(r.date), 'dd MMM (EEE)')}</span>
-                            <span className="text-slate-400">{r.totalHours.toFixed(1)}h total</span>
-                            <span className={`font-black ${isSun?'text-purple-600':isHol?'text-pink-600':'text-slate-800'}`}>
-                              +{ot}h {isSun?'🌙':isHol?'🎉':'OT'}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-        );
-      })()}
-    </div>
-  );
+ {/* Employee OT Cards */}
+ {filteredOT.map(({ emp, otRecs, sundayOT, holidayOT, regularOT, totalOT }) => (
+ <div key={emp.id} className="bg-slate-50 rounded-md p-4 border border-slate-100">
+ <div className="flex items-center justify-between mb-3">
+ <div className="flex items-center gap-2.5">
+ <div className="w-9 h-9 bg-slate-800 text-white rounded flex items-center justify-center text-xs font-semibold">
+ {getInitials(emp.name)}
+ </div>
+ <div>
+ <p className="text-slate-800 font-bold text-sm">{emp.name}</p>
+ <p className="text-slate-400 text-xs font-medium">{otRecs.length} session{otRecs.length!==1?'s':''}</p>
+ </div>
+ </div>
+ <div className="text-right">
+ <p className="text-purple-600 font-black text-lg">+{totalOT}h</p>
+ <div className="flex flex-wrap gap-1 mt-0.5 justify-end">
+ {sundayOT > 0 && <span className="text-[11px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-bold">Sun:{sundayOT}h</span>}
+ {holidayOT > 0 && <span className="text-[11px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded font-bold">Hol:{holidayOT}h</span>}
+ {regularOT > 0 && <span className="text-[11px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-bold">Reg:{regularOT}h</span>}
+ </div>
+ </div>
+ </div>
+ {/* Session list */}
+ <div className="space-y-1">
+ {otRecs.map(r => {
+ const isSun = r.notes?.includes('SUNDAY');
+ const isHol = r.notes?.includes('HOLIDAY');
+ const ot = (isSun||isHol) ? r.totalHours : Math.round((r.totalHours-getEmployeeTiming(emp.id).minHoursForFullDay)*100)/100;
+ return (
+ <div key={r.id} className="flex items-center justify-between text-[11px] bg-white rounded px-3 py-2 border border-slate-100">
+ <span className="text-slate-600 font-medium w-24">{format(new Date(r.date), 'dd MMM (EEE)')}</span>
+ <span className="text-slate-400">{r.totalHours.toFixed(1)}h total</span>
+ <span className={`font-black ${isSun?'text-purple-600':isHol?'text-pink-600':'text-slate-800'}`}>
+ +{ot}h {isSun?'🌙':isHol?'🎉':'OT'}
+ </span>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+ </div>
+ );
+ })()}
+ </div>
+ );
 }

@@ -9,289 +9,288 @@ import { format } from 'date-fns';
 interface AISearchProps { currentUser: Employee; }
 
 interface ChatMessage {
-  id: string;
-  role: 'user' | 'ai';
-  content: string;
-  timestamp: Date;
-  exportable?: boolean;
+ id: string;
+ role: 'user' | 'ai';
+ content: string;
+ timestamp: Date;
+ exportable?: boolean;
 }
 
 const getInitials = (name: string) =>
-  name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+ name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
 
 const SUGGESTIONS = [
-  { text: "Aaj ki report dikhao", icon: "📅" },
-  { text: "Kaun late aaya?", icon: "⏰" },
-  { text: "Kaun absent hai?", icon: "❌" },
-  { text: "Best performer kaun?", icon: "🏆" },
-  { text: "Team summary dikhao", icon: "📊" },
-  { text: "Hamza ki attendance", icon: "👤" },
-  { text: "WhatsApp report banao", icon: "📱" },
-  { text: "PDF report chahiye", icon: "📄" },
+ { text: "Aaj ki report dikhao", icon: "📅" },
+ { text: "Kaun late aaya?", icon: "⏰" },
+ { text: "Kaun absent hai?", icon: "❌" },
+ { text: "Best performer kaun?", icon: "🏆" },
+ { text: "Team summary dikhao", icon: "📊" },
+ { text: "Hamza ki attendance", icon: "👤" },
+ { text: "WhatsApp report banao", icon: "📱" },
+ { text: "PDF report chahiye", icon: "📄" },
 ];
 
 export default function AISearch({ currentUser }: AISearchProps) {
-  const isAdmin = currentUser.role === 'admin' || currentUser.role === 'manager';
+ const isAdmin = currentUser.role === 'admin' || currentUser.role === 'manager';
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1', role: 'ai', timestamp: new Date(),
-      content: `👋 **Hello ${currentUser.name}!**\n\nI'm your Attendify AI Assistant. Ask me anything about attendance in **English** or **Urdu**.\n\n${
-        isAdmin ? '🔓 You have **admin access** — full team data available.' : '🔒 You can view your **own data**.'
-      }\n\nType **"help"** for full guide.`,
-    },
-  ]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+ const [messages, setMessages] = useState<ChatMessage[]>([
+ {
+ id: '1', role: 'ai', timestamp: new Date(),
+ content: `👋 **Hello ${currentUser.name}!**\n\nI'm your Attendify AI Assistant. Ask me anything about attendance in **English** or **Urdu**.\n\n${
+ isAdmin ? '🔓 You have **admin access** — full team data available.' : '🔒 You can view your **own data**.'
+ }\n\nType **"help"** for full guide.`,
+ },
+ ]);
+ const [input, setInput] = useState('');
+ const [isTyping, setIsTyping] = useState(false);
+ const [mounted, setMounted] = useState(false);
+ const chatEndRef = useRef<HTMLDivElement>(null);
+ const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setTimeout(() => setMounted(true), 50); }, []);
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isTyping]);
+ useEffect(() => { setTimeout(() => setMounted(true), 50); }, []);
+ useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isTyping]);
 
-  // ── PDF Generation ──
-  const generatePDF = useCallback((content: string) => {
-    try {
-      const cleanText = content.replace(/\*\*/g, '').replace(/•/g, '-');
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) { alert('Please allow popups for PDF generation'); return; }
-      printWindow.document.write(`<!DOCTYPE html><html><head><title>Attendify Report</title>
+ // ── PDF Generation ──
+ const generatePDF = useCallback((content: string) => {
+ try {
+ const cleanText = content.replace(/\*\*/g, '').replace(/•/g, '-');
+ const printWindow = window.open('', '_blank');
+ if (!printWindow) { alert('Please allow popups for PDF generation'); return; }
+ printWindow.document.write(`<!DOCTYPE html><html><head><title>Attendify Report</title>
 <style>
-  body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; color: #1e293b; line-height: 1.6; }
-  h1 { color: #1E40AF; font-size: 22px; border-bottom: 3px solid #1E40AF; padding-bottom: 10px; }
-  .meta { color: #64748b; font-size: 12px; margin-bottom: 20px; }
-  pre { white-space: pre-wrap; font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; }
-  .footer { margin-top: 40px; padding-top: 15px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 11px; text-align: center; }
+ body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; color: #1e293b; line-height: 1.6; }
+ h1 { color: #0f172a; font-size: 22px; border-bottom: 3px solid #0f172a; padding-bottom: 10px; }
+ .meta { color: #64748b; font-size: 12px; margin-bottom: 20px; }
+ pre { white-space: pre-wrap; font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; }
+ .footer { margin-top: 40px; padding-top: 15px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 11px; text-align: center; }
 </style></head><body>
 <h1>📋 Attendify Report</h1>
 <div class="meta">Generated: ${format(new Date(), 'dd MMMM yyyy, hh:mm a')} | By: ${currentUser.name}</div>
 <pre>${cleanText}</pre>
 <div class="footer">Generated by Attendify — Employee Attendance System</div>
 </body></html>`);
-      printWindow.document.close();
-      setTimeout(() => { printWindow.print(); }, 500);
-    } catch { alert('PDF generation failed. Please try again.'); }
-  }, [currentUser.name]);
+ printWindow.document.close();
+ setTimeout(() => { printWindow.print(); }, 500);
+ } catch { alert('PDF generation failed. Please try again.'); }
+ }, [currentUser.name]);
 
-  // ── WhatsApp Share ──
-  const shareWhatsApp = useCallback((content: string) => {
-    try {
-      const cleanText = content.replace(/\*\*/g, '*').replace(/•/g, '•');
-      const encoded = encodeURIComponent(cleanText);
-      window.open(`https://wa.me/?text=${encoded}`, '_blank');
-    } catch { alert('WhatsApp sharing failed.'); }
-  }, []);
+ // ── WhatsApp Share ──
+ const shareWhatsApp = useCallback((content: string) => {
+ try {
+ const cleanText = content.replace(/\*\*/g, '*').replace(/•/g, '•');
+ const encoded = encodeURIComponent(cleanText);
+ window.open(`https://wa.me/?text=${encoded}`, '_blank');
+ } catch { alert('WhatsApp sharing failed.'); }
+ }, []);
 
-  // ── Copy to Clipboard ──
-  const copyToClipboard = useCallback((content: string) => {
-    try {
-      const cleanText = content.replace(/\*\*/g, '').replace(/•/g, '-');
-      navigator.clipboard.writeText(cleanText);
-    } catch {}
-  }, []);
+ // ── Copy to Clipboard ──
+ const copyToClipboard = useCallback((content: string) => {
+ try {
+ const cleanText = content.replace(/\*\*/g, '').replace(/•/g, '-');
+ navigator.clipboard.writeText(cleanText);
+ } catch {}
+ }, []);
 
-  // ── Send Message ──
-  const handleSend = useCallback(async (query?: string) => {
-    const text = (query || input).trim();
-    if (!text || isTyping) return;
+ // ── Send Message ──
+ const handleSend = useCallback(async (query?: string) => {
+ const text = (query || input).trim();
+ if (!text || isTyping) return;
 
-    const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', content: text, timestamp: new Date() };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setIsTyping(true);
+ const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', content: text, timestamp: new Date() };
+ setMessages(prev => [...prev, userMsg]);
+ setInput('');
+ setIsTyping(true);
 
-    // Small delay for natural feel
-    await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 500));
+ // Small delay for natural feel
+ await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 500));
 
-    try {
-      const allRecords = getAttendanceRecords();
-      const response = processAIQuery(text, allRecords, currentUser.id, isAdmin);
-      const isExportable = response.length > 100;
-      const aiMsg: ChatMessage = { id: (Date.now() + 1).toString(), role: 'ai', content: response, timestamp: new Date(), exportable: isExportable };
-      setMessages(prev => [...prev, aiMsg]);
-    } catch {
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(), role: 'ai', timestamp: new Date(),
-        content: '⚠️ Something went wrong. Please try again or type **"help"** for guidance.',
-      }]);
-    }
+ try {
+ const allRecords = getAttendanceRecords();
+ const response = processAIQuery(text, allRecords, currentUser.id, isAdmin);
+ const isExportable = response.length > 100;
+ const aiMsg: ChatMessage = { id: (Date.now() + 1).toString(), role: 'ai', content: response, timestamp: new Date(), exportable: isExportable };
+ setMessages(prev => [...prev, aiMsg]);
+ } catch {
+ setMessages(prev => [...prev, {
+ id: (Date.now() + 1).toString(), role: 'ai', timestamp: new Date(),
+ content: '⚠️ Something went wrong. Please try again or type **"help"** for guidance.',
+ }]);
+ }
 
-    setIsTyping(false);
-    inputRef.current?.focus();
-  }, [input, isTyping, currentUser.id, isAdmin]);
+ setIsTyping(false);
+ inputRef.current?.focus();
+ }, [input, isTyping, currentUser.id, isAdmin]);
 
-  const clearChat = useCallback(() => {
-    setMessages([{
-      id: Date.now().toString(), role: 'ai', timestamp: new Date(),
-      content: '✨ Chat cleared! Ask me anything about attendance.',
-    }]);
-  }, []);
+ const clearChat = useCallback(() => {
+ setMessages([{
+ id: Date.now().toString(), role: 'ai', timestamp: new Date(),
+ content: '✨ Chat cleared! Ask me anything about attendance.',
+ }]);
+ }, []);
 
-  // ── Render markdown-like content ──
-  const renderContent = (content: string) => {
-    return content.split('\n').map((line, i) => {
-      let html = line
-        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-black text-slate-900">$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+ // ── Render markdown-like content ──
+ const renderContent = (content: string) => {
+ return content.split('\n').map((line, i) => {
+ let html = line
+ .replace(/\*\*(.*?)\*\*/g, '<strong class="font-black text-slate-900">$1</strong>')
+ .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-      if (line.startsWith('•') || line.startsWith('  •') || line.startsWith('   ')) {
-        const indent = line.startsWith('   ') ? 'ml-4' : 'ml-1';
-        return (
-          <div key={i} className={`${indent} flex items-start gap-2 my-0.5`}>
-            {(line.startsWith('•') || line.startsWith('  •')) && <span className="w-1.5 h-1.5 bg-slate-500 rounded-full mt-2 shrink-0" />}
-            <span dangerouslySetInnerHTML={{ __html: html.replace(/^[\s•]+/, '') }} />
-          </div>
-        );
-      }
-      if (!html.trim()) return <div key={i} className="h-1.5" />;
-      return <div key={i} dangerouslySetInnerHTML={{ __html: html }} className="my-0.5" />;
-    });
-  };
+ if (line.startsWith('•') || line.startsWith(' •') || line.startsWith(' ')) {
+ const indent = line.startsWith(' ') ? 'ml-4' : 'ml-1';
+ return (
+ <div key={i} className={`${indent} flex items-start gap-2 my-0.5`}>
+ {(line.startsWith('•') || line.startsWith(' •')) && <span className="w-1.5 h-1.5 bg-slate-500 rounded-full mt-2 shrink-0" />}
+ <span dangerouslySetInnerHTML={{ __html: html.replace(/^[\s•]+/, '') }} />
+ </div>
+ );
+ }
+ if (!html.trim()) return <div key={i} className="h-1.5" />;
+ return <div key={i} dangerouslySetInnerHTML={{ __html: html }} className="my-0.5" />;
+ });
+ };
 
-  return (
-    <div className={`flex flex-col h-[calc(100vh-180px)] min-h-[500px] font-sans transition-all duration-500 ${
-      mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-    }`}>
+ return (
+ <div className={`flex flex-col h-[calc(100vh-180px)] min-h-[500px] font-sans transition-all duration-200 ${
+ mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+ }`}>
 
-      {/* ═══ HEADER ═══ */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-md p-4 mb-3 relative overflow-hidden shadow-lg">
-        <div className="absolute -top-8 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg" />
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/15 rounded flex items-center justify-center text-xl">🤖</div>
-            <div>
-              <h2 className="text-base font-bold text-white">AI Assistant</h2>
-              <p className="text-slate-400 text-xs font-medium">English & Urdu • Reports • PDF • WhatsApp</p>
-            </div>
-          </div>
-          <button onClick={clearChat} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 text-xs font-bold border border-white/10 transition-all">
-            🗑️ Clear
-          </button>
-        </div>
-      </div>
+ {/* ═══ HEADER ═══ */}
+ <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-md p-4 mb-3 relative overflow-hidden shadow-lg">
+ <div className="relative z-10 flex items-center justify-between">
+ <div className="flex items-center gap-3">
+ <div className="w-10 h-10 bg-white/15 rounded flex items-center justify-center text-xl">🤖</div>
+ <div>
+ <h2 className="text-base font-bold text-white">AI Assistant</h2>
+ <p className="text-slate-400 text-xs font-medium">English & Urdu • Reports • PDF • WhatsApp</p>
+ </div>
+ </div>
+ <button onClick={clearChat} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 text-xs font-bold border border-white/10 transition-all">
+ 🗑️ Clear
+ </button>
+ </div>
+ </div>
 
-      {/* ═══ SUGGESTIONS (show when few messages) ═══ */}
-      {messages.length <= 1 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-          {SUGGESTIONS.map(s => (
-            <button key={s.text} onClick={() => handleSend(s.text)}
-              className="bg-white border border-slate-200 rounded p-2.5 text-left hover:border-slate-300 hover:bg-slate-50/50 transition-all group">
-              <span className="text-lg block mb-1">{s.icon}</span>
-              <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900 leading-tight">{s.text}</span>
-            </button>
-          ))}
-        </div>
-      )}
+ {/* ═══ SUGGESTIONS (show when few messages) ═══ */}
+ {messages.length <= 1 && (
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+ {SUGGESTIONS.map(s => (
+ <button key={s.text} onClick={() => handleSend(s.text)}
+ className="bg-white border border-slate-200 rounded p-2.5 text-left hover:border-slate-300 hover:bg-slate-50/50 transition-all group">
+ <span className="text-lg block mb-1">{s.icon}</span>
+ <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900 leading-tight">{s.text}</span>
+ </button>
+ ))}
+ </div>
+ )}
 
-      {/* ═══ CHAT AREA ═══ */}
-      <div className="flex-1 overflow-y-auto bg-white border border-slate-200 rounded-md p-4 space-y-3 mb-3 shadow-sm">
-        {messages.map(msg => (
-          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {/* AI Avatar */}
-            {msg.role === 'ai' && (
-              <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center mr-2 mt-0.5 shrink-0 text-sm">
-                🤖
-              </div>
-            )}
+ {/* ═══ CHAT AREA ═══ */}
+ <div className="flex-1 overflow-y-auto bg-white border border-slate-200 rounded-md p-4 space-y-3 mb-3 shadow-sm">
+ {messages.map(msg => (
+ <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+ {/* AI Avatar */}
+ {msg.role === 'ai' && (
+ <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center mr-2 mt-0.5 shrink-0 text-sm">
+ 🤖
+ </div>
+ )}
 
-            <div className="max-w-[85%] space-y-0">
-              <div className={`rounded-md px-4 py-3 ${
-                msg.role === 'user'
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-slate-50 text-slate-700 border border-slate-100'
-              }`}>
-                <div className="text-[13px] leading-relaxed font-medium">
-                  {renderContent(msg.content)}
-                </div>
-              </div>
+ <div className="max-w-[85%] space-y-0">
+ <div className={`rounded-md px-4 py-3 ${
+ msg.role === 'user'
+ ? 'bg-slate-900 text-white'
+ : 'bg-slate-50 text-slate-700 border border-slate-100'
+ }`}>
+ <div className="text-[13px] leading-relaxed font-medium">
+ {renderContent(msg.content)}
+ </div>
+ </div>
 
-              {/* Export buttons for AI messages */}
-              {msg.role === 'ai' && msg.exportable && (
-                <div className="flex items-center gap-1.5 mt-1.5 ml-1">
-                  <button onClick={() => generatePDF(msg.content)} title="Download PDF"
-                    className="flex items-center gap-1 px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium transition-all border border-red-100">
-                    📄 PDF
-                  </button>
-                  <button onClick={() => shareWhatsApp(msg.content)} title="Share on WhatsApp"
-                    className="flex items-center gap-1 px-2 py-1 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs font-medium transition-all border border-green-100">
-                    📱 WhatsApp
-                  </button>
-                  <button onClick={() => copyToClipboard(msg.content)} title="Copy text"
-                    className="flex items-center gap-1 px-2 py-1 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg text-xs font-medium transition-all border border-slate-200">
-                    📋 Copy
-                  </button>
-                  <span className="text-[11px] text-slate-300 ml-auto">
-                    {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              )}
+ {/* Export buttons for AI messages */}
+ {msg.role === 'ai' && msg.exportable && (
+ <div className="flex items-center gap-1.5 mt-1.5 ml-1">
+ <button onClick={() => generatePDF(msg.content)} title="Download PDF"
+ className="flex items-center gap-1 px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-medium transition-all border border-red-100">
+ 📄 PDF
+ </button>
+ <button onClick={() => shareWhatsApp(msg.content)} title="Share on WhatsApp"
+ className="flex items-center gap-1 px-2 py-1 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg text-xs font-medium transition-all border border-green-100">
+ 📱 WhatsApp
+ </button>
+ <button onClick={() => copyToClipboard(msg.content)} title="Copy text"
+ className="flex items-center gap-1 px-2 py-1 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg text-xs font-medium transition-all border border-slate-200">
+ 📋 Copy
+ </button>
+ <span className="text-[11px] text-slate-300 ml-auto">
+ {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+ </span>
+ </div>
+ )}
 
-              {msg.role === 'ai' && !msg.exportable && (
-                <div className="ml-1 mt-1">
-                  <span className="text-[11px] text-slate-300">
-                    {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              )}
+ {msg.role === 'ai' && !msg.exportable && (
+ <div className="ml-1 mt-1">
+ <span className="text-[11px] text-slate-300">
+ {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+ </span>
+ </div>
+ )}
 
-              {msg.role === 'user' && (
-                <div className="text-right mt-0.5 mr-1">
-                  <span className="text-[11px] text-slate-300">
-                    {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              )}
-            </div>
+ {msg.role === 'user' && (
+ <div className="text-right mt-0.5 mr-1">
+ <span className="text-[11px] text-slate-300">
+ {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+ </span>
+ </div>
+ )}
+ </div>
 
-            {/* User Avatar */}
-            {msg.role === 'user' && (
-              <div className="w-7 h-7 bg-slate-200 rounded-lg flex items-center justify-center ml-2 mt-0.5 shrink-0 text-[11px] font-medium text-slate-600">
-                {getInitials(currentUser.name)}
-              </div>
-            )}
-          </div>
-        ))}
+ {/* User Avatar */}
+ {msg.role === 'user' && (
+ <div className="w-7 h-7 bg-slate-200 rounded-lg flex items-center justify-center ml-2 mt-0.5 shrink-0 text-[11px] font-medium text-slate-600">
+ {getInitials(currentUser.name)}
+ </div>
+ )}
+ </div>
+ ))}
 
-        {/* Typing Indicator */}
-        {isTyping && (
-          <div className="flex justify-start">
-            <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center mr-2 shrink-0 text-sm">🤖</div>
-            <div className="bg-slate-50 border border-slate-100 rounded-md px-4 py-3">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                <span className="text-xs text-slate-400 font-medium ml-2">Thinking...</span>
-              </div>
-            </div>
-          </div>
-        )}
+ {/* Typing Indicator */}
+ {isTyping && (
+ <div className="flex justify-start">
+ <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center mr-2 shrink-0 text-sm">🤖</div>
+ <div className="bg-slate-50 border border-slate-100 rounded-md px-4 py-3">
+ <div className="flex items-center gap-1.5">
+ <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+ <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+ <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+ <span className="text-xs text-slate-400 font-medium ml-2">Thinking...</span>
+ </div>
+ </div>
+ </div>
+ )}
 
-        <div ref={chatEndRef} />
-      </div>
+ <div ref={chatEndRef} />
+ </div>
 
-      {/* ═══ INPUT ═══ */}
-      <div className="bg-white border border-slate-200 rounded-md p-2 shadow-sm flex items-center gap-2">
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-          placeholder="Ask anything... e.g. 'Aaj kaun absent hai?'"
-          className="flex-1 px-3 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-400 bg-transparent focus:outline-none"
-          disabled={isTyping}
-        />
-        <button
-          onClick={() => handleSend()}
-          disabled={!input.trim() || isTyping}
-          className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-white shadow-sm hover:shadow-lg transition-all disabled:opacity-40 disabled:shadow-none shrink-0"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
+ {/* ═══ INPUT ═══ */}
+ <div className="bg-white border border-slate-200 rounded-md p-2 shadow-sm flex items-center gap-2">
+ <input
+ ref={inputRef}
+ value={input}
+ onChange={e => setInput(e.target.value)}
+ onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+ placeholder="Ask anything... e.g. 'Aaj kaun absent hai?'"
+ className="flex-1 px-3 py-2.5 text-sm font-medium text-slate-700 placeholder-slate-400 bg-transparent focus:outline-none"
+ disabled={isTyping}
+ />
+ <button
+ onClick={() => handleSend()}
+ disabled={!input.trim() || isTyping}
+ className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-white shadow-sm hover:shadow-lg transition-all disabled:opacity-40 disabled:shadow-none shrink-0"
+ >
+ <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+ </svg>
+ </button>
+ </div>
+ </div>
+ );
 }
