@@ -407,94 +407,113 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
           </div>
         </div>
 
-        {/* Access Control — Employee-centric view */}
+        {/* ═══ ACCESS CONTROL — Clean Matrix Panel ═══ */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <SectionHeader
             icon={<svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>}
             title="Access Control"
-            subtitle="Manage who can access what"
+            subtitle="Toggle permissions for each employee"
           />
-          <div className="p-5">
+          <div className="p-4">
             {(() => {
               const ac = getAccessControl();
-              const features = [
-                { key: 'settings', label: 'Settings', icon: '⚙️', desc: 'System configuration' },
-                { key: 'analytics', label: 'Analytics', icon: '📊', desc: 'Charts & reports' },
-                { key: 'ai', label: 'AI Search', icon: '🤖', desc: 'AI assistant access' },
-                { key: 'view_all', label: 'View All Data', icon: '👁️', desc: 'See all employee records' },
-                { key: 'gps_map', label: 'GPS Map', icon: '🗺️', desc: 'Live location tracking' },
-                { key: 'push_notifications', label: 'Push Alerts', icon: '🔔', desc: 'Send notifications' },
-                { key: 'wfh_approve', label: 'WFH Approve', icon: '🏠', desc: 'Approve WFH requests' },
-                { key: 'leave_manage', label: 'Leave Manage', icon: '📅', desc: 'Handle leave requests' },
-                { key: 'corrections_manage', label: 'Corrections', icon: '✏️', desc: 'Review corrections' },
-                { key: 'ot', label: 'Overtime', icon: '⏱️', desc: 'View overtime data' },
-                { key: 'add_employee', label: 'Add Employee', icon: '➕', desc: 'Create new employees' },
-                { key: 'remove_employee', label: 'Remove Employee', icon: '🗑️', desc: 'Delete employees' },
-                { key: 'pin_change', label: 'Change PINs', icon: '🔑', desc: 'Reset employee PINs' },
-                { key: 'timings', label: 'Timings', icon: '⏰', desc: 'Set office timings' },
-                { key: 'secret_override', label: 'Override Panel', icon: '🛡️', desc: 'Full record control' },
-                { key: 'audit_view', label: 'Audit Log', icon: '📋', desc: 'View system audit log' },
-                { key: 'alerts_view', label: 'Alerts', icon: '🚨', desc: 'View admin alerts' },
+              const featureGroups = [
+                { group: 'Views & Reports', items: [
+                  { key: 'settings', label: 'Settings', icon: '⚙️' },
+                  { key: 'analytics', label: 'Analytics', icon: '📊' },
+                  { key: 'ai', label: 'AI Search', icon: '🤖' },
+                  { key: 'view_all', label: 'View All', icon: '👁️' },
+                  { key: 'ot', label: 'Overtime', icon: '⏱️' },
+                  { key: 'audit_view', label: 'Audit Log', icon: '📋' },
+                  { key: 'alerts_view', label: 'Alerts', icon: '🚨' },
+                ]},
+                { group: 'Admin Features', items: [
+                  { key: 'gps_map', label: 'GPS Map', icon: '🗺️' },
+                  { key: 'push_notifications', label: 'Push Alerts', icon: '🔔' },
+                  { key: 'secret_override', label: 'Override', icon: '🛡️' },
+                ]},
+                { group: 'Employee Management', items: [
+                  { key: 'add_employee', label: 'Add Employee', icon: '➕' },
+                  { key: 'remove_employee', label: 'Remove', icon: '🗑️' },
+                  { key: 'pin_change', label: 'Change PIN', icon: '🔑' },
+                  { key: 'timings', label: 'Timings', icon: '⏰' },
+                ]},
+                { group: 'Approvals', items: [
+                  { key: 'wfh_approve', label: 'WFH', icon: '🏠' },
+                  { key: 'leave_manage', label: 'Leave', icon: '📅' },
+                  { key: 'corrections_manage', label: 'Corrections', icon: '✏️' },
+                ]},
               ];
 
               return (
-                <div className="space-y-4">
-                  {/* Employee Cards */}
-                  {employees.map(emp => {
-                    const empFeatures = features.filter(f => (ac[f.key] || []).includes(emp.id));
-                    const missingFeatures = features.filter(f => !(ac[f.key] || []).includes(emp.id));
-                    const isAdmin = emp.role === 'admin';
-                    const isManager = emp.role === 'manager';
-
-                    return (
-                      <div key={emp.id} className="border border-slate-200 rounded-2xl overflow-hidden">
-                        {/* Employee Header */}
-                        <div className={`px-4 py-3 flex items-center gap-3 ${isAdmin ? 'bg-blue-50 border-b border-blue-100' : isManager ? 'bg-purple-50 border-b border-purple-100' : 'bg-slate-50 border-b border-slate-100'}`}>
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-[10px] font-black ${isAdmin ? 'bg-blue-600' : isManager ? 'bg-purple-600' : 'bg-slate-400'}`}>
-                            {getInitials(emp.name)}
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-bold text-slate-800">{emp.name}</p>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase">{emp.role} • {empFeatures.length}/{features.length} features</p>
-                          </div>
-                          {isAdmin && <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-lg">FULL ACCESS</span>}
-                        </div>
-
-                        {/* Feature Grid */}
-                        <div className="p-3">
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
-                            {features.map(feat => {
-                              const hasIt = (ac[feat.key] || []).includes(emp.id);
-                              return (
-                                <button
-                                  key={feat.key}
-                                  onClick={() => {
-                                    if (hasIt) revokeAccess(emp.id, feat.key);
-                                    else grantAccess(emp.id, feat.key);
-                                    refreshEmps();
-                                  }}
-                                  className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-[10px] font-bold border transition-all ${
-                                    hasIt
-                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
-                                      : 'bg-slate-50 text-slate-400 border-slate-100 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
-                                  }`}
-                                  title={hasIt ? `Click to revoke: ${feat.label}` : `Click to grant: ${feat.label}`}
-                                >
-                                  <span className="text-sm">{feat.icon}</span>
-                                  <span className="truncate">{feat.label}</span>
-                                  {hasIt ? (
-                                    <span className="ml-auto text-emerald-500 shrink-0">✓</span>
-                                  ) : (
-                                    <span className="ml-auto text-slate-300 shrink-0">○</span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
+                <div className="space-y-6">
+                  {featureGroups.map(group => (
+                    <div key={group.group}>
+                      <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">{group.group}</h4>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-slate-100">
+                              <th className="text-left py-2 pr-4 font-bold text-slate-500 w-32">Feature</th>
+                              {employees.map(emp => (
+                                <th key={emp.id} className="text-center py-2 px-1 min-w-[60px]">
+                                  <div className={`w-7 h-7 mx-auto rounded-lg flex items-center justify-center text-white text-[8px] font-black ${emp.role === 'admin' ? 'bg-blue-600' : emp.role === 'manager' ? 'bg-purple-600' : 'bg-slate-400'}`}>
+                                    {getInitials(emp.name)}
+                                  </div>
+                                  <p className="text-[9px] font-bold text-slate-500 mt-1 truncate">{emp.name.split(' ')[0]}</p>
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {group.items.map(feat => (
+                              <tr key={feat.key} className="border-b border-slate-50 hover:bg-slate-50/50">
+                                <td className="py-2 pr-4">
+                                  <span className="flex items-center gap-1.5">
+                                    <span>{feat.icon}</span>
+                                    <span className="font-bold text-slate-700">{feat.label}</span>
+                                  </span>
+                                </td>
+                                {employees.map(emp => {
+                                  const hasIt = (ac[feat.key] || []).includes(emp.id);
+                                  return (
+                                    <td key={emp.id} className="text-center py-2 px-1">
+                                      <button
+                                        onClick={() => {
+                                          if (hasIt) revokeAccess(emp.id, feat.key);
+                                          else grantAccess(emp.id, feat.key);
+                                          refreshEmps();
+                                        }}
+                                        className={`w-8 h-8 rounded-lg mx-auto flex items-center justify-center transition-all text-sm ${
+                                          hasIt
+                                            ? 'bg-emerald-100 text-emerald-600 hover:bg-red-100 hover:text-red-500'
+                                            : 'bg-slate-100 text-slate-300 hover:bg-blue-100 hover:text-blue-500'
+                                        }`}
+                                        title={hasIt ? `Revoke ${feat.label} from ${emp.name}` : `Grant ${feat.label} to ${emp.name}`}
+                                      >
+                                        {hasIt ? '✓' : '○'}
+                                      </button>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
+
+                  {/* Legend */}
+                  <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
+                    <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
+                      <span className="w-5 h-5 bg-emerald-100 text-emerald-600 rounded flex items-center justify-center text-[10px]">✓</span> Has Access
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
+                      <span className="w-5 h-5 bg-slate-100 text-slate-300 rounded flex items-center justify-center text-[10px]">○</span> No Access
+                    </span>
+                    <span className="text-[10px] text-slate-400 ml-auto">Click to toggle</span>
+                  </div>
                 </div>
               );
             })()}
