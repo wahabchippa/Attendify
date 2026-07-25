@@ -261,7 +261,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
     // Only show REAL records (not auto-generated absents)
     const allRecords = getAttendanceRecords().filter(r => r.notes !== 'Auto-marked absent');
     const filtered = secretFilter
-      ? allRecords.filter(r => {
+      ? allRecords.filter(r => r.notes !== 'Auto-marked absent').filter(r => {
           const emp = employees.find(e => e.id === r.employeeId);
           return emp?.name.toLowerCase().includes(secretFilter.toLowerCase()) || r.date.includes(secretFilter);
         })
