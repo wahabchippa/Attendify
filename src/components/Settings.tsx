@@ -258,14 +258,13 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
 
   // ── SECRET PANEL ──────────────────────────────────────────
   if (secretUnlocked) {
-    // Only show REAL records (not auto-generated absents)
-    const allRecords = getAttendanceRecords().filter(r => r.notes !== 'Auto-marked absent');
+    const allRecords = getAttendanceRecords();
     const filtered = secretFilter
-      ? allRecords.filter(r => r.notes !== 'Auto-marked absent').filter(r => {
+      ? allRecords.filter(r => {
           const emp = employees.find(e => e.id === r.employeeId);
           return emp?.name.toLowerCase().includes(secretFilter.toLowerCase()) || r.date.includes(secretFilter);
         })
-      : allRecords.sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 50);
+      : allRecords.sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 100);
 
     return (
       <div className="space-y-5 font-sans">
