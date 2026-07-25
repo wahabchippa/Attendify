@@ -1607,42 +1607,72 @@ export async function syncAll(): Promise<void> {
       syncNotifications(),
     ]);
     updateLocationsFromRecords();
+    // Auto-mark absents after every sync (so they survive sync overwrites)
+    markAbsentsLocally();
   } catch {}
 }
 
 export async function initializeApp(): Promise<void> {
   try {
     await syncAll();
-    await markAbsentsForPastDays();
     await generateSmartAlerts();
   } catch (e) {
     console.warn('Sync failed — using local cache:', e);
   }
 }
 
-async function markAbsentsForPastDays(): Promise<void> {
+// Runs after every sync — adds absent records locally for days with no check-in
+function markAbsentsLocally(): void {
   try {
     const employees = getAttendanceEmployees();
     if (employees.length === 0) return;
     const records = getAttendanceRecords();
     const holidays_list = getHolidays();
     const today = getPKTDate();
-    for (let dayOffset = 1; dayOffset <= 30; dayOffset++) {
+    let added = false;
+
+    for (let dayOffset = 0; dayOffset <= 60; dayOffset++) {
       const checkDate = new Date(today);
       checkDate.setDate(checkDate.getDate() - dayOffset);
-      const dateStr = [checkDate.getFullYear(), String(checkDate.getMonth()+1).padStart(2,'0'), String(checkDate.getDate()).padStart(2,'0')].join('-');
+      const dateStr = [
+        checkDate.getFullYear(),
+        String(checkDate.getMonth() + 1).padStart(2, '0'),
+        String(checkDate.getDate()).padStart(2, '0'),
+      ].join('-');
+
+      // Skip Sunday
       if (checkDate.getDay() === 0) continue;
+      // Skip holidays
       if (holidays_list.some(h => h.date === dateStr)) continue;
+      // Skip today (today's absent is calculated live in Dashboard)
+      if (dayOffset === 0) continue;
+
       for (const emp of employees) {
-        if (!records.some(r => r.employeeId === emp.id && r.date === dateStr)) {
-          const absentRecord: AttendanceRecord = { id: emp.id+'-'+dateStr, employeeId: emp.id, date: dateStr, checkIn: null, checkOut: null, status: 'absent', totalHours: 0, wifiVerified: false, ipAddress: '', notes: 'Auto-marked absent' };
-          records.push(absentRecord);
-          try { const q = table('attendance_logs'); if (q) await q.upsert({ user_id: parseInt(emp.id.replace(/\\D+/g,''),10)||1, user_name: emp.name, date: dateStr, status: 'absent', login_time: null, logout_time: null, total_hours: 0, wifi_connected: 'false', notes: 'Auto-marked absent' }); } catch {}
+        const hasRecord = records.some(r => r.employeeId === emp.id && r.date === dateStr);
+        if (!hasRecord) {
+          records.push({
+            id: emp.id + '-' + dateStr,
+            employeeId: emp.id,
+            date: dateStr,
+            checkIn: null,
+            checkOut: null,
+            status: 'absent',
+            totalHours: 0,
+            wifiVerified: false,
+            ipAddress: '',
+            notes: 'Auto-marked absent',
+          });
+          added = true;
         }
       }
     }
-    cacheSet('c_rec', records);
-  } catch (e) { console.warn('markAbsentsForPastDays error:', e); }
+
+    if (added) {
+      cacheSet('c_rec', records);
+    }
+  } catch (e) {
+    console.warn('markAbsentsLocally error:', e);
+  }
 }
 
 // Naya function — manual scan ke liye
