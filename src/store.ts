@@ -247,11 +247,37 @@ export async function bindEmployeeDevice(empId: string, deviceId: string | null)
 // =============================================
 
 export function getAttendanceRecords(): AttendanceRecord[] {
-  return cacheGet('c_rec', []);
+  return deduplicateRecords(cacheGet('c_rec', []));
 }
 
 export function saveAttendanceRecords(records: AttendanceRecord[]): void {
   cacheSet('c_rec', records);
+}
+
+
+// Deduplicate records — keep only ONE record per employee per date
+// Priority: present/late > absent > others (keep the real check-in, not auto-absent)
+function deduplicateRecords(records: AttendanceRecord[]): AttendanceRecord[] {
+  const seen = new Map<string, AttendanceRecord>();
+  const priority: Record<string, number> = { present: 4, late: 3, 'half-day': 3, 'work-from-home': 3, 'holiday-ot': 3, absent: 1 };
+  
+  for (const r of records) {
+    const key = r.employeeId + '|' + r.date;
+    const existing = seen.get(key);
+    if (!existing) {
+      seen.set(key, r);
+    } else {
+      // Keep the one with higher priority (present > absent)
+      const existingPriority = priority[existing.status] || 2;
+      const newPriority = priority[r.status] || 2;
+      if (newPriority > existingPriority) {
+        seen.set(key, r); // Replace with better status
+      } else if (newPriority === existingPriority && r.checkIn && !existing.checkIn) {
+        seen.set(key, r); // Prefer the one with actual check-in
+      }
+    }
+  }
+  return Array.from(seen.values());
 }
 
 async function syncRecords(): Promise<void> {
@@ -260,7 +286,7 @@ async function syncRecords(): Promise<void> {
     if (!q) return;
     const { data } = await q.select('*');
     if (data) {
-      cacheSet('c_rec', data.map((r: any) => ({
+      const mapped = data.map((r: any) => ({
         id:                String(r.id),
         employeeId:        r.user_id ? `emp-${String(r.user_id).padStart(3, '0')}` : 'emp-001',
         date:              r.date,
@@ -275,7 +301,8 @@ async function syncRecords(): Promise<void> {
         verification_method: r.verification_method || null,
         latitude:           r.latitude || null,
         longitude:          r.longitude || null,
-      })));
+      }));
+      cacheSet('c_rec', deduplicateRecords(mapped));
     }
   } catch {}
 }
@@ -1690,7 +1717,7 @@ function markAbsentsLocally(): void {
       }
     }
 
-    if (added) cacheSet('c_rec', records);
+    if (added) cacheSet('c_rec', deduplicateRecords(records));
   } catch (e) {
     console.warn('markAbsentsLocally error:', e);
   }
