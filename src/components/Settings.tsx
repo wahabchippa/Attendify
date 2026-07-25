@@ -843,70 +843,90 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
 
       {/* ═══ LOCATIONS ═══ */}
       {activeTab === 'locations' && (() => {
-        const offices = getOfficeLocations();
-        const updateRadius = (id: number, radius: number) => {
-          const updated = offices.map(o => o.id === id ? { ...o, radius } : o);
+        // Force read fresh from localStorage every render
+        const offices = JSON.parse(JSON.stringify(getOfficeLocations()));
+        
+        const saveAndRefresh = (updated: any[]) => {
           saveOfficeLocations(updated);
+          // Force component re-render
           refreshEmps();
         };
+        
+        const updateField = (id: number, field: string, value: any) => {
+          const updated = offices.map((o: any) => o.id === id ? { ...o, [field]: value } : o);
+          saveAndRefresh(updated);
+        };
+
+        const addOffice = () => {
+          const newId = Math.max(...offices.map((o: any) => o.id), 0) + 1;
+          const updated = [...offices, { id: newId, name: 'New Office', ip_address: '', is_active: true, lat: 24.86, lng: 67.11, radius: 200 }];
+          saveAndRefresh(updated);
+        };
+
+        const deleteOffice = (id: number) => {
+          if (!confirm('Delete this office permanently?')) return;
+          const updated = offices.filter((o: any) => o.id !== id);
+          saveAndRefresh(updated);
+        };
+
         const resetDefaults = () => {
-          saveOfficeLocations([
+          if (!confirm('Reset all offices to defaults? Your changes will be lost.')) return;
+          saveAndRefresh([
             { id: 1, name: 'PK Zone',   ip_address: '103.93.12.229',   is_active: true, lat: 24.825222, lng: 67.247472, radius: 800 },
             { id: 2, name: 'QC Center', ip_address: '202.141.254.126', is_active: true, lat: 24.856917, lng: 67.111833, radius: 150 },
             { id: 3, name: 'Z House',   ip_address: '103.93.12.229',   is_active: true, lat: 24.882889, lng: 67.073278, radius: 500 },
           ]);
-          refreshEmps();
         };
+
         return (
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             <SectionHeader
               icon={<svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>}
               title="Office Locations"
-              subtitle="Set check-in radius (meters) for each office"
+              subtitle="Set check-in radius for each office"
             />
             <div className="p-4 space-y-3">
-              {offices.map(office => (
+              {offices.map((office: any) => (
                 <div key={office.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  {/* Office Header */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white text-sm">📍</div>
                       <div>
-                        <p className="text-sm font-black text-slate-800">{office.name}</p>
+                        <input value={office.name} onChange={e => updateField(office.id, 'name', e.target.value)}
+                          className="text-sm font-black text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-none px-0.5 py-0.5 w-36" />
                         <p className="text-[10px] text-slate-400 font-mono">{office.lat}, {office.lng}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xl font-black text-blue-600">{office.radius || 200}m</p>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase">Check-in Radius</p>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-xl font-black text-blue-600">{office.radius || 200}m</p>
+                        <p className="text-[9px] text-slate-400 font-bold">RADIUS</p>
+                      </div>
+                      <button onClick={() => deleteOffice(office.id)}
+                        className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-400 hover:text-red-600 transition-all border border-red-100" title="Delete office">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
                     </div>
                   </div>
 
                   {/* Radius Slider */}
-                  <div className="space-y-2">
-                    <input
-                      type="range"
-                      min="50"
-                      max="2000"
-                      step="50"
-                      value={office.radius || 200}
-                      onChange={e => updateRadius(office.id, parseInt(e.target.value))}
-                      className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-600"
-                    />
-                    <div className="flex justify-between text-[9px] font-bold text-slate-400">
-                      <span>50m</span>
-                      <span>500m</span>
-                      <span>1000m</span>
-                      <span>2000m</span>
+                  <div className="mb-3">
+                    <input type="range" min="50" max="2000" step="50" value={office.radius || 200}
+                      onChange={e => updateField(office.id, 'radius', parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-blue-600" />
+                    <div className="flex justify-between text-[9px] font-bold text-slate-300 mt-1">
+                      <span>50m</span><span>500m</span><span>1km</span><span>2km</span>
                     </div>
                   </div>
 
-                  {/* Quick preset buttons */}
-                  <div className="flex gap-1.5 mt-3">
+                  {/* Quick Presets */}
+                  <div className="flex gap-1.5">
                     {[100, 200, 300, 500, 800, 1000].map(r => (
-                      <button key={r} onClick={() => updateRadius(office.id, r)}
-                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                      <button key={r} onClick={() => updateField(office.id, 'radius', r)}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
                           (office.radius || 200) === r
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-blue-600 text-white shadow-sm'
                             : 'bg-white border border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600'
                         }`}>{r}m</button>
                     ))}
@@ -914,9 +934,21 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                 </div>
               ))}
 
-              <button onClick={resetDefaults} className="w-full py-2 text-[10px] font-bold text-slate-400 hover:text-red-500 transition-all">
-                ↻ Reset to Default Locations
-              </button>
+              {/* Add + Reset Buttons */}
+              <div className="flex gap-2">
+                <button onClick={addOffice}
+                  className="flex-1 py-2.5 border-2 border-dashed border-blue-200 rounded-2xl text-xs font-bold text-blue-500 hover:bg-blue-50 hover:border-blue-400 transition-all">
+                  + Add New Office
+                </button>
+                <button onClick={resetDefaults}
+                  className="px-4 py-2.5 border border-slate-200 rounded-2xl text-[10px] font-bold text-slate-400 hover:text-red-500 hover:border-red-200 transition-all">
+                  ↻ Reset
+                </button>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[10px] text-blue-600 font-medium">
+                💡 Radius = kitne meter tak check-in allow hai. Slider slide karo ya button dabao — save auto hota hai.
+              </div>
             </div>
           </div>
         );
