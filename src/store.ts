@@ -111,8 +111,28 @@ export function getOfficeLocations(): OfficeLocation[] {
   return cached;
 }
 
-export function saveOfficeLocations(locs: OfficeLocation[]): void {
+export async function saveOfficeLocations(locs: OfficeLocation[]): Promise<void> {
   cacheSet('c_locations', locs);
+  // Also save to Supabase so all devices get the update
+  try {
+    const q = table('office_locations');
+    if (!q) return;
+    // Delete all existing and re-insert
+    await q.delete().neq('id', 0);
+    for (const loc of locs) {
+      await q.upsert({
+        id: loc.id,
+        name: loc.name,
+        ip_address: loc.ip_address,
+        is_active: loc.is_active,
+        lat: loc.lat || null,
+        lng: loc.lng || null,
+        radius: loc.radius || 200,
+      });
+    }
+  } catch (e) {
+    console.warn('saveOfficeLocations to Supabase failed:', e);
+  }
 }
 
 export function getLocationFromIP(ip: string): string {
@@ -132,8 +152,19 @@ async function syncLocations(): Promise<void> {
   try {
     const q = table('office_locations');
     if (!q) return;
-    const { data } = await q.select('*').eq('is_active', true);
-    if (data && data.length > 0) cacheSet('c_locations', data);
+    const { data } = await q.select('*');
+    if (data && data.length > 0) {
+      const mapped = data.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        ip_address: r.ip_address,
+        is_active: r.is_active !== false,
+        lat: r.lat || null,
+        lng: r.lng || null,
+        radius: r.radius || 200,
+      }));
+      cacheSet('c_locations', mapped);
+    }
   } catch {}
 }
 
