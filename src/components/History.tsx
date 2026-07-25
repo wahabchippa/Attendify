@@ -304,6 +304,14 @@ export default function History({ currentUser }: HistoryProps) {
           </div>
 
           {/* Employee rows */}
+          {/* Selected employee indicator */}
+          {selectedEmployee !== 'all' && (
+            <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+              <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center text-white text-[8px] font-black">{getInitials(getEmpName(selectedEmployee))}</div>
+              <p className="text-xs font-bold text-blue-700">Showing: {getEmpName(selectedEmployee)}</p>
+              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-[10px] font-bold text-blue-500 hover:text-blue-700">Show All ×</button>
+            </div>
+          )}
           {getWeeklyEmployeeData().length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-sm font-bold text-slate-400">No data for this week</p>
