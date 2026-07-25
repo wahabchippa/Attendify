@@ -217,7 +217,7 @@ const allEmployees = getEmployees();
     URL.revokeObjectURL(url);
   };
 
-  const inputCls  = "w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E40AF] transition-all";
+  const inputCls  = "w-full bg-slate-50 border border-slate-200 rounded px-3.5 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all";
   const labelCls  = "block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1.5";
 
   return (
@@ -225,7 +225,7 @@ const allEmployees = getEmployees();
 
       {/* Notification */}
       {notification && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold max-w-[92%] border animate-slide-down ${
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-5 py-3.5 rounded-md shadow-lg flex items-center gap-3 text-sm font-bold max-w-[92%] border animate-slide-down ${
           notification.type === 'success' ? 'bg-emerald-600/95 text-white border-emerald-500' : 'bg-red-600/95 text-white border-red-500'
         }`}>
           {notification.type === 'success' ? '✓' : '✕'} {notification.message}
@@ -233,12 +233,12 @@ const allEmployees = getEmployees();
       )}
 
       {/* ===== HEADER ===== */}
-      <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 rounded-3xl p-5 text-white relative overflow-hidden shadow-xl shadow-emerald-900/20">
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-teal-400/20 rounded-full blur-2xl" />
+      <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 rounded-lg p-5 text-white relative overflow-hidden shadow-md shadow-emerald-900/20">
+        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-xl" />
+        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-teal-400/20 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+            <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center border border-white/20">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
               </svg>
@@ -250,7 +250,7 @@ const allEmployees = getEmployees();
           </div>
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-2xl text-white text-xs font-bold border border-white/10 transition-all active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-md text-white text-xs font-bold border border-white/10 transition-all active:scale-95"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -261,7 +261,7 @@ const allEmployees = getEmployees();
       </div>
 
       {/* ===== TABS ===== */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-2">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-2">
         <div className="flex gap-1">
           {[
             { key: 'reports', label: '📊 Reports',      },
@@ -270,7 +270,7 @@ const allEmployees = getEmployees();
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key as any)}
-              className={`flex-1 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+              className={`flex-1 py-2.5 rounded-md text-xs font-bold transition-all ${
                 activeTab === t.key
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md'
                   : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
@@ -287,7 +287,7 @@ const allEmployees = getEmployees();
         <div className="space-y-4">
 
           {/* Filters */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 flex flex-wrap gap-3 items-center">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 flex flex-wrap gap-3 items-center">
             {/* Month picker */}
             <div>
               <input
@@ -303,7 +303,7 @@ const allEmployees = getEmployees();
               <select
                 value={selectedEmpId}
                 onChange={e => setSelectedEmpId(e.target.value)}
-                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-2xl pl-4 pr-8 py-2.5 text-sm font-semibold focus:outline-none focus:border-[#1E40AF] transition-all cursor-pointer"
+                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-md pl-4 pr-8 py-2.5 text-sm font-semibold focus:outline-none focus:border-slate-900 transition-all cursor-pointer"
               >
                 <option value="all">All Employees</option>
                 {employees.map(e => (
@@ -325,11 +325,11 @@ const allEmployees = getEmployees();
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { label: 'Total Net Pay',   value: formatPKR(teamTotals.netPay),         color: 'text-emerald-600', bg: 'from-emerald-50 to-green-50',   border: 'border-emerald-200', icon: '💰' },
-                { label: 'Total OT Pay',    value: formatPKR(teamTotals.totalOtPay),      color: 'text-purple-600',  bg: 'from-purple-50 to-indigo-50',   border: 'border-purple-200', icon: '⚡' },
+                { label: 'Total OT Pay',    value: formatPKR(teamTotals.totalOtPay),      color: 'text-purple-600',  bg: 'from-slate-50 to-slate-100',   border: 'border-purple-200', icon: '⚡' },
                 { label: 'Total Deductions',value: formatPKR(teamTotals.totalDeductions), color: 'text-red-600',     bg: 'from-red-50 to-rose-50',        border: 'border-red-200',    icon: '📉' },
-                { label: 'Total Hours',     value: `${Math.round(teamTotals.totalHours)}h`, color: 'text-blue-600', bg: 'from-blue-50 to-indigo-50',     border: 'border-blue-200',   icon: '⏱' },
+                { label: 'Total Hours',     value: `${Math.round(teamTotals.totalHours)}h`, color: 'text-slate-800', bg: 'from-blue-50 to-indigo-50',     border: 'border-slate-200',   icon: '⏱' },
               ].map(s => (
-                <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-2xl p-4 border ${s.border} shadow-sm`}>
+                <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-md p-4 border ${s.border} shadow-sm`}>
                   <p className="text-lg mb-1">{s.icon}</p>
                   <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{s.label}</p>
@@ -345,12 +345,12 @@ const allEmployees = getEmployees();
               const hasConfig = getSalaryConfig(report.employeeId).baseSalary > 0;
 
               return (
-                <div key={report.employeeId} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div key={report.employeeId} className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                   {/* Employee Header */}
                   <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/30">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl flex items-center justify-center text-xs font-black shadow-md">
+                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded flex items-center justify-center text-xs font-black shadow-md">
                           {getInitials(report.employeeName)}
                         </div>
                         <div>
@@ -359,7 +359,7 @@ const allEmployees = getEmployees();
                         </div>
                       </div>
                       {!hasConfig && (
-                        <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black rounded-xl border border-amber-200">
+                        <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black rounded border border-amber-200">
                           ⚠️ Config Missing
                         </span>
                       )}
@@ -377,7 +377,7 @@ const allEmployees = getEmployees();
                       <p className="text-slate-400 text-sm font-medium mb-3">No salary config found for this employee.</p>
                       <button
                         onClick={() => { setActiveTab('config'); handleLoadConfig(report.employeeId); }}
-                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl text-xs font-bold shadow-lg transition-all active:scale-95"
+                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-md text-xs font-bold shadow-lg transition-all active:scale-95"
                       >
                         + Add Salary Config
                       </button>
@@ -393,10 +393,10 @@ const allEmployees = getEmployees();
                             { label: 'Absent',   value: report.absentDays,   color: 'text-red-600' },
                             { label: 'Late',     value: report.lateDays,     color: 'text-amber-600' },
                             { label: 'Half Day', value: report.halfDays,     color: 'text-orange-600' },
-                            { label: 'WFH',      value: report.wfhDays,      color: 'text-blue-600' },
+                            { label: 'WFH',      value: report.wfhDays,      color: 'text-slate-800' },
                             { label: 'Leave',    value: report.leaveDays,    color: 'text-purple-600' },
                           ].map(s => (
-                            <div key={s.label} className="bg-slate-50 rounded-xl p-2.5 text-center border border-slate-100">
+                            <div key={s.label} className="bg-slate-50 rounded p-2.5 text-center border border-slate-100">
                               <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
                               <p className="text-[9px] font-bold text-slate-400 mt-0.5">{s.label}</p>
                             </div>
@@ -407,7 +407,7 @@ const allEmployees = getEmployees();
                       {/* Salary Breakdown */}
                       <div>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Salary Breakdown</p>
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2.5">
+                        <div className="bg-slate-50 rounded-md p-4 border border-slate-100 space-y-2.5">
                           {/* Base */}
                           <div className="flex justify-between text-sm">
                             <span className="text-slate-500 font-medium">Base Salary</span>
@@ -493,9 +493,9 @@ const allEmployees = getEmployees();
                       </div>
 
                       {/* Hours worked */}
-                      <div className="flex items-center justify-between bg-blue-50 rounded-2xl px-4 py-3 border border-blue-200">
-                        <span className="text-blue-700 text-xs font-bold">Total Hours Worked</span>
-                        <span className="text-[#1E40AF] font-black">{report.totalHoursWorked}h</span>
+                      <div className="flex items-center justify-between bg-slate-50 rounded-md px-4 py-3 border border-slate-200">
+                        <span className="text-slate-900 text-xs font-bold">Total Hours Worked</span>
+                        <span className="text-slate-900 font-black">{report.totalHoursWorked}h</span>
                       </div>
                     </div>
                   )}
@@ -510,7 +510,7 @@ const allEmployees = getEmployees();
       {activeTab === 'config' && (
         <div className="space-y-4">
           {/* Employee selector */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
             <label className={labelCls}>Select Employee to Configure</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
               {employees.map(emp => {
@@ -520,13 +520,13 @@ const allEmployees = getEmployees();
                   <button
                     key={emp.id}
                     onClick={() => handleLoadConfig(emp.id)}
-                    className={`flex items-center gap-2.5 px-3.5 py-3 rounded-2xl border text-left transition-all active:scale-95 ${
+                    className={`flex items-center gap-2.5 px-3.5 py-3 rounded-md border text-left transition-all active:scale-95 ${
                       isSelected
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400 shadow-md'
                         : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-emerald-300'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0 ${
+                    <div className={`w-8 h-8 rounded flex items-center justify-center text-[10px] font-black shrink-0 ${
                       isSelected ? 'bg-white/20 text-white' : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
                     }`}>
                       {getInitials(emp.name)}
@@ -545,10 +545,10 @@ const allEmployees = getEmployees();
 
           {/* Config Form */}
           {configForm && configEmpId && (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/30">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl flex items-center justify-center text-xs font-black">
+                  <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded flex items-center justify-center text-xs font-black">
                     {getInitials(allEmployees.find(e => e.id === configEmpId)?.name || '')}
                   </div>
                   <div>
@@ -674,7 +674,7 @@ const allEmployees = getEmployees();
 
                 {/* Auto calculated preview */}
                 {configForm.baseSalary > 0 && (
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-md p-4 space-y-2">
                     <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Auto Calculated</p>
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div className="flex justify-between">
@@ -692,7 +692,7 @@ const allEmployees = getEmployees();
                 {/* Save button */}
                 <button
                   onClick={handleSaveConfig}
-                  className={`w-full py-4 rounded-2xl font-black text-sm transition-all active:scale-[0.98] shadow-lg ${
+                  className={`w-full py-4 rounded-md font-black text-sm transition-all active:scale-[0.98] shadow-lg ${
                     configSaved
                       ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                       : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-500/20 hover:shadow-emerald-500/30'

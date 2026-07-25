@@ -139,7 +139,7 @@ export default function AISearch({ currentUser }: AISearchProps) {
         const indent = line.startsWith('   ') ? 'ml-4' : 'ml-1';
         return (
           <div key={i} className={`${indent} flex items-start gap-2 my-0.5`}>
-            {(line.startsWith('•') || line.startsWith('  •')) && <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 shrink-0" />}
+            {(line.startsWith('•') || line.startsWith('  •')) && <span className="w-1.5 h-1.5 bg-slate-500 rounded-full mt-2 shrink-0" />}
             <span dangerouslySetInnerHTML={{ __html: html.replace(/^[\s•]+/, '') }} />
           </div>
         );
@@ -155,14 +155,14 @@ export default function AISearch({ currentUser }: AISearchProps) {
     }`}>
 
       {/* ═══ HEADER ═══ */}
-      <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] rounded-2xl p-4 mb-3 relative overflow-hidden shadow-lg">
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-md p-4 mb-3 relative overflow-hidden shadow-lg">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center text-xl">🤖</div>
+            <div className="w-10 h-10 bg-white/15 rounded flex items-center justify-center text-xl">🤖</div>
             <div>
               <h2 className="text-base font-black text-white">AI Assistant</h2>
-              <p className="text-blue-200 text-[10px] font-bold">English & Urdu • Reports • PDF • WhatsApp</p>
+              <p className="text-slate-400 text-[10px] font-bold">English & Urdu • Reports • PDF • WhatsApp</p>
             </div>
           </div>
           <button onClick={clearChat} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 text-xs font-bold border border-white/10 transition-all">
@@ -176,29 +176,29 @@ export default function AISearch({ currentUser }: AISearchProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
           {SUGGESTIONS.map(s => (
             <button key={s.text} onClick={() => handleSend(s.text)}
-              className="bg-white border border-slate-200 rounded-xl p-2.5 text-left hover:border-blue-300 hover:bg-blue-50/50 transition-all group">
+              className="bg-white border border-slate-200 rounded p-2.5 text-left hover:border-slate-300 hover:bg-slate-50/50 transition-all group">
               <span className="text-lg block mb-1">{s.icon}</span>
-              <span className="text-[11px] font-semibold text-slate-600 group-hover:text-blue-700 leading-tight">{s.text}</span>
+              <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900 leading-tight">{s.text}</span>
             </button>
           ))}
         </div>
       )}
 
       {/* ═══ CHAT AREA ═══ */}
-      <div className="flex-1 overflow-y-auto bg-white border border-slate-200 rounded-2xl p-4 space-y-3 mb-3 shadow-sm">
+      <div className="flex-1 overflow-y-auto bg-white border border-slate-200 rounded-md p-4 space-y-3 mb-3 shadow-sm">
         {messages.map(msg => (
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {/* AI Avatar */}
             {msg.role === 'ai' && (
-              <div className="w-7 h-7 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-lg flex items-center justify-center mr-2 mt-0.5 shrink-0 text-sm">
+              <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center mr-2 mt-0.5 shrink-0 text-sm">
                 🤖
               </div>
             )}
 
             <div className="max-w-[85%] space-y-0">
-              <div className={`rounded-2xl px-4 py-3 ${
+              <div className={`rounded-md px-4 py-3 ${
                 msg.role === 'user'
-                  ? 'bg-gradient-to-br from-[#1E40AF] to-[#2563EB] text-white'
+                  ? 'bg-slate-900 text-white'
                   : 'bg-slate-50 text-slate-700 border border-slate-100'
               }`}>
                 <div className="text-[13px] leading-relaxed font-medium">
@@ -256,8 +256,8 @@ export default function AISearch({ currentUser }: AISearchProps) {
         {/* Typing Indicator */}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="w-7 h-7 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-lg flex items-center justify-center mr-2 shrink-0 text-sm">🤖</div>
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3">
+            <div className="w-7 h-7 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center mr-2 shrink-0 text-sm">🤖</div>
+            <div className="bg-slate-50 border border-slate-100 rounded-md px-4 py-3">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -272,7 +272,7 @@ export default function AISearch({ currentUser }: AISearchProps) {
       </div>
 
       {/* ═══ INPUT ═══ */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-2 shadow-sm flex items-center gap-2">
+      <div className="bg-white border border-slate-200 rounded-md p-2 shadow-sm flex items-center gap-2">
         <input
           ref={inputRef}
           value={input}
@@ -285,7 +285,7 @@ export default function AISearch({ currentUser }: AISearchProps) {
         <button
           onClick={() => handleSend()}
           disabled={!input.trim() || isTyping}
-          className="w-10 h-10 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-500/20 hover:shadow-lg transition-all disabled:opacity-40 disabled:shadow-none shrink-0"
+          className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-white shadow-sm hover:shadow-lg transition-all disabled:opacity-40 disabled:shadow-none shrink-0"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

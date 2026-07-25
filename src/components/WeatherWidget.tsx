@@ -42,7 +42,7 @@ export default function WeatherWidget() {
   if (!weather) return null;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10">
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10  rounded border border-white/10">
       <span className="text-xl">{weather.icon}</span>
       <div className="text-white">
         <p className="text-sm font-black leading-none">{weather.temp}°C</p>

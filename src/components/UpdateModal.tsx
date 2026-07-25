@@ -37,16 +37,16 @@ export default function UpdateModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md font-sans">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-up">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60  font-sans">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-sm overflow-hidden animate-scale-up">
 
         {/* ===== TOP GRADIENT BANNER ===== */}
-        <div className="bg-gradient-to-br from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] px-7 pt-8 pb-10 text-white text-center relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-indigo-400/20 rounded-full blur-2xl" />
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-7 pt-8 pb-10 text-white text-center relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl" />
+          <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-indigo-400/20 rounded-full blur-lg" />
 
           {/* App icon */}
-          <div className="relative z-10 w-20 h-20 mx-auto mb-4 bg-white/15 backdrop-blur-sm rounded-3xl flex items-center justify-center border border-white/20 shadow-xl">
+          <div className="relative z-10 w-20 h-20 mx-auto mb-4 bg-white/15  rounded-lg flex items-center justify-center border border-white/20 shadow-md">
             <img
               src="/icon.png?v=2"
               alt="Attendify"
@@ -61,7 +61,7 @@ export default function UpdateModal() {
           <h2 className="text-2xl font-black tracking-tight relative z-10">
             Update Available
           </h2>
-          <p className="text-blue-200 text-xs font-bold mt-1 relative z-10">
+          <p className="text-slate-400 text-xs font-bold mt-1 relative z-10">
             Attendify needs to be updated
           </p>
         </div>
@@ -70,10 +70,10 @@ export default function UpdateModal() {
         <div className="px-7 py-6 space-y-5">
 
           {/* Version info */}
-          <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
+          <div className="flex items-center justify-between bg-slate-50 rounded-md px-4 py-3 border border-slate-100">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center">
-                <svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center">
+                <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -83,7 +83,7 @@ export default function UpdateModal() {
               </div>
             </div>
             {updateInfo.force_update && (
-              <span className="px-2.5 py-1 bg-red-50 text-red-600 text-[10px] font-black rounded-xl border border-red-200 uppercase tracking-wide">
+              <span className="px-2.5 py-1 bg-red-50 text-red-600 text-[10px] font-black rounded border border-red-200 uppercase tracking-wide">
                 Required
               </span>
             )}
@@ -101,12 +101,12 @@ export default function UpdateModal() {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-600 font-bold flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[#1E40AF] animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-4 h-4 text-slate-900 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
                   </svg>
                   Downloading...
                 </span>
-                <span className="text-[#1E40AF] font-black text-sm">{downloadProgress}%</span>
+                <span className="text-slate-900 font-black text-sm">{downloadProgress}%</span>
               </div>
 
               {/* Progress bar */}
@@ -129,7 +129,7 @@ export default function UpdateModal() {
             <button
               onClick={handleUpdate}
               disabled={downloading}
-              className="w-full py-4 bg-gradient-to-r from-[#1E40AF] to-[#2563EB] hover:from-[#1d4ed8] hover:to-[#3b82f6] active:scale-[0.98] text-white font-black rounded-2xl text-sm transition-all duration-200 shadow-xl shadow-blue-600/25 hover:shadow-blue-500/35 flex items-center justify-center gap-2.5"
+              className="w-full py-4 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-[#1d4ed8] hover:to-[#3b82f6] active:scale-[0.98] text-white font-black rounded-md text-sm transition-all duration-200 shadow-md shadow-blue-600/25 hover:shadow-blue-500/35 flex items-center justify-center gap-2.5"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -140,7 +140,7 @@ export default function UpdateModal() {
 
           {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 flex items-start gap-2.5">
+            <div className="bg-red-50 border border-red-200 rounded-md px-4 py-3 flex items-start gap-2.5">
               <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
               </svg>
@@ -154,10 +154,10 @@ export default function UpdateModal() {
               <p className="text-[10px] text-slate-400 font-medium mb-2">Having trouble? Download manually:</p>
               <button
                 onClick={handleCopyLink}
-                className={`inline-flex items-center gap-1.5 text-xs font-bold transition-all px-3 py-1.5 rounded-xl border ${
+                className={`inline-flex items-center gap-1.5 text-xs font-bold transition-all px-3 py-1.5 rounded border ${
                   copied
                     ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
-                    : 'text-[#1E40AF] bg-blue-50 border-blue-200 hover:bg-blue-100'
+                    : 'text-slate-900 bg-slate-50 border-slate-200 hover:bg-slate-100'
                 }`}
               >
                 {copied ? (

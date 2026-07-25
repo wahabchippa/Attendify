@@ -194,15 +194,15 @@ export default function App() {
     return (
       <>
         {updateRequired && <UpdateModal />}
-        <div className="min-h-screen bg-gradient-to-br from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] flex items-center justify-center font-sans">
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center font-sans">
           <div className="flex flex-col items-center animate-pulse">
             <div className="relative mb-6">
               <img
                 src="/icon.png"
                 alt="Attendify"
-                className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-3xl shadow-2xl"
+                className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg shadow-lg"
               />
-              <div className="absolute -inset-4 bg-white/20 blur-2xl rounded-full -z-10" />
+              <div className="absolute -inset-4 bg-white/15 blur-lg rounded-full -z-10" />
             </div>
             <h2 className="text-3xl font-black text-white tracking-tight">Attendify</h2>
             <div className="mt-4 flex items-center gap-2">
@@ -210,7 +210,7 @@ export default function App() {
               <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
               <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
             </div>
-            <p className="mt-4 text-blue-200 text-xs font-bold tracking-widest">INITIALIZING...</p>
+            <p className="mt-4 text-slate-400 text-xs font-bold tracking-widest">INITIALIZING...</p>
           </div>
         </div>
       </>
@@ -256,11 +256,11 @@ export default function App() {
       <div className="min-h-screen bg-slate-50 font-sans">
 
         {/* ===== MOBILE HEADER ===== */}
-        <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/95  border-b border-slate-200 shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-95"
+              className="w-9 h-9 flex items-center justify-center rounded hover:bg-slate-100 text-slate-600 transition-all active:scale-95"
               aria-label="Toggle menu"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -276,14 +276,14 @@ export default function App() {
               <img
                 src="/icon.png"
                 alt="Attendify"
-                className="w-12 h-12 md:w-14 md:h-14 object-cover rounded-xl shadow-md"
+                className="w-12 h-12 md:w-14 md:h-14 object-cover rounded shadow-md"
               />
               <span className="text-slate-800 font-black text-base tracking-tight">Attendify</span>
             </div>
 
             <div className="flex items-center gap-2">
   <NotificationBell currentUser={currentUser} />
-  <div className="w-9 h-9 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center text-[10px] font-black text-white shadow-md shadow-blue-500/20">
+  <div className="w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-[10px] font-black text-white shadow-sm">
     {getInitials(currentUser.name)}
   </div>
 </div>
@@ -292,7 +292,7 @@ export default function App() {
 
         {sidebarOpen && (
           <div
-            className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            className="lg:hidden fixed inset-0 z-40 bg-black/40 "
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -303,10 +303,10 @@ export default function App() {
           bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#0f172a]
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 shadow-2xl
+          lg:translate-x-0 shadow-lg
         `}>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#1E40AF]/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-slate-900/20 rounded-full blur-xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl pointer-events-none" />
 
           <div className="flex flex-col h-full relative z-10">
 
@@ -316,7 +316,7 @@ export default function App() {
     <img
       src="/icon.png"
       alt="Attendify"
-      className="w-12 h-12 md:w-14 md:h-14 object-cover rounded-xl shadow-md"
+      className="w-12 h-12 md:w-14 md:h-14 object-cover rounded shadow-md"
     />
     <div className="flex flex-col">
       <h1 className="text-xl font-extrabold text-white leading-tight">Attendify</h1>
@@ -333,10 +333,10 @@ export default function App() {
                     key={item.key}
                     onClick={() => navigateTo(item.key)}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold
+                      w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-bold
                       transition-all duration-200 group relative
                       ${isActive
-                        ? 'bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white shadow-lg shadow-blue-900/40'
+                        ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-lg shadow-blue-900/40'
                         : 'text-slate-400 hover:bg-white/5 hover:text-white'
                       }
                     `}
@@ -357,8 +357,8 @@ export default function App() {
             </nav>
 
             <div className="p-3 border-t border-white/5">
-              <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-2xl border border-white/5">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-xl flex items-center justify-center text-xs font-black text-white shadow-md shadow-blue-900/40 shrink-0">
+              <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-md border border-white/5">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-xs font-black text-white shadow-md shadow-blue-900/40 shrink-0">
                   {getInitials(currentUser.name)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -396,7 +396,7 @@ export default function App() {
           </div>
         </main>
 
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95  border-t border-slate-200 shadow-lg">
           <div className="flex items-stretch px-2 py-2 gap-1">
             {visibleNav.map(item => {
               const isActive = currentPage === item.key;
@@ -406,10 +406,10 @@ export default function App() {
                   onClick={() => navigateTo(item.key)}
                   className={`
                     flex-1 flex flex-col items-center justify-center gap-1
-                    py-2 px-1 rounded-2xl text-xs font-bold
+                    py-2 px-1 rounded-md text-xs font-bold
                     transition-all duration-200 active:scale-95
                     ${isActive
-                      ? 'bg-gradient-to-br from-[#1E40AF]/10 to-[#2563EB]/10 text-[#1E40AF]'
+                      ? 'bg-gradient-to-br from-[#1E40AF]/10 to-[#2563EB]/10 text-slate-900'
                       : 'text-slate-400 hover:text-slate-600'
                     }
                   `}
@@ -421,7 +421,7 @@ export default function App() {
                     {item.label.split(' ')[0]}
                   </span>
                   {isActive && (
-                    <div className="w-4 h-0.5 bg-[#1E40AF] rounded-full" />
+                    <div className="w-4 h-0.5 bg-slate-900 rounded-full" />
                   )}
                 </button>
               );

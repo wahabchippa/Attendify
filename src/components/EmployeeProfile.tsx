@@ -26,7 +26,7 @@ const STATUS_STYLES: Record<string, string> = {
   late:             'bg-amber-50 text-amber-700 border-amber-200',
   absent:           'bg-red-50 text-red-700 border-red-200',
   'half-day':       'bg-orange-50 text-orange-700 border-orange-200',
-  'work-from-home': 'bg-blue-50 text-blue-700 border-blue-200',
+  'work-from-home': 'bg-slate-50 text-slate-900 border-slate-200',
   'holiday-ot':     'bg-purple-50 text-purple-700 border-purple-200',
   'on-leave':       'bg-indigo-50 text-indigo-700 border-indigo-200',
 };
@@ -175,14 +175,14 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
 
   const getPerformanceColor = (pct: number) => {
     if (pct >= 90) return 'text-emerald-600';
-    if (pct >= 75) return 'text-blue-600';
+    if (pct >= 75) return 'text-slate-800';
     if (pct >= 60) return 'text-amber-600';
     return 'text-red-600';
   };
 
   const getPerformanceLabel = (pct: number) => {
     if (pct >= 90) return { label: 'Excellent', color: 'bg-emerald-500' };
-    if (pct >= 75) return { label: 'Good', color: 'bg-blue-500' };
+    if (pct >= 75) return { label: 'Good', color: 'bg-slate-500' };
     if (pct >= 60) return { label: 'Average', color: 'bg-amber-500' };
     return { label: 'Needs Improvement', color: 'bg-red-500' };
   };
@@ -192,7 +192,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
 
       {/* Notification */}
       {notification && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold max-w-[92%] border animate-slide-down ${
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-5 py-3.5 rounded-md shadow-lg flex items-center gap-3 text-sm font-bold max-w-[92%] border animate-slide-down ${
           notification.type === 'success' ? 'bg-emerald-600/95 text-white border-emerald-500' :
           notification.type === 'error'   ? 'bg-red-600/95 text-white border-red-500' :
           'bg-amber-500/95 text-white border-amber-400'
@@ -202,25 +202,25 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
       )}
 
       {/* ===== HEADER ===== */}
-      <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] rounded-3xl p-5 text-white relative overflow-hidden shadow-xl shadow-blue-900/20">
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-indigo-400/20 rounded-full blur-2xl" />
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 text-white relative overflow-hidden shadow-sm">
+        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-xl" />
+        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-indigo-400/20 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center gap-3.5">
-          <div className="w-12 h-12 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+          <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center border border-white/20">
             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
           </div>
           <div>
             <h2 className="text-lg font-black text-white tracking-tight">Employee Profile</h2>
-            <p className="text-blue-200 text-xs font-bold">Full employee details & performance</p>
+            <p className="text-slate-400 text-xs font-bold">Full employee details & performance</p>
           </div>
         </div>
       </div>
 
       {/* ===== EMPLOYEE SELECTOR (Admin only) ===== */}
       {isAdmin && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5">
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Select Employee</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {employees.map(emp => {
@@ -229,17 +229,17 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                 <button
                   key={emp.id}
                   onClick={() => { setSelectedEmpId(emp.id); setActiveTab('overview'); }}
-                  className={`flex items-center gap-2.5 px-3.5 py-3 rounded-2xl border text-left transition-all active:scale-95 ${
+                  className={`flex items-center gap-2.5 px-3.5 py-3 rounded-md border text-left transition-all active:scale-95 ${
                     isSelected
-                      ? 'bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white border-blue-400 shadow-md shadow-blue-500/20'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-blue-300 hover:bg-blue-50/30'
+                      ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white border-slate-400 shadow-sm'
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50/30'
                   }`}
                 >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0 ${
+                  <div className={`w-9 h-9 rounded flex items-center justify-center text-[10px] font-black shrink-0 ${
                     isSelected
                       ? 'bg-white/20 text-white'
                       : emp.role === 'admin'   ? 'bg-purple-100 text-purple-700'
-                      : emp.role === 'manager' ? 'bg-blue-100 text-blue-700'
+                      : emp.role === 'manager' ? 'bg-slate-100 text-slate-900'
                       : 'bg-slate-200 text-slate-600'
                   }`}>
                     {getInitials(emp.name)}
@@ -261,8 +261,8 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
 
       {/* No selection */}
       {!selectedEmpId && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm py-16 text-center">
-          <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm py-16 text-center">
+          <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
@@ -275,12 +275,12 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
       {selectedEmp && empStats && (
         <>
           {/* Employee Card */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
             <div className="bg-gradient-to-r from-slate-50 to-blue-50/30 px-6 py-5">
               <div className="flex items-start gap-4">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-lg font-black text-white shadow-lg shrink-0 ${
+                <div className={`w-16 h-16 rounded-md flex items-center justify-center text-lg font-black text-white shadow-lg shrink-0 ${
                   selectedEmp.role === 'admin'   ? 'bg-gradient-to-br from-purple-500 to-purple-700 shadow-purple-500/20' :
-                  selectedEmp.role === 'manager' ? 'bg-gradient-to-br from-[#1E40AF] to-[#2563EB] shadow-blue-500/20' :
+                  selectedEmp.role === 'manager' ? 'bg-gradient-to-br from-slate-900 to-slate-800 shadow-slate-900/10' :
                                                   'bg-gradient-to-br from-slate-500 to-slate-700 shadow-slate-500/20'
                 }`}>
                   {getInitials(selectedEmp.name)}
@@ -289,14 +289,14 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xl font-black text-slate-900">{selectedEmp.name}</h3>
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                    <span className={`px-2.5 py-1 rounded-xl text-[10px] font-black border ${
+                    <span className={`px-2.5 py-1 rounded text-[10px] font-black border ${
                       selectedEmp.role === 'admin'   ? 'bg-purple-50 text-purple-600 border-purple-200' :
-                      selectedEmp.role === 'manager' ? 'bg-blue-50 text-[#1E40AF] border-blue-200' :
+                      selectedEmp.role === 'manager' ? 'bg-slate-50 text-slate-900 border-slate-200' :
                                                       'bg-slate-100 text-slate-600 border-slate-200'
                     }`}>{selectedEmp.role.toUpperCase()}</span>
                     <span className="text-[10px] text-slate-400 font-medium">{selectedEmp.id}</span>
                     {selectedEmp.device_id && (
-                      <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black rounded-xl border border-emerald-200">
+                      <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black rounded border border-emerald-200">
                         📱 Device Bound
                       </span>
                     )}
@@ -319,7 +319,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                 {/* Streak */}
                 {empStats.streak > 0 && (
                   <div className="text-center shrink-0">
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-md shadow-amber-500/20">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-md flex items-center justify-center shadow-md shadow-amber-500/20">
                       <span className="text-white font-black text-sm">{empStats.streak}</span>
                     </div>
                     <p className="text-[9px] font-bold text-amber-600 mt-1">Day Streak</p>
@@ -330,7 +330,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
           </div>
 
           {/* Tabs */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-2">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-2">
             <div className="flex gap-1">
               {[
                 { key: 'overview',   label: 'Overview',   icon: '📊' },
@@ -341,9 +341,9 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                 <button
                   key={t.key}
                   onClick={() => setActiveTab(t.key as any)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-xs font-bold transition-all ${
                     activeTab === t.key
-                      ? 'bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white shadow-md shadow-blue-500/20'
+                      ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-sm'
                       : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -363,9 +363,9 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                   { label: 'Total Present', value: empStats.presentAll,    color: 'text-emerald-600', bg: 'from-emerald-50 to-green-50',  border: 'border-emerald-200', icon: '✅' },
                   { label: 'Total Late',    value: empStats.lateAll,       color: 'text-amber-600',   bg: 'from-amber-50 to-yellow-50',   border: 'border-amber-200',  icon: '⚠️' },
                   { label: 'Total Absent',  value: empStats.absentAll,     color: 'text-red-600',     bg: 'from-red-50 to-rose-50',       border: 'border-red-200',    icon: '❌' },
-                  { label: 'Total WFH',     value: empStats.wfhAll,        color: 'text-blue-600',    bg: 'from-blue-50 to-indigo-50',    border: 'border-blue-200',   icon: '🏠' },
+                  { label: 'Total WFH',     value: empStats.wfhAll,        color: 'text-slate-800',    bg: 'from-blue-50 to-indigo-50',    border: 'border-slate-200',   icon: '🏠' },
                 ].map(s => (
-                  <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-2xl p-4 border ${s.border} shadow-sm`}>
+                  <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-md p-4 border ${s.border} shadow-sm`}>
                     <p className="text-lg mb-1">{s.icon}</p>
                     <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
                     <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{s.label}</p>
@@ -376,11 +376,11 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
               {/* Hours & OT */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { label: 'Total Hours (All Time)', value: `${empStats.totalHours}h`, color: 'text-[#1E40AF]',  icon: '⏱' },
+                  { label: 'Total Hours (All Time)', value: `${empStats.totalHours}h`, color: 'text-slate-900',  icon: '⏱' },
                   { label: 'This Month Hours',        value: `${empStats.monthHours}h`, color: 'text-emerald-600', icon: '📅' },
                   { label: 'Total Overtime',          value: `+${empStats.totalOT}h`,   color: 'text-purple-600',  icon: '⚡' },
                 ].map(s => (
-                  <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                  <div key={s.label} className="bg-white rounded-md border border-slate-200 p-4 shadow-sm">
                     <p className="text-xl mb-1">{s.icon}</p>
                     <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
                     <p className="text-slate-400 text-[10px] font-bold mt-1">{s.label}</p>
@@ -389,7 +389,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
               </div>
 
               {/* Last 30 days mini summary */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Last 30 Days</p>
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -397,7 +397,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                     { label: 'Late',    value: empStats.last30Late,    color: 'text-amber-600' },
                     { label: 'Absent',  value: empStats.last30Absent,  color: 'text-red-600' },
                   ].map(s => (
-                    <div key={s.label} className="text-center bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                    <div key={s.label} className="text-center bg-slate-50 rounded-md p-3 border border-slate-100">
                       <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
                       <p className="text-slate-400 text-[10px] font-bold mt-1">{s.label}</p>
                     </div>
@@ -407,16 +407,16 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
 
               {/* Leave Balance */}
               {leaveBalance && (
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5">
+                <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Leave Balance ({leaveBalance.year})</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { label: 'Casual',    remaining: leaveBalance.casual,    used: leaveBalance.casualUsed,    color: 'text-blue-600' },
+                      { label: 'Casual',    remaining: leaveBalance.casual,    used: leaveBalance.casualUsed,    color: 'text-slate-800' },
                       { label: 'Sick',      remaining: leaveBalance.sick,      used: leaveBalance.sickUsed,      color: 'text-red-600' },
                       { label: 'Annual',    remaining: leaveBalance.annual,    used: leaveBalance.annualUsed,    color: 'text-emerald-600' },
                       { label: 'Emergency', remaining: leaveBalance.emergency, used: leaveBalance.emergencyUsed, color: 'text-orange-600' },
                     ].map(l => (
-                      <div key={l.label} className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-center">
+                      <div key={l.label} className="bg-slate-50 rounded-md p-3 border border-slate-100 text-center">
                         <p className={`text-xl font-black ${l.color}`}>{l.remaining}</p>
                         <p className="text-slate-400 text-[9px] font-bold mt-0.5">{l.label}</p>
                         <p className="text-slate-300 text-[9px] font-medium">{l.used} used</p>
@@ -428,7 +428,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
 
               {/* Salary info */}
               {isAdmin && salaryConfig && salaryConfig.baseSalary > 0 && (
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5">
+                <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">💰 Salary Info</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                     {[
@@ -436,7 +436,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                       { label: 'Allowances',   value: formatPKR(salaryConfig.allowances) },
                       { label: 'OT Rate/hr',   value: formatPKR(salaryConfig.otRatePerHour) },
                     ].map(s => (
-                      <div key={s.label} className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200">
+                      <div key={s.label} className="bg-emerald-50 rounded-md p-3 border border-emerald-200">
                         <p className="text-emerald-700 font-black">{s.value}</p>
                         <p className="text-emerald-500 text-[10px] font-bold mt-0.5">{s.label}</p>
                       </div>
@@ -449,7 +449,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
 
           {/* ===== ATTENDANCE TAB ===== */}
           {activeTab === 'attendance' && (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
                 <h3 className="text-sm font-black text-slate-800">Recent Attendance</h3>
               </div>
@@ -464,7 +464,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                     return (
                       <div key={rec.id} className="px-5 py-3.5 hover:bg-slate-50/80 transition-all">
                         <div className="flex items-center gap-3">
-                          <div className={`px-2.5 py-1 rounded-xl text-[10px] font-black border shrink-0 ${statusStyle}`}>
+                          <div className={`px-2.5 py-1 rounded text-[10px] font-black border shrink-0 ${statusStyle}`}>
                             {rec.status === 'work-from-home' ? 'WFH' : rec.status.toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -499,7 +499,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
           {activeTab === 'notes' && isAdmin && (
             <div className="space-y-4">
               {/* Add note */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
                   <h3 className="text-sm font-black text-slate-800">Add Manager Note</h3>
                 </div>
@@ -512,7 +512,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                         <button
                           key={type}
                           onClick={() => setNoteType(type)}
-                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all active:scale-95 ${
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded border text-xs font-bold transition-all active:scale-95 ${
                             noteType === type
                               ? `${cfg.bg} ${cfg.color} ${cfg.border} shadow-sm`
                               : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
@@ -530,7 +530,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                     onChange={e => setNoteText(e.target.value)}
                     placeholder="Write your note here..."
                     rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E40AF] resize-none transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 resize-none transition-all"
                   />
 
                   <div className="flex items-center justify-between">
@@ -547,7 +547,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                     <button
                       onClick={handleAddNote}
                       disabled={!noteText.trim() || addingNote}
-                      className="px-5 py-2.5 bg-gradient-to-r from-[#1E40AF] to-[#2563EB] disabled:from-slate-300 disabled:to-slate-400 text-white rounded-2xl text-xs font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:shadow-none"
+                      className="px-5 py-2.5 bg-gradient-to-r from-slate-900 to-slate-800 disabled:from-slate-300 disabled:to-slate-400 text-white rounded-md text-xs font-black shadow-lg shadow-slate-900/10 transition-all active:scale-95 disabled:shadow-none"
                     >
                       {addingNote ? 'Adding...' : '+ Add Note'}
                     </button>
@@ -556,7 +556,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
               </div>
 
               {/* Notes list */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
                   <h3 className="text-sm font-black text-slate-800">Notes ({notes.length})</h3>
                 </div>
@@ -571,7 +571,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                       return (
                         <div key={note.id} className="px-5 py-4 hover:bg-slate-50/80 transition-all">
                           <div className="flex items-start gap-3">
-                            <div className={`w-9 h-9 ${cfg.bg} rounded-xl flex items-center justify-center text-lg border ${cfg.border} shrink-0`}>
+                            <div className={`w-9 h-9 ${cfg.bg} rounded flex items-center justify-center text-lg border ${cfg.border} shrink-0`}>
                               {cfg.icon}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -589,7 +589,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                             </div>
                             <button
                               onClick={() => handleDeleteNote(note.id)}
-                              className="w-7 h-7 bg-red-50 hover:bg-red-100 text-red-400 rounded-xl flex items-center justify-center text-xs border border-red-200 transition-all active:scale-95 shrink-0"
+                              className="w-7 h-7 bg-red-50 hover:bg-red-100 text-red-400 rounded flex items-center justify-center text-xs border border-red-200 transition-all active:scale-95 shrink-0"
                             >
                               ✕
                             </button>
@@ -607,15 +607,15 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
           {activeTab === 'device' && isAdmin && (
             <div className="space-y-4">
               {/* Device Status */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
                   <h3 className="text-sm font-black text-slate-800">Device Status</h3>
                 </div>
                 <div className="p-5">
                   {selectedEmp.device_id ? (
                     <div className="space-y-4">
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
-                        <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-md p-4 flex items-center gap-3">
+                        <div className="w-12 h-12 bg-emerald-100 rounded flex items-center justify-center">
                           <span className="text-2xl">📱</span>
                         </div>
                         <div className="flex-1">
@@ -626,14 +626,14 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                       {selectedEmp.role !== 'admin' && (
                         <button
                           onClick={handleResetDevice}
-                          className="w-full py-3 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-2xl text-sm font-bold transition-all active:scale-95"
+                          className="w-full py-3 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 rounded-md text-sm font-bold transition-all active:scale-95"
                         >
                           🔄 Reset Device Binding
                         </button>
                       )}
                     </div>
                   ) : (
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center">
+                    <div className="bg-slate-50 border border-slate-200 rounded-md p-4 text-center">
                       <span className="text-3xl">📵</span>
                       <p className="text-slate-500 font-bold text-sm mt-2">No Device Bound</p>
                       <p className="text-slate-400 text-xs mt-1">Employee will bind device on first login</p>
@@ -644,7 +644,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
 
               {/* Device Logs */}
               {deviceLogs.length > 0 && (
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                   <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/20">
                     <h3 className="text-sm font-black text-slate-800">Device Activity Log</h3>
                   </div>
@@ -653,7 +653,7 @@ export default function EmployeeProfile({ currentUser }: EmployeeProfileProps) {
                       const actionConfig: Record<string, { color: string; icon: string }> = {
                         bind:           { color: 'text-emerald-600', icon: '🔗' },
                         reset:          { color: 'text-amber-600',   icon: '🔄' },
-                        login_attempt:  { color: 'text-blue-600',    icon: '🔑' },
+                        login_attempt:  { color: 'text-slate-800',    icon: '🔑' },
                         login_blocked:  { color: 'text-red-600',     icon: '🚫' },
                       };
                       const cfg = actionConfig[log.action] || { color: 'text-slate-600', icon: '•' };

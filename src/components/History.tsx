@@ -15,7 +15,7 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; te
   late:             { label: 'Late',       dot: 'bg-amber-500',   bg: 'bg-amber-50',   text: 'text-amber-700',   icon: '!' },
   absent:           { label: 'Absent',     dot: 'bg-red-500',     bg: 'bg-red-50',     text: 'text-red-700',     icon: '✕' },
   'half-day':       { label: 'Half Day',   dot: 'bg-orange-500',  bg: 'bg-orange-50',  text: 'text-orange-700',  icon: '½' },
-  'work-from-home': { label: 'WFH',        dot: 'bg-blue-500',    bg: 'bg-blue-50',    text: 'text-blue-700',    icon: '⌂' },
+  'work-from-home': { label: 'WFH',        dot: 'bg-slate-500',    bg: 'bg-slate-50',    text: 'text-slate-900',    icon: '⌂' },
   'holiday-ot':     { label: 'Holiday OT', dot: 'bg-purple-500',  bg: 'bg-purple-50',  text: 'text-purple-700',  icon: '★' },
   'on-leave':       { label: 'On Leave',   dot: 'bg-indigo-500',  bg: 'bg-indigo-50',  text: 'text-indigo-700',  icon: '⏸' },
 };
@@ -149,11 +149,11 @@ export default function History({ currentUser }: HistoryProps) {
     <div className={`space-y-4 font-sans transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
 
       {/* ═══ TOP BAR ═══ */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+      <div className="bg-white rounded-md border border-slate-200 shadow-sm p-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
 
           {/* View Mode Tabs */}
-          <div className="flex bg-slate-100 rounded-xl p-1 gap-0.5 shrink-0">
+          <div className="flex bg-slate-100 rounded p-1 gap-0.5 shrink-0">
             {(['daily', 'weekly', 'monthly'] as const).map(v => (
               <button key={v} onClick={() => setViewMode(v)}
                 className={`px-4 py-2 text-xs font-bold rounded-lg transition-all capitalize ${
@@ -169,7 +169,7 @@ export default function History({ currentUser }: HistoryProps) {
             <button onClick={goPrev} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all shrink-0">
               <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <button onClick={goToday} className="px-3 py-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all shrink-0">Today</button>
+            <button onClick={goToday} className="px-3 py-1.5 text-[10px] font-bold text-slate-800 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all shrink-0">Today</button>
             <p className="text-sm font-bold text-slate-800 truncate">{navLabel}</p>
             <button onClick={goNext} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all shrink-0">
               <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
@@ -180,7 +180,7 @@ export default function History({ currentUser }: HistoryProps) {
             {/* Employee Filter */}
             {isAdmin && (
               <select value={selectedEmployee} onChange={e => setSelectedEmployee(e.target.value)}
-                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-lg pl-3 pr-8 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
+                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-lg pl-3 pr-8 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-900/20 cursor-pointer">
                 <option value="all">All Employees</option>
                 {attendanceEmps.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
               </select>
@@ -198,9 +198,9 @@ export default function History({ currentUser }: HistoryProps) {
           { label: 'Present', val: stats.present, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
           { label: 'Late',    val: stats.late,    color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-100' },
           { label: 'Absent',  val: stats.absent,  color: 'text-red-600',     bg: 'bg-red-50',     border: 'border-red-100' },
-          { label: 'Hours',   val: `${stats.totalHours}h`, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
+          { label: 'Hours',   val: `${stats.totalHours}h`, color: 'text-slate-800', bg: 'bg-slate-50', border: 'border-slate-200' },
         ].map(s => (
-          <div key={s.label} className={`${s.bg} ${s.border} border rounded-xl p-2.5 text-center`}>
+          <div key={s.label} className={`${s.bg} ${s.border} border rounded p-2.5 text-center`}>
             <p className={`text-lg font-black ${s.color} leading-none`}>{s.val}</p>
             <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{s.label}</p>
           </div>
@@ -211,15 +211,15 @@ export default function History({ currentUser }: HistoryProps) {
       {/* ═══ DAILY VIEW ═══ */}
       {/* ═══════════════════════════════════════ */}
       {viewMode === 'daily' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
           {/* Selected Employee Banner */}
           {selectedEmployee !== 'all' && (
-            <div className="px-4 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white text-[9px] font-black">
+            <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+              <div className="w-7 h-7 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[9px] font-black">
                 {getInitials(getEmpName(selectedEmployee))}
               </div>
-              <p className="text-sm font-bold text-blue-800">{getEmpName(selectedEmployee)}</p>
-              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-[10px] font-bold text-blue-500 hover:text-blue-700 bg-blue-100 px-2 py-0.5 rounded">✕ Clear</button>
+              <p className="text-sm font-bold text-slate-900">{getEmpName(selectedEmployee)}</p>
+              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-[10px] font-bold text-slate-700 hover:text-slate-900 bg-slate-100 px-2 py-0.5 rounded">✕ Clear</button>
             </div>
           )}
           {dailyRecords.length === 0 ? (
@@ -236,7 +236,7 @@ export default function History({ currentUser }: HistoryProps) {
                   <div key={r.id} className="p-4 hover:bg-slate-50/50 transition-colors">
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white text-xs font-black shrink-0 shadow-sm">
+                      <div className="w-10 h-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded flex items-center justify-center text-white text-xs font-black shrink-0 shadow-sm">
                         {getInitials(getEmpName(r.employeeId))}
                       </div>
 
@@ -255,7 +255,7 @@ export default function History({ currentUser }: HistoryProps) {
                             <span className="text-slate-300">→</span>
                             <span>Out <span className="font-semibold text-slate-700">{safeFmt(r.checkOut, 'hh:mm a')}</span></span>
                             {r.totalHours > 0 && (
-                              <span className="font-bold text-blue-600">{r.totalHours.toFixed(1)}h</span>
+                              <span className="font-bold text-slate-800">{r.totalHours.toFixed(1)}h</span>
                             )}
                           </div>
                         ) : (
@@ -283,7 +283,7 @@ export default function History({ currentUser }: HistoryProps) {
       {/* ═══ WEEKLY VIEW ═══ */}
       {/* ═══════════════════════════════════════ */}
       {viewMode === 'weekly' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
           {/* Day headers */}
           <div className="grid grid-cols-[140px_repeat(7,1fr)] border-b border-slate-100 bg-slate-50/80">
             <div className="p-3 text-[10px] font-bold text-slate-400 uppercase">Employee</div>
@@ -291,11 +291,11 @@ export default function History({ currentUser }: HistoryProps) {
               const isT = isToday(day);
               const isSun = day.getDay() === 0;
               return (
-                <div key={day.toISOString()} className={`p-2 text-center border-l border-slate-100 ${isT ? 'bg-blue-50' : ''}`}>
-                  <p className={`text-[10px] font-bold uppercase ${isSun ? 'text-red-400' : isT ? 'text-blue-600' : 'text-slate-400'}`}>
+                <div key={day.toISOString()} className={`p-2 text-center border-l border-slate-100 ${isT ? 'bg-slate-50' : ''}`}>
+                  <p className={`text-[10px] font-bold uppercase ${isSun ? 'text-red-400' : isT ? 'text-slate-800' : 'text-slate-400'}`}>
                     {format(day, 'EEE')}
                   </p>
-                  <p className={`text-sm font-black ${isT ? 'text-blue-600' : 'text-slate-700'}`}>
+                  <p className={`text-sm font-black ${isT ? 'text-slate-800' : 'text-slate-700'}`}>
                     {format(day, 'd')}
                   </p>
                 </div>
@@ -306,10 +306,10 @@ export default function History({ currentUser }: HistoryProps) {
           {/* Employee rows */}
           {/* Selected employee indicator */}
           {selectedEmployee !== 'all' && (
-            <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
-              <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center text-white text-[8px] font-black">{getInitials(getEmpName(selectedEmployee))}</div>
-              <p className="text-xs font-bold text-blue-700">Showing: {getEmpName(selectedEmployee)}</p>
-              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-[10px] font-bold text-blue-500 hover:text-blue-700">Show All ×</button>
+            <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+              <div className="w-6 h-6 bg-slate-800 rounded-md flex items-center justify-center text-white text-[8px] font-black">{getInitials(getEmpName(selectedEmployee))}</div>
+              <p className="text-xs font-bold text-slate-900">Showing: {getEmpName(selectedEmployee)}</p>
+              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-[10px] font-bold text-slate-700 hover:text-slate-900">Show All ×</button>
             </div>
           )}
           {getWeeklyEmployeeData().length === 0 ? (
@@ -322,7 +322,7 @@ export default function History({ currentUser }: HistoryProps) {
                 <div key={row.empId} className="grid grid-cols-[140px_repeat(7,1fr)] hover:bg-slate-50/30 transition-colors">
                   {/* Employee name */}
                   <div className="p-3 flex items-center gap-2 border-r border-slate-100">
-                    <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white text-[9px] font-black shrink-0">
+                    <div className="w-7 h-7 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[9px] font-black shrink-0">
                       {getInitials(row.name)}
                     </div>
                     <p className="text-xs font-bold text-slate-700 truncate">{row.name}</p>
@@ -336,7 +336,7 @@ export default function History({ currentUser }: HistoryProps) {
 
                     if (!rec) {
                       return (
-                        <div key={i} className={`p-2 border-l border-slate-100 flex items-center justify-center ${isT ? 'bg-blue-50/50' : isSun ? 'bg-slate-50/50' : ''}`}>
+                        <div key={i} className={`p-2 border-l border-slate-100 flex items-center justify-center ${isT ? 'bg-slate-50/50' : isSun ? 'bg-slate-50/50' : ''}`}>
                           {isSun ? (
                             <span className="text-[10px] text-slate-300 font-medium">OFF</span>
                           ) : (
@@ -348,7 +348,7 @@ export default function History({ currentUser }: HistoryProps) {
 
                     const s = sc(rec.status);
                     return (
-                      <div key={i} className={`p-1.5 border-l border-slate-100 flex items-center justify-center ${isT ? 'bg-blue-50/50' : ''}`}>
+                      <div key={i} className={`p-1.5 border-l border-slate-100 flex items-center justify-center ${isT ? 'bg-slate-50/50' : ''}`}>
                         <div className={`w-full rounded-lg p-1.5 text-center ${s.bg}`} title={`${s.label} | ${safeFmt(rec.checkIn, 'hh:mm a')} - ${safeFmt(rec.checkOut, 'hh:mm a')} | ${rec.totalHours.toFixed(1)}h`}>
                           <div className={`w-5 h-5 rounded-full ${s.dot} mx-auto flex items-center justify-center`}>
                             <span className="text-white text-[9px] font-black">{s.icon}</span>
@@ -417,7 +417,7 @@ export default function History({ currentUser }: HistoryProps) {
         return (
           <div className="space-y-4">
             {/* Calendar */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+            <div className="bg-white rounded-md border border-slate-200 shadow-sm p-4">
               {/* Weekday headers */}
               <div className="grid grid-cols-7 mb-2">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
@@ -450,11 +450,11 @@ export default function History({ currentUser }: HistoryProps) {
                     dotEl = <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />;
                   }
 
-                  if (isT) cellBg = 'bg-blue-100 ring-2 ring-blue-400 ring-offset-1';
+                  if (isT) cellBg = 'bg-slate-100 ring-2 ring-slate-900 ring-offset-1';
 
                   return (
                     <div key={day.toISOString()} className={`aspect-square rounded-lg ${cellBg} flex flex-col items-center justify-center gap-0.5 transition-all`}>
-                      <span className={`text-xs font-bold ${isT ? 'text-blue-700' : dayColor}`}>{format(day, 'd')}</span>
+                      <span className={`text-xs font-bold ${isT ? 'text-slate-900' : dayColor}`}>{format(day, 'd')}</span>
                       {dotEl}
                       {info && selectedEmployee === 'all' && (
                         <span className="text-[8px] font-bold text-slate-400">{info.count}/{info.total}</span>
@@ -473,7 +473,7 @@ export default function History({ currentUser }: HistoryProps) {
                   </span>
                 ))}
                 <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 ring-1 ring-blue-300" />
+                  <span className="w-2 h-2 rounded-full bg-slate-900 ring-1 ring-slate-400" />
                   Today
                 </span>
               </div>
@@ -481,14 +481,14 @@ export default function History({ currentUser }: HistoryProps) {
 
             {/* Monthly Summary Table (admin view) */}
             {selectedEmployee === 'all' && empSummaries.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
                   <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Monthly Summary — {format(currentDate, 'MMMM yyyy')}</h3>
                 </div>
                 <div className="divide-y divide-slate-50">
                   {empSummaries.map(es => (
                     <div key={es.emp.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 transition-colors">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white text-[9px] font-black shrink-0">
+                      <div className="w-8 h-8 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center text-white text-[9px] font-black shrink-0">
                         {getInitials(es.emp.name)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -496,7 +496,7 @@ export default function History({ currentUser }: HistoryProps) {
                         <div className="flex gap-3 mt-0.5">
                           <span className="text-[10px] font-bold text-emerald-600">{es.present} present</span>
                           <span className="text-[10px] font-bold text-red-500">{es.absent} absent</span>
-                          <span className="text-[10px] font-bold text-blue-600">{es.hours}h worked</span>
+                          <span className="text-[10px] font-bold text-slate-800">{es.hours}h worked</span>
                         </div>
                       </div>
                       {/* Attendance % bar */}
@@ -517,7 +517,7 @@ export default function History({ currentUser }: HistoryProps) {
 
             {/* Single employee monthly detail */}
             {selectedEmployee !== 'all' && (
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
                   <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">
                     {getEmpName(targetEmpId)} — {format(currentDate, 'MMMM yyyy')}

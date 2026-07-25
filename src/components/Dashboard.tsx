@@ -414,7 +414,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       late: 'bg-amber-50 text-amber-700 border-amber-200',
       absent: 'bg-red-50 text-red-700 border-red-200',
       'half-day': 'bg-orange-50 text-orange-700 border-orange-200',
-      'work-from-home': 'bg-blue-50 text-blue-700 border-blue-200',
+      'work-from-home': 'bg-slate-50 text-slate-900 border-slate-200',
       'holiday-ot': 'bg-purple-50 text-purple-700 border-purple-200',
     };
     return m[s] || 'bg-slate-50 text-slate-600 border-slate-200';
@@ -477,7 +477,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
       {/* NOTIFICATION TOAST */}
       {notification && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-5 py-3.5 rounded-2xl shadow-2xl animate-slide-down flex items-center gap-3 text-sm font-bold max-w-[92%] backdrop-blur-md border ${
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-5 py-3.5 rounded-md shadow-lg animate-slide-down flex items-center gap-3 text-sm font-bold max-w-[92%]  border ${
           notification.type === 'success' ? 'bg-emerald-600/95 text-white border-emerald-500' :
           notification.type === 'error' ? 'bg-red-600/95 text-white border-red-500' :
           'bg-amber-500/95 text-white border-amber-400'
@@ -496,10 +496,10 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
             {/* ===== WFH MODAL ===== */}
       {showWFHModal && createPortal(
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/40 backdrop-blur-sm">
-          <div className="my-auto bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border border-slate-200">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/40 ">
+          <div className="my-auto bg-white rounded-lg shadow-lg p-8 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border border-slate-200">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center shadow-lg shadow-slate-900/10">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                 </svg>
@@ -515,14 +515,14 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 value={wfhReason}
                 onChange={e => setWfhReason(e.target.value || "")}
                 placeholder="Why do you need to work from home?"
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium resize-none h-28 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E40AF] bg-slate-50/50 placeholder-slate-400 transition-all"
+                className="w-full border border-slate-200 rounded px-4 py-3 text-sm font-medium resize-none h-28 focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 bg-slate-50/50 placeholder-slate-400 transition-all"
               />
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => { setShowWFHModal(false); setWfhReason(''); }} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-[0.98]">
+              <button onClick={() => { setShowWFHModal(false); setWfhReason(''); }} className="flex-1 py-3 rounded border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-[0.98]">
                 Cancel
               </button>
-              <button onClick={handleWFHRequest} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white text-sm font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all active:scale-[0.98]">
+              <button onClick={handleWFHRequest} className="flex-1 py-3 rounded bg-gradient-to-r from-slate-900 to-slate-800 text-white text-sm font-bold shadow-lg shadow-slate-900/10 hover:shadow-blue-500/30 transition-all active:scale-[0.98]">
                 Submit Request
               </button>
             </div>
@@ -533,9 +533,9 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
             {/* ===== QUIT CONFIRM MODAL ===== */}
       {showQuitConfirm && createPortal(
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/40 backdrop-blur-sm">
-          <div className="my-auto bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border border-slate-200 text-center">
-            <div className="w-16 h-16 mx-auto bg-red-100 rounded-2xl flex items-center justify-center mb-5">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/40 ">
+          <div className="my-auto bg-white rounded-lg shadow-lg p-8 w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border border-slate-200 text-center">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-md flex items-center justify-center mb-5">
               <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
               </svg>
@@ -543,8 +543,8 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
             <h3 className="text-xl font-black text-slate-900 mb-1">Quit Attendify?</h3>
             <p className="text-slate-400 text-sm font-medium mb-6">You will be logged out of your session.</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowQuitConfirm(false)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-[0.98]">Stay</button>
-              <button onClick={onLogout} className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]">Quit</button>
+              <button onClick={() => setShowQuitConfirm(false)} className="flex-1 py-3 rounded border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-[0.98]">Stay</button>
+              <button onClick={onLogout} className="flex-1 py-3 rounded bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]">Quit</button>
             </div>
           </div>
         </div>,
@@ -553,18 +553,18 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
             {/* ===== WARNING MODAL ===== */}
       {showWarningModal && createPortal(
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/70 backdrop-blur-sm">
-          <div className="my-auto bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border-2 border-red-400">
-            <div className="flex items-center justify-center w-20 h-20 mx-auto bg-red-100 rounded-3xl mb-5">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/70 ">
+          <div className="my-auto bg-white rounded-lg shadow-lg p-8 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto animate-scale-up border-2 border-red-400">
+            <div className="flex items-center justify-center w-20 h-20 mx-auto bg-red-100 rounded-lg mb-5">
               <span className="text-4xl">🚨</span>
             </div>
             <h3 className="text-2xl font-black text-red-600 text-center mb-4">Security Violation</h3>
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
               <p className="text-slate-700 text-sm text-center leading-relaxed font-medium">
                 ⚠️ You are <span className="font-black text-red-600">not connected</span> to office WiFi. Your check-out has been marked as <span className="font-black">'Unverified / Outside Office'</span> and an alert has been sent to Admin.
               </p>
             </div>
-            <button onClick={() => setShowWarningModal(false)} className="w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-sm transition-all shadow-lg shadow-red-600/20">
+            <button onClick={() => setShowWarningModal(false)} className="w-full py-3.5 rounded bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-sm transition-all shadow-lg shadow-red-600/20">
               I Understand
             </button>
           </div>
@@ -576,16 +576,16 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       <div className={`max-w-5xl mx-auto p-4 md:p-6 space-y-5 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
         {/* TOP HEADER BAR */}
-        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] rounded-3xl p-5 md:p-6 text-white relative overflow-hidden shadow-xl shadow-blue-900/20">
-          <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl" />
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 md:p-6 text-white relative overflow-hidden shadow-sm">
+          <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/5 rounded-sm blur-lg" />
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/3 rounded-sm blur-md" />
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center text-sm font-black border border-white/20 shadow-inner">
+              <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center text-sm font-black border border-white/20 shadow-inner">
                 {getInitials(currentUser.name)}
               </div>
               <div>
-                <p className="text-blue-200 text-xs font-bold tracking-wide">{getGreeting()}</p>
+                <p className="text-slate-400 text-xs font-bold tracking-wide">{getGreeting()}</p>
                 <h1 className="text-lg md:text-xl font-black tracking-tight leading-tight">{currentUser.name}</h1>
                 {isAdmin && (
                   <div className="flex items-center gap-1.5 mt-1">
@@ -601,9 +601,9 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               <WeatherWidget />
               <div className="hidden sm:block text-right">
                 <p className="text-white font-bold text-sm">{format(currentTime, 'EEEE')}</p>
-                <p className="text-blue-200 text-xs font-medium">{format(currentTime, 'dd MMMM yyyy')}</p>
+                <p className="text-slate-400 text-xs font-medium">{format(currentTime, 'dd MMMM yyyy')}</p>
               </div>
-              <button onClick={() => setShowQuitConfirm(true)} className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/10 transition-all active:scale-95" aria-label="Quit">
+              <button onClick={() => setShowQuitConfirm(true)} className="w-10 h-10 bg-white/10 hover:bg-white/20  rounded flex items-center justify-center border border-white/10 transition-all active:scale-95" aria-label="Quit">
                 <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
                 </svg>
@@ -614,20 +614,20 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
         {/* ACCOUNT REQUESTS */}
         {canSeeAccountRequests && pendingAccounts.length > 0 && (
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
             <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-indigo-50">
               <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                <span className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" />
                 New Account Requests
-                <span className="ml-auto bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{pendingAccounts.length}</span>
+                <span className="ml-auto bg-slate-800 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{pendingAccounts.length}</span>
               </h3>
             </div>
             <div className="p-4 space-y-3">
               {pendingAccounts.map((req: any) => (
-                <div key={req.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-100 hover:border-blue-200 transition-all">
+                <div key={req.id} className="bg-slate-50 rounded-md p-4 border border-slate-100 hover:border-slate-200 transition-all">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] text-white rounded-xl flex items-center justify-center text-[10px] font-black shadow-md shadow-blue-500/20">
+                      <div className="w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded flex items-center justify-center text-[10px] font-black shadow-sm">
                         {getInitials(req.name)}
                       </div>
                       <div>
@@ -637,10 +637,10 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => handleApproveAccount(req, 'employee')} className="px-3.5 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-xl text-xs font-bold transition-all active:scale-95">✓ Employee</button>
-                    <button onClick={() => handleApproveAccount(req, 'admin')} className="px-3.5 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-xl text-xs font-bold transition-all active:scale-95">✓ Admin</button>
-                    <button onClick={() => handleApproveAccount(req, 'manager')} className="px-3.5 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl text-xs font-bold transition-all active:scale-95">✓ Manager</button>
-                    <button onClick={() => handleRejectAccount(req)} className="px-3.5 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-xs font-bold transition-all active:scale-95 ml-auto">✕ Reject</button>
+                    <button onClick={() => handleApproveAccount(req, 'employee')} className="px-3.5 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-xs font-bold transition-all active:scale-95">✓ Employee</button>
+                    <button onClick={() => handleApproveAccount(req, 'admin')} className="px-3.5 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded text-xs font-bold transition-all active:scale-95">✓ Admin</button>
+                    <button onClick={() => handleApproveAccount(req, 'manager')} className="px-3.5 py-2 bg-slate-100 hover:bg-blue-200 text-slate-900 rounded text-xs font-bold transition-all active:scale-95">✓ Manager</button>
+                    <button onClick={() => handleRejectAccount(req)} className="px-3.5 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-bold transition-all active:scale-95 ml-auto">✕ Reject</button>
                   </div>
                 </div>
               ))}
@@ -650,7 +650,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
         {/* ATTENDANCE CARD */}
         {canMarkAttendance && (
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
             <div className="px-6 py-8 flex flex-col items-center">
               <AnalogClock size={190} />
               <div className="mt-5 text-center">
@@ -667,7 +667,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               </div>
 
               {/* Location Badge */}
-              <div className={`mt-5 flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-sm font-bold border transition-all ${
+              <div className={`mt-5 flex items-center gap-2.5 px-5 py-2.5 rounded-md text-sm font-bold border transition-all ${
                 officeLocation === null && !gpsOff ? 'bg-slate-50 text-slate-500 border-slate-200'
                 : displayLabel.includes('Office') ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : displayLabel === '📍 Location Off' ? 'bg-amber-50 text-amber-700 border-amber-200'
@@ -704,7 +704,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 {!todayRecord ? (
                   <div className="space-y-3">
                     {todayWFHRequest && (
-                      <div className={`p-4 rounded-2xl text-center text-sm font-bold border ${
+                      <div className={`p-4 rounded-md text-center text-sm font-bold border ${
                         todayWFHRequest.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200'
                         : todayWFHRequest.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : 'bg-red-50 text-red-700 border-red-200'
@@ -715,7 +715,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                     )}
                     {officeLocation ? (
                       <button onClick={handleCheckIn} disabled={checkingIn}
-                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#1E40AF] to-[#2563EB] hover:from-[#1d4ed8] hover:to-[#3b82f6] disabled:from-slate-300 disabled:to-slate-400 text-white font-bold text-base transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-500/35 active:scale-[0.98] disabled:shadow-none">
+                        className="w-full py-4 rounded-md bg-gradient-to-r from-slate-900 to-slate-800 hover:from-[#1d4ed8] hover:to-[#3b82f6] disabled:from-slate-300 disabled:to-slate-400 text-white font-bold text-base transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-500/35 active:scale-[0.98] disabled:shadow-none">
                         {checkingIn ? (
                           <span className="flex items-center justify-center gap-2">
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -725,18 +725,18 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                       </button>
                     ) : (
                       <div className="space-y-3">
-                        <button disabled className="w-full py-4 rounded-2xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed border border-slate-200">
+                        <button disabled className="w-full py-4 rounded-md bg-slate-100 text-slate-400 font-bold cursor-not-allowed border border-slate-200">
                           {displayLabel === '📍 Location Off' ? '📍 Enable GPS to Check In' : officeLocation === null ? 'Detecting...' : 'Not in Office'}
                         </button>
                         {!todayWFHRequest && (
-                          <button onClick={() => setShowWFHModal(true)} className="w-full py-3.5 rounded-2xl border-2 border-dashed border-blue-200 text-blue-600 font-bold hover:bg-blue-50 text-sm transition-all active:scale-[0.98]">
+                          <button onClick={() => setShowWFHModal(true)} className="w-full py-3.5 rounded-md border-2 border-dashed border-slate-200 text-slate-800 font-bold hover:bg-slate-50 text-sm transition-all active:scale-[0.98]">
                             🏠 Request Work From Home
                           </button>
                         )}
                       </div>
                     )}
                     <button onClick={checkOfficeStatus} disabled={officeLocation === null && !gpsOff}
-                      className="w-full py-2.5 text-xs text-slate-400 hover:text-[#1E40AF] disabled:opacity-40 font-bold transition-all flex items-center justify-center gap-1">
+                      className="w-full py-2.5 text-xs text-slate-400 hover:text-slate-900 disabled:opacity-40 font-bold transition-all flex items-center justify-center gap-1">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
                       </svg>
@@ -746,24 +746,24 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 ) : (
                   <div className="space-y-4">
                     {todayRecord.checkIn && (
-                      <div className="bg-gradient-to-r from-[#1E40AF] to-[#2563EB] rounded-2xl p-5 text-white shadow-lg shadow-blue-500/20">
-                        <p className="text-blue-200 text-[10px] font-black uppercase tracking-widest mb-1">Today's Check-in</p>
+                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-md p-5 text-white shadow-lg shadow-slate-900/10">
+                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Today's Check-in</p>
                         <p className="text-3xl font-black font-mono">{formatTime12hr(todayRecord.checkIn)}</p>
                         <p className="text-blue-100 text-xs font-bold mt-1">📍 {getLocationFromIP(todayRecord.ipAddress)}</p>
                       </div>
                     )}
                     <div className="text-center flex flex-wrap items-center justify-center gap-2">
-                      <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-sm font-black border ${statusStyle(todayRecord.status)}`}>
+                      <span className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-black border ${statusStyle(todayRecord.status)}`}>
                         {statusLabel(todayRecord.status)}
                       </span>
                       {todayRecord.notes?.includes('SUNDAY') && (
-                        <span className="px-3 py-2 bg-purple-50 text-purple-600 rounded-2xl text-xs font-bold border border-purple-200">🌟 Sunday OT</span>
+                        <span className="px-3 py-2 bg-purple-50 text-purple-600 rounded-md text-xs font-bold border border-purple-200">🌟 Sunday OT</span>
                       )}
                     </div>
-                    <div className="bg-slate-50 rounded-2xl p-5 space-y-3 border border-slate-100">
+                    <div className="bg-slate-50 rounded-md p-5 space-y-3 border border-slate-100">
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-500 font-medium">Location</span>
-                        <span className="text-[#1E40AF] font-bold">{getLocationFromIP(todayRecord.ipAddress)}</span>
+                        <span className="text-slate-900 font-bold">{getLocationFromIP(todayRecord.ipAddress)}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-500 font-medium">Check In</span>
@@ -775,7 +775,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                       </div>
                       <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-sm">
                         <span className="text-slate-500 font-medium">Working Time</span>
-                        <span className="text-[#1E40AF] font-black font-mono text-base">{getLiveHours()}</span>
+                        <span className="text-slate-900 font-black font-mono text-base">{getLiveHours()}</span>
                       </div>
                       {showOT && getLiveOT() > 0 && (
                         <div className="flex justify-between items-center text-sm">
@@ -785,14 +785,14 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                       )}
                     </div>
                     {!todayRecord.checkOut ? (
-                      <button onClick={() => handleCheckOut()} className="w-full py-4 rounded-2xl bg-slate-800 hover:bg-slate-900 active:scale-[0.98] text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-slate-800/20 transition-all">
+                      <button onClick={() => handleCheckOut()} className="w-full py-4 rounded-md bg-slate-800 hover:bg-slate-900 active:scale-[0.98] text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-slate-800/20 transition-all">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
                         </svg>
                         Check Out
                       </button>
                     ) : (
-                      <div className="text-center py-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                      <div className="text-center py-4 bg-emerald-50 border border-emerald-200 rounded-md">
                         <p className="text-emerald-700 text-sm font-black flex items-center justify-center gap-2">
                           ✓ Day Complete — {typeof todayRecord.totalHours === 'number' ? todayRecord.totalHours.toFixed(1) : '0.0'}h
                         </p>
@@ -810,15 +810,15 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
                 {/* MANAGER ONLY HEADER */}
         {isManagerOnly && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-2xl flex items-center justify-center text-lg font-black text-white shadow-lg shadow-blue-500/20">
+              <div className="w-14 h-14 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center text-lg font-black text-white shadow-lg shadow-slate-900/10">
                 {getInitials(currentUser.name)}
               </div>
               <div className="flex-1">
                 <p className="text-slate-400 text-xs font-bold">{getGreeting()}</p>
                 <h1 className="text-lg font-black text-slate-800">{currentUser.name}</h1>
-                <p className="text-[#1E40AF] text-[10px] font-black uppercase tracking-widest">Manager Panel</p>
+                <p className="text-slate-900 text-[10px] font-black uppercase tracking-widest">Manager Panel</p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-black text-slate-800 font-mono">{format(currentTime, 'hh:mm')}</p>
@@ -835,7 +835,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
         {/* PENDING WFH REQUESTS */}
         {isAdmin && pendingWFHRequests.length > 0 && (
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
             <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-orange-50">
               <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
                 <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
@@ -847,9 +847,9 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
               {pendingWFHRequests.map(req => {
                 const emp = getEmployees().find(e => e.id === req.employeeId);
                 return (
-                  <div key={req.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-100 hover:border-amber-200 transition-all">
+                  <div key={req.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 rounded-md p-4 border border-slate-100 hover:border-amber-200 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-xl flex items-center justify-center text-xs font-black shadow-md">
+                      <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded flex items-center justify-center text-xs font-black shadow-md">
                         {emp ? getInitials(emp.name) : '?'}
                       </div>
                       <div>
@@ -858,8 +858,8 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleApproveWFH(req)} className="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-xl text-xs font-bold transition-all active:scale-95">✓ Approve</button>
-                      <button onClick={() => handleRejectWFH(req)} className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-xs font-bold transition-all active:scale-95">✕ Reject</button>
+                      <button onClick={() => handleApproveWFH(req)} className="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-xs font-bold transition-all active:scale-95">✓ Approve</button>
+                      <button onClick={() => handleRejectWFH(req)} className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-bold transition-all active:scale-95">✕ Reject</button>
                     </div>
                   </div>
                 );
@@ -870,7 +870,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
         {/* TODAY'S TEAM */}
         {isAdmin && (
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-black text-slate-800">Today's Team</h3>
@@ -885,9 +885,9 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
                 const otHrs = rec && typeof rec.totalHours === 'number' && rec.totalHours > 0 ? Math.max(0, rec.totalHours - t.minHoursForFullDay) : 0;
                 const isSunOT = rec?.notes?.includes('SUNDAY');
                 return (
-                  <div key={emp.id} className="flex items-center justify-between py-3.5 px-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-slate-200 transition-all">
+                  <div key={emp.id} className="flex items-center justify-between py-3.5 px-4 bg-slate-50 rounded-md border border-slate-100 hover:border-slate-200 transition-all">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black border shadow-sm ${rec ? 'bg-gradient-to-br from-[#1E40AF] to-[#2563EB] text-white border-blue-300' : 'bg-white text-slate-500 border-slate-200'}`}>
+                      <div className={`w-10 h-10 rounded flex items-center justify-center text-xs font-black border shadow-sm ${rec ? 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-300' : 'bg-white text-slate-500 border-slate-200'}`}>
                         {getInitials(emp.name)}
                       </div>
                       <div>
@@ -929,11 +929,11 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
             {[
               { label: 'Present', value: todayAllRecords.filter(r => r.status === 'present').length, color: 'text-emerald-600', bg: 'from-emerald-50 to-green-50', border: 'border-emerald-200', icon: '✓' },
               { label: 'Late', value: todayAllRecords.filter(r => r.status === 'late').length, color: 'text-amber-600', bg: 'from-amber-50 to-yellow-50', border: 'border-amber-200', icon: '⚠' },
-              { label: 'WFH', value: todayAllRecords.filter(r => r.status === 'work-from-home').length, color: 'text-blue-600', bg: 'from-blue-50 to-indigo-50', border: 'border-blue-200', icon: '🏠' },
+              { label: 'WFH', value: todayAllRecords.filter(r => r.status === 'work-from-home').length, color: 'text-slate-800', bg: 'from-blue-50 to-indigo-50', border: 'border-slate-200', icon: '🏠' },
               { label: 'Absent', value: getAttendanceEmployees().length - todayAllRecords.length, color: 'text-red-600', bg: 'from-red-50 to-rose-50', border: 'border-red-200', icon: '✕' },
               { label: 'Total', value: getAttendanceEmployees().length, color: 'text-slate-700', bg: 'from-slate-50 to-slate-100', border: 'border-slate-200', icon: '👥' },
             ].map(s => (
-              <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-2xl p-4 text-center border ${s.border} shadow-sm hover:shadow-md transition-all`}>
+              <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-md p-4 text-center border ${s.border} shadow-sm hover:shadow-md transition-all`}>
                 <p className="text-[10px] font-bold text-slate-400 mb-1">{s.icon}</p>
                 <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
                 <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{s.label}</p>
@@ -944,7 +944,7 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
         {/* QUIT BUTTON */}
         <div className="pt-2 pb-8">
-          <button onClick={() => setShowQuitConfirm(true)} className="w-full py-3.5 rounded-2xl border border-red-200 text-red-500 hover:bg-red-50 font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+          <button onClick={() => setShowQuitConfirm(true)} className="w-full py-3.5 rounded-md border border-red-200 text-red-500 hover:bg-red-50 font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
             Quit Attendify
           </button>
         </div>

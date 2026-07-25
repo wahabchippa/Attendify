@@ -123,20 +123,20 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
     <div className={`space-y-4 font-sans transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
       {/* Toast */}
       {notification && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl shadow-xl text-sm font-bold text-white animate-slide-in ${
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded shadow-md text-sm font-bold text-white animate-slide-in ${
           notification.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'
         }`}>{notification.msg}</div>
       )}
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] rounded-2xl p-4 text-white relative overflow-hidden shadow-lg">
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-md p-4 text-white relative overflow-hidden shadow-lg">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center text-xl">🔔</div>
+            <div className="w-10 h-10 bg-white/15 rounded flex items-center justify-center text-xl">🔔</div>
             <div>
               <h2 className="text-base font-black">Push Notifications</h2>
-              <p className="text-blue-200 text-[10px] font-bold">Send alerts & reminders to team</p>
+              <p className="text-slate-400 text-[10px] font-bold">Send alerts & reminders to team</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -152,38 +152,38 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
 
       {/* Permission Banner */}
       {permissionStatus !== 'granted' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3">
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-center gap-3">
           <span className="text-2xl">🔔</span>
           <div className="flex-1">
             <p className="text-sm font-bold text-slate-800">Enable Browser Notifications</p>
             <p className="text-xs text-slate-500">Allow notifications to send alerts to your team</p>
           </div>
-          <button onClick={requestPermission} className="px-4 py-2 bg-[#1E40AF] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A8A] transition-all">
+          <button onClick={requestPermission} className="px-4 py-2 bg-slate-900 text-white rounded text-xs font-bold hover:bg-slate-800 transition-all">
             Enable
           </button>
         </div>
       )}
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+      <div className="bg-white rounded-md border border-slate-200 shadow-sm p-4">
         <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-3">⚡ Quick Actions</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <button onClick={sendCheckInReminder} className="p-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-xl transition-all text-left group">
+          <button onClick={sendCheckInReminder} className="p-3 bg-slate-50 hover:bg-slate-50 border border-slate-200 hover:border-slate-200 rounded transition-all text-left group">
             <span className="text-xl block mb-1">⏰</span>
-            <p className="text-[11px] font-bold text-slate-700 group-hover:text-blue-700">Check-In Reminder</p>
+            <p className="text-[11px] font-bold text-slate-700 group-hover:text-slate-900">Check-In Reminder</p>
             <p className="text-[9px] text-slate-400">Alert absent employees</p>
           </button>
-          <button onClick={sendLateWarning} className="p-3 bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-200 rounded-xl transition-all text-left group">
+          <button onClick={sendLateWarning} className="p-3 bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-200 rounded transition-all text-left group">
             <span className="text-xl block mb-1">⚠️</span>
             <p className="text-[11px] font-bold text-slate-700 group-hover:text-amber-700">Late Warning</p>
             <p className="text-[9px] text-slate-400">Alert late arrivals</p>
           </button>
-          <button onClick={sendCheckOutReminder} className="p-3 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 rounded-xl transition-all text-left group">
+          <button onClick={sendCheckOutReminder} className="p-3 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 rounded transition-all text-left group">
             <span className="text-xl block mb-1">🚪</span>
             <p className="text-[11px] font-bold text-slate-700 group-hover:text-emerald-700">Check-Out Reminder</p>
             <p className="text-[9px] text-slate-400">Remind still working</p>
           </button>
-          <button onClick={sendDaySummary} className="p-3 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded-xl transition-all text-left group">
+          <button onClick={sendDaySummary} className="p-3 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-200 rounded transition-all text-left group">
             <span className="text-xl block mb-1">📊</span>
             <p className="text-[11px] font-bold text-slate-700 group-hover:text-purple-700">Day Summary</p>
             <p className="text-[9px] text-slate-400">Full day report</p>
@@ -192,26 +192,26 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
       </div>
 
       {/* Custom Notification Composer */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+      <div className="bg-white rounded-md border border-slate-200 shadow-sm p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">✏️ Custom Notification</h3>
           <button onClick={() => setShowComposer(!showComposer)}
-            className="text-xs font-bold text-blue-600 hover:text-blue-800">{showComposer ? 'Hide' : 'Compose'}</button>
+            className="text-xs font-bold text-slate-800 hover:text-slate-900">{showComposer ? 'Hide' : 'Compose'}</button>
         </div>
 
         {showComposer && (
           <div className="space-y-3">
             <select value={selectedTarget} onChange={e => setSelectedTarget(e.target.value)}
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none">
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded text-xs font-semibold focus:outline-none">
               <option value="all">📢 All Employees</option>
               {allEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
             </select>
             <input value={customTitle} onChange={e => setCustomTitle(e.target.value)} placeholder="Notification Title"
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/20" />
             <textarea value={customBody} onChange={e => setCustomBody(e.target.value)} placeholder="Message body..." rows={3}
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none" />
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/20 resize-none" />
             <button onClick={handleCustomSend} disabled={permissionStatus !== 'granted'}
-              className="w-full py-2.5 bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white rounded-xl text-sm font-bold hover:shadow-lg transition-all disabled:opacity-50">
+              className="w-full py-2.5 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded text-sm font-bold hover:shadow-lg transition-all disabled:opacity-50">
               🔔 Send Notification
             </button>
           </div>
@@ -220,7 +220,7 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
 
       {/* Notification Log */}
       {logs.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
             <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">📜 Recent Notifications</h3>
             <button onClick={() => setLogs([])} className="text-[10px] font-bold text-red-500 hover:text-red-700">Clear</button>
@@ -233,7 +233,7 @@ export default function PushNotifications({ currentUser }: PushNotificationsProp
                   <span className="text-[10px] text-slate-400">{log.sentAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5">{log.body}</p>
-                <p className="text-[10px] text-blue-500 font-bold mt-0.5">→ {log.sentTo}</p>
+                <p className="text-[10px] text-slate-700 font-bold mt-0.5">→ {log.sentTo}</p>
               </div>
             ))}
           </div>

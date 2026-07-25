@@ -24,13 +24,13 @@ const ALERT_CONFIG: Record<AlertType, {
   late_pattern:       { label: 'Late Pattern',         icon: '⏰', color: 'text-amber-700',   bg: 'bg-amber-50',   border: 'border-amber-200' },
   frequent_absent:    { label: 'Frequent Absent',       icon: '❌', color: 'text-red-700',     bg: 'bg-red-50',     border: 'border-red-200' },
   ot_excess:          { label: 'OT Excess',             icon: '⚡', color: 'text-purple-700',  bg: 'bg-purple-50',  border: 'border-purple-200' },
-  wfh_excess:         { label: 'WFH Excess',            icon: '🏠', color: 'text-blue-700',    bg: 'bg-blue-50',    border: 'border-blue-200' },
+  wfh_excess:         { label: 'WFH Excess',            icon: '🏠', color: 'text-slate-900',    bg: 'bg-slate-50',    border: 'border-slate-200' },
   outside_office:     { label: 'Outside Office',        icon: '🚨', color: 'text-red-700',     bg: 'bg-red-50',     border: 'border-red-200' },
   gps_off:            { label: 'GPS Off',               icon: '📍', color: 'text-amber-700',   bg: 'bg-amber-50',   border: 'border-amber-200' },
   unauthorized_device:{ label: 'Unauthorized Device',   icon: '📱', color: 'text-red-700',     bg: 'bg-red-50',     border: 'border-red-200' },
   failed_login:       { label: 'Failed Login',          icon: '🔑', color: 'text-orange-700',  bg: 'bg-orange-50',  border: 'border-orange-200' },
   no_checkout:        { label: 'No Checkout',           icon: '⚠️', color: 'text-amber-700',   bg: 'bg-amber-50',   border: 'border-amber-200' },
-  correction_request: { label: 'Correction Request',    icon: '✏️', color: 'text-blue-700',    bg: 'bg-blue-50',    border: 'border-blue-200' },
+  correction_request: { label: 'Correction Request',    icon: '✏️', color: 'text-slate-900',    bg: 'bg-slate-50',    border: 'border-slate-200' },
   leave_request:      { label: 'Leave Request',         icon: '📅', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
   suspicious_override:{ label: 'Suspicious Override',   icon: '🔐', color: 'text-red-700',     bg: 'bg-red-50',     border: 'border-red-200' },
   consecutive_absent: { label: 'Consecutive Absences',  icon: '🔴', color: 'text-red-700',     bg: 'bg-red-50',     border: 'border-red-200' },
@@ -163,12 +163,12 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
     <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* ===== HEADER ===== */}
-      <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] rounded-3xl p-5 text-white relative overflow-hidden shadow-xl shadow-blue-900/20">
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-indigo-400/20 rounded-full blur-2xl" />
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 text-white relative overflow-hidden shadow-sm">
+        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-xl" />
+        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-indigo-400/20 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 relative">
+            <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center border border-white/20 relative">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
               </svg>
@@ -180,7 +180,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
             </div>
             <div>
               <h2 className="text-lg font-black text-white tracking-tight">Smart Alerts</h2>
-              <p className="text-blue-200 text-xs font-bold">Real-time security & attendance monitoring</p>
+              <p className="text-slate-400 text-xs font-bold">Real-time security & attendance monitoring</p>
             </div>
           </div>
 
@@ -189,7 +189,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
             <button
               onClick={handleGenerateAlerts}
               disabled={generating}
-              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white text-xs font-bold border border-white/10 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-bold border border-white/10 transition-all active:scale-95 disabled:opacity-50"
             >
               <svg className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
@@ -201,7 +201,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
             <button
               onClick={handleRefresh}
               disabled={syncing}
-              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white text-xs font-bold border border-white/10 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-bold border border-white/10 transition-all active:scale-95 disabled:opacity-50"
             >
               <svg className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
@@ -215,12 +215,12 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
       {/* ===== STATS ===== */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Unread',   value: stats.unread,   color: 'text-[#1E40AF]',  bg: 'from-blue-50 to-indigo-50',    border: 'border-blue-200',   icon: '🔔' },
+          { label: 'Unread',   value: stats.unread,   color: 'text-slate-900',  bg: 'from-blue-50 to-indigo-50',    border: 'border-slate-200',   icon: '🔔' },
           { label: 'Critical', value: stats.critical, color: 'text-red-600',    bg: 'from-red-50 to-rose-50',       border: 'border-red-200',    icon: '🚨' },
           { label: 'High',     value: stats.high,     color: 'text-orange-600', bg: 'from-orange-50 to-amber-50',   border: 'border-orange-200', icon: '⚠️' },
           { label: 'Total',    value: stats.total,    color: 'text-slate-700',  bg: 'from-slate-50 to-slate-100',   border: 'border-slate-200',  icon: '📋' },
         ].map(s => (
-          <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-2xl p-4 border ${s.border} shadow-sm`}>
+          <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-md p-4 border ${s.border} shadow-sm`}>
             <p className="text-lg mb-1">{s.icon}</p>
             <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
             <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mt-1">{s.label}</p>
@@ -229,21 +229,21 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
       </div>
 
       {/* ===== FILTERS ===== */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 space-y-3">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 space-y-3">
 
         {/* Tab filters */}
-        <div className="flex gap-1 overflow-x-auto bg-slate-50 p-1 rounded-2xl">
+        <div className="flex gap-1 overflow-x-auto bg-slate-50 p-1 rounded-md">
           {tabs.map(t => (
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex-1 justify-center ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded text-xs font-bold whitespace-nowrap transition-all flex-1 justify-center ${
                 activeTab === t.key
                   ? t.key === 'critical'
                     ? 'bg-red-600 text-white shadow-md'
                     : t.key === 'high'
                       ? 'bg-orange-500 text-white shadow-md'
-                      : 'bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white shadow-md'
+                      : 'bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-md'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -266,7 +266,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
             <select
               value={typeFilter}
               onChange={e => setTypeFilter(e.target.value)}
-              className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-2xl pl-4 pr-8 py-2 text-xs font-semibold focus:outline-none focus:border-[#1E40AF] transition-all cursor-pointer"
+              className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-md pl-4 pr-8 py-2 text-xs font-semibold focus:outline-none focus:border-slate-900 transition-all cursor-pointer"
             >
               <option value="all">All Types</option>
               {Object.entries(ALERT_CONFIG).map(([key, cfg]) => (
@@ -283,7 +283,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
             <select
               value={empFilter}
               onChange={e => setEmpFilter(e.target.value)}
-              className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-2xl pl-4 pr-8 py-2 text-xs font-semibold focus:outline-none focus:border-[#1E40AF] transition-all cursor-pointer"
+              className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-md pl-4 pr-8 py-2 text-xs font-semibold focus:outline-none focus:border-slate-900 transition-all cursor-pointer"
             >
               <option value="all">All Employees</option>
               {employees.map(e => (
@@ -299,7 +299,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
           {stats.unread > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="ml-auto px-4 py-2 bg-blue-50 hover:bg-blue-100 text-[#1E40AF] rounded-2xl text-xs font-bold border border-blue-200 transition-all active:scale-95"
+              className="ml-auto px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-md text-xs font-bold border border-slate-200 transition-all active:scale-95"
             >
               ✓ Mark All Read
             </button>
@@ -312,11 +312,11 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
       </div>
 
       {/* ===== ALERTS LIST ===== */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="divide-y divide-slate-50">
           {filteredAlerts.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 </svg>
@@ -331,7 +331,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                 <button
                   onClick={handleGenerateAlerts}
                   disabled={generating}
-                  className="mt-4 px-5 py-2.5 bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white rounded-2xl text-xs font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50"
+                  className="mt-4 px-5 py-2.5 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-md text-xs font-bold shadow-lg shadow-slate-900/10 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {generating ? 'Scanning...' : '🔍 Run Smart Scan'}
                 </button>
@@ -358,7 +358,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                   <div className="flex items-start gap-3">
 
                     {/* Alert Icon */}
-                    <div className={`w-11 h-11 ${typeCfg.bg} rounded-2xl flex items-center justify-center text-xl border ${typeCfg.border} shrink-0 relative`}>
+                    <div className={`w-11 h-11 ${typeCfg.bg} rounded-md flex items-center justify-center text-xl border ${typeCfg.border} shrink-0 relative`}>
                       {typeCfg.icon}
                       {/* Severity dot */}
                       <div className={`absolute -top-1 -right-1 w-3 h-3 ${sevCfg.dot} rounded-full border-2 border-white ${
@@ -375,7 +375,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                               {alert.title}
                             </p>
                             {isUnread && (
-                              <span className="w-2 h-2 bg-[#1E40AF] rounded-full shrink-0" />
+                              <span className="w-2 h-2 bg-slate-900 rounded-full shrink-0" />
                             )}
                           </div>
 
@@ -404,7 +404,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                       {/* Employee info */}
                       {emp && (
                         <div className="flex items-center gap-2 mt-2">
-                          <div className="w-5 h-5 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] rounded-md flex items-center justify-center text-[8px] font-black text-white">
+                          <div className="w-5 h-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-md flex items-center justify-center text-[8px] font-black text-white">
                             {getInitials(emp.name)}
                           </div>
                           <span className="text-[10px] text-slate-500 font-bold">{emp.name}</span>
@@ -417,7 +417,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                         {isUnread && (
                           <button
                             onClick={() => handleMarkRead(alert.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#1E40AF] rounded-xl text-[10px] font-bold border border-blue-200 transition-all active:scale-95"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-900 rounded text-[10px] font-bold border border-slate-200 transition-all active:scale-95"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -428,7 +428,7 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
                         {!alert.isDismissed && (
                           <button
                             onClick={() => handleDismiss(alert.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl text-[10px] font-bold border border-slate-200 transition-all active:scale-95"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded text-[10px] font-bold border border-slate-200 transition-all active:scale-95"
                           >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -454,8 +454,8 @@ export default function AdminAlerts({ currentUser }: AdminAlertsProps) {
         {filteredAlerts.length > 0 && (
           <div className="px-6 py-3 bg-gradient-to-r from-slate-50 to-blue-50/20 border-t border-slate-100 text-center">
             <p className="text-[10px] font-bold text-slate-400">
-              Showing <span className="text-[#1E40AF]">{filteredAlerts.length}</span> of{' '}
-              <span className="text-[#1E40AF]">{allAlerts.length}</span> total alerts
+              Showing <span className="text-slate-900">{filteredAlerts.length}</span> of{' '}
+              <span className="text-slate-900">{allAlerts.length}</span> total alerts
             </p>
           </div>
         )}

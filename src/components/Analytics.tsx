@@ -149,11 +149,11 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
     {
       label: 'Avg On-Time',
       value: `${summaries.length > 0 ? Math.round(summaries.reduce((s, a) => s + a.onTimePercentage, 0) / summaries.length) : 0}%`,
-      color: 'text-[#1E40AF]',
+      color: 'text-slate-900',
       bg: 'from-blue-50 to-indigo-50',
-      border: 'border-blue-200',
+      border: 'border-slate-200',
       icon: (
-        <svg className="w-5 h-5 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <svg className="w-5 h-5 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
@@ -198,9 +198,9 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
 
   // Shared chart card wrapper
   const ChartCard = ({ title, children, icon }: { title: string; children: React.ReactNode; icon?: React.ReactNode }) => (
-    <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+    <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
       <div className="flex items-center gap-2 mb-5">
-        {icon && <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">{icon}</div>}
+        {icon && <div className="w-8 h-8 bg-slate-50 rounded flex items-center justify-center">{icon}</div>}
         <h3 className="text-sm font-black text-slate-800">{title}</h3>
       </div>
       <div className="h-64">{children}</div>
@@ -211,27 +211,27 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
     <div className={`space-y-5 font-sans transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
       {/* ===== HEADER ===== */}
-      <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] rounded-3xl p-5 md:p-6 text-white relative overflow-hidden shadow-xl shadow-blue-900/20">
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-indigo-400/20 rounded-full blur-2xl" />
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-lg p-5 md:p-6 text-white relative overflow-hidden shadow-sm">
+        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-xl" />
+        <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-indigo-400/20 rounded-full blur-lg" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+            <div className="w-12 h-12 bg-white/15  rounded-md flex items-center justify-center border border-white/20">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
               </svg>
             </div>
             <div>
               <h2 className="text-lg font-black text-white tracking-tight">Analytics & Reports</h2>
-              <p className="text-blue-200 text-xs font-bold">Performance overview & insights</p>
+              <p className="text-slate-400 text-xs font-bold">Performance overview & insights</p>
             </div>
           </div>
 
           {/* ✅ Month Navigator */}
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-2xl px-3 py-2 border border-white/10">
+          <div className="flex items-center gap-2 bg-white/10  rounded-md px-3 py-2 border border-white/10">
             <button
               onClick={() => navigateMonth(-1)}
-              className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center transition-all active:scale-95"
             >
               <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -242,7 +242,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
             </span>
             <button
               onClick={() => navigateMonth(1)}
-              className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center transition-all active:scale-95"
             >
               <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -255,9 +255,9 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
       {/* ===== KPI CARDS ===== */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {kpis.map(kpi => (
-          <div key={kpi.label} className={`bg-gradient-to-br ${kpi.bg} rounded-3xl p-5 border ${kpi.border} shadow-sm hover:shadow-md transition-all`}>
+          <div key={kpi.label} className={`bg-gradient-to-br ${kpi.bg} rounded-lg p-5 border ${kpi.border} shadow-sm hover:shadow-md transition-all`}>
             <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 bg-white rounded flex items-center justify-center shadow-sm">
                 {kpi.icon}
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
         <ChartCard
           title="Overview by Employee"
           icon={
-            <svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
             </svg>
           }
@@ -296,7 +296,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
         <ChartCard
           title="Status Distribution"
           icon={
-            <svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
             </svg>
@@ -334,7 +334,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
         <ChartCard
           title="30-Day Attendance Trend"
           icon={
-            <svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
             </svg>
           }
@@ -355,7 +355,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
         <ChartCard
           title="Hours Worked by Employee"
           icon={
-            <svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
@@ -404,9 +404,9 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
         const calTargetEmp = otEmployee !== 'all' ? otEmployee : null;
 
         return (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
           {/* Header */}
-          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-slate-100">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
                 <span>⚡</span> Overtime Details
@@ -444,7 +444,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
               <div className="space-y-3">
                 {/* OT Calendar (when single employee selected) */}
                 {calTargetEmp && otPeriod === 'month' && (
-                  <div className="bg-purple-50 rounded-2xl p-3 border border-purple-100 mb-3">
+                  <div className="bg-purple-50 rounded-md p-3 border border-purple-100 mb-3">
                     <p className="text-[10px] font-black text-purple-600 uppercase tracking-wider mb-2">{format(calMonth, 'MMMM yyyy')} — OT Calendar</p>
                     <div className="grid grid-cols-7 gap-0.5 mb-1">
                       {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-center text-[8px] font-bold text-purple-400">{d}</div>)}
@@ -473,10 +473,10 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
 
                 {/* Employee OT Cards */}
                 {filteredOT.map(({ emp, otRecs, sundayOT, holidayOT, regularOT, totalOT }) => (
-                  <div key={emp.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <div key={emp.id} className="bg-slate-50 rounded-md p-4 border border-slate-100">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl flex items-center justify-center text-[10px] font-black">
+                        <div className="w-9 h-9 bg-slate-800 text-white rounded flex items-center justify-center text-[10px] font-black">
                           {getInitials(emp.name)}
                         </div>
                         <div>
@@ -489,7 +489,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
                         <div className="flex flex-wrap gap-1 mt-0.5 justify-end">
                           {sundayOT > 0 && <span className="text-[9px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-bold">Sun:{sundayOT}h</span>}
                           {holidayOT > 0 && <span className="text-[9px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded font-bold">Hol:{holidayOT}h</span>}
-                          {regularOT > 0 && <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">Reg:{regularOT}h</span>}
+                          {regularOT > 0 && <span className="text-[9px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-bold">Reg:{regularOT}h</span>}
                         </div>
                       </div>
                     </div>
@@ -500,10 +500,10 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
                         const isHol = r.notes?.includes('HOLIDAY');
                         const ot = (isSun||isHol) ? r.totalHours : Math.round((r.totalHours-getEmployeeTiming(emp.id).minHoursForFullDay)*100)/100;
                         return (
-                          <div key={r.id} className="flex items-center justify-between text-[11px] bg-white rounded-xl px-3 py-2 border border-slate-100">
+                          <div key={r.id} className="flex items-center justify-between text-[11px] bg-white rounded px-3 py-2 border border-slate-100">
                             <span className="text-slate-600 font-medium w-24">{format(new Date(r.date), 'dd MMM (EEE)')}</span>
                             <span className="text-slate-400">{r.totalHours.toFixed(1)}h total</span>
-                            <span className={`font-black ${isSun?'text-purple-600':isHol?'text-pink-600':'text-blue-600'}`}>
+                            <span className={`font-black ${isSun?'text-purple-600':isHol?'text-pink-600':'text-slate-800'}`}>
                               +{ot}h {isSun?'🌙':isHol?'🎉':'OT'}
                             </span>
                           </div>

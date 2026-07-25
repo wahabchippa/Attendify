@@ -92,8 +92,8 @@ export default function AllOfficesDistance() {
 
   if (loading) {
     return (
-      <div className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200">
-        <span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0" />
+      <div className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-md bg-slate-50 border border-slate-200">
+        <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin shrink-0" />
         <span className="text-xs font-bold text-slate-500">Detecting office distances...</span>
       </div>
     );
@@ -101,7 +101,7 @@ export default function AllOfficesDistance() {
 
   if (error || results.length === 0) {
     return (
-      <div className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-50 border border-amber-200">
+      <div className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-md bg-amber-50 border border-amber-200">
         <span className="text-sm">📍</span>
         <span className="text-xs font-bold text-amber-700">GPS unavailable — enable location</span>
       </div>
@@ -116,14 +116,14 @@ export default function AllOfficesDistance() {
       {results.map(office => (
         <div
           key={office.name}
-          className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all ${
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-md border transition-all ${
             office.isInside
               ? 'bg-emerald-50 border-emerald-200'
               : 'bg-slate-50 border-slate-200'
           }`}
         >
           {/* Office icon */}
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm ${
+          <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 text-sm ${
             office.isInside
               ? 'bg-emerald-500 text-white'
               : 'bg-slate-200 text-slate-500'
@@ -146,7 +146,7 @@ export default function AllOfficesDistance() {
           </div>
 
           {/* Checkmark or distance badge */}
-          <div className={`shrink-0 px-2.5 py-1 rounded-xl text-[10px] font-black border ${
+          <div className={`shrink-0 px-2.5 py-1 rounded text-[10px] font-black border ${
             office.isInside
               ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
               : 'bg-slate-100 text-slate-500 border-slate-200'

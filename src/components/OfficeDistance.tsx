@@ -9,7 +9,7 @@ export default function OfficeDistance({ distance, isInside, locationName }: Off
   const distanceText = distance < 1000 ? `${Math.round(distance)}m` : `${(distance / 1000).toFixed(2)}km`;
 
   return (
-    <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl border ${
+    <div className={`flex items-center gap-2 px-4 py-2 rounded-md border ${
       isInside ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'
     }`}>
       <span className="text-base">📍</span>
