@@ -31,8 +31,13 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
   const canViewAudit  = ha('audit_view');
 
   const [saved, setSaved]           = useState(false);
+  const [locName, setLocName] = useState('');
+  const [locLat, setLocLat] = useState('');
+  const [locLng, setLocLng] = useState('');
+  const [locRadius, setLocRadius] = useState('200');
+  const [locIP, setLocIP] = useState('');
   const [mounted, setMounted]       = useState(false);
-  const [activeTab, setActiveTab]   = useState<'timings'|'security'|'employees'|'audit'|'alerts'|'salary'|'about'>(
+  const [activeTab, setActiveTab]   = useState<'timings'|'security'|'employees'|'audit'|'alerts'|'salary'|'about'|'locations'>(
     canEdit ? 'timings' : canChangePins ? 'security' : 'about'
   );
   const [empTimings, setEmpTimings]         = useState<Record<string, EmployeeTiming>>({});
@@ -493,10 +498,11 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
 
                 {/* Edit Modal */}
         {secretEditRecord?._editing && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-lg border border-slate-200 animate-scale-up">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] text-white rounded-xl flex items-center justify-center text-xs font-black shadow-md shadow-blue-500/20">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setSecretEditRecord(null)}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 animate-scale-up max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] text-white rounded-lg flex items-center justify-center text-[10px] font-black">
                   {getInitials(employees.find(e => e.id === secretEditRecord.employeeId)?.name || '?')}
                 </div>
                 <div>
@@ -504,7 +510,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   <p className="text-slate-400 text-xs font-medium">{secretEditRecord.date}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <InputField label="Status">
                   <select value={secretEditRecord.status} onChange={e => setSecretEditRecord((p: any) => ({ ...p, status: e.target.value }))} className={selectCls}>
                     <option value="present">Present</option>
@@ -554,9 +560,10 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   <input type="date" value={secretEditRecord.date || ''} onChange={e => setSecretEditRecord((p: any) => ({ ...p, date: e.target.value || '' }))} className={inputCls} />
                 </InputField>
               </div>
-              <div className="flex gap-3 mt-6">
-                <button onClick={() => setSecretEditRecord(null)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-95">Cancel</button>
-                <button onClick={handleSecretSave} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white text-sm font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95">Save Changes</button>
+              <div className="flex gap-3 mt-4">
+                <button onClick={() => setSecretEditRecord(null)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-all">Cancel</button>
+                <button onClick={handleSecretSave} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white text-xs font-bold shadow-lg shadow-blue-500/20 transition-all">Save</button>
+              </div>
               </div>
             </div>
           </div>
@@ -579,6 +586,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
     { key: 'employees', label: 'Employees', icon: '👥', show: canViewAll },
     { key: 'audit',     label: 'Audit Log', icon: '📋', show: canViewAudit },
     { key: 'alerts',    label: 'Alerts',    icon: '🔔', show: ha('alerts_view') },
+    { key: 'locations',  label: 'Locations', icon: '📍', show: canEdit },
     // Salary removed
     { key: 'about',     label: 'About',     icon: 'ℹ️', show: true },
   ].filter(t => t.show);
@@ -831,6 +839,91 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
       {/* ===== ALERTS ===== */}
       {activeTab === 'alerts' && ha('alerts_view') && (
         <AdminAlerts currentUser={currentUser} />
+      )}
+
+      {/* ═══ LOCATIONS ═══ */}
+      {activeTab === 'locations' && (
+        <div className="space-y-4">
+          {/* Current Offices — from wifiService */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <SectionHeader
+              icon={<svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>}
+              title="Office Locations"
+              subtitle="GPS geofences for check-in verification"
+            />
+            <div className="p-5 space-y-3">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-700 font-medium">
+                ⚠️ To change office locations, update the coordinates in <span className="font-black">src/wifiService.ts</span> (OFFICE_FENCES) and <span className="font-black">src/components/GPSLiveMap.tsx</span> (OFFICES). Supabase table: <span className="font-black">office_locations</span>
+              </div>
+              
+              {/* Show current offices */}
+              {[
+                { name: 'QC Center', lat: 24.856917, lng: 67.111833, radius: 150, ip: '202.141.254.126' },
+                { name: 'PK Zone', lat: 24.825222, lng: 67.247472, radius: 800, ip: '103.93.12.229' },
+                { name: 'Z House', lat: 24.882889, lng: 67.073278, radius: 500, ip: '103.93.12.229' },
+              ].map(office => (
+                <div key={office.name} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-black text-slate-800">🏢 {office.name}</h4>
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">ACTIVE</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="bg-white rounded-xl p-2 border border-slate-100">
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Latitude</p>
+                      <p className="font-black text-slate-700">{office.lat}</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-2 border border-slate-100">
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Longitude</p>
+                      <p className="font-black text-slate-700">{office.lng}</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-2 border border-slate-100">
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Radius</p>
+                      <p className="font-black text-blue-600">{office.radius}m</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-2 border border-slate-100">
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">IP Address</p>
+                      <p className="font-black text-slate-700 text-[10px]">{office.ip}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* How to change */}
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                <h4 className="text-xs font-black text-blue-800 mb-2">📝 How to Change Locations</h4>
+                <ol className="text-[11px] text-blue-700 space-y-1.5 font-medium list-decimal list-inside">
+                  <li>Open Google Maps → Right-click your office → Copy coordinates</li>
+                  <li>Open <span className="font-black bg-blue-100 px-1 rounded">src/wifiService.ts</span> → Edit OFFICE_FENCES array</li>
+                  <li>Open <span className="font-black bg-blue-100 px-1 rounded">src/components/GPSLiveMap.tsx</span> → Edit OFFICES array</li>
+                  <li>Set <span className="font-black">name</span>, <span className="font-black">lat</span>, <span className="font-black">lng</span>, <span className="font-black">radiusM</span> (meters)</li>
+                  <li>Push to GitHub → Vercel auto-deploys</li>
+                </ol>
+                <div className="mt-3 bg-white rounded-xl p-3 border border-blue-100">
+                  <p className="text-[10px] font-black text-slate-600 mb-1">Example:</p>
+                  <pre className="text-[10px] text-blue-800 font-mono bg-blue-50 rounded-lg p-2 overflow-x-auto">{`{
+  name: 'New Office',
+  lat: 24.8600,    // from Google Maps
+  lng: 67.0700,    // from Google Maps  
+  radiusM: 300,    // 300 meters geofence
+  fakeIP: '1.2.3.4'
+}`}</pre>
+                </div>
+              </div>
+
+              {/* Supabase office_locations */}
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <h4 className="text-xs font-black text-slate-700 mb-2">🗄️ Supabase: office_locations table</h4>
+                <p className="text-[11px] text-slate-500 font-medium mb-2">If you have offices in Supabase, they sync automatically on app load. Add rows to <span className="font-black">office_locations</span> table with columns:</p>
+                <div className="grid grid-cols-4 gap-1 text-[10px] font-bold">
+                  <span className="bg-white rounded px-2 py-1 border border-slate-200 text-slate-600">id (int)</span>
+                  <span className="bg-white rounded px-2 py-1 border border-slate-200 text-slate-600">name (text)</span>
+                  <span className="bg-white rounded px-2 py-1 border border-slate-200 text-slate-600">ip_address (text)</span>
+                  <span className="bg-white rounded px-2 py-1 border border-slate-200 text-slate-600">is_active (bool)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Salary removed */}
