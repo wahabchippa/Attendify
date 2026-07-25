@@ -1508,6 +1508,49 @@ export async function generateSmartAlerts(): Promise<void> {
 // SYNC ALL + INIT
 // =============================================
 
+
+// =============================================
+// 🆕 EMPLOYEE LIVE LOCATIONS
+// =============================================
+
+export interface EmployeeLocationData {
+  empId: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  timestamp: string;
+  status: string;
+}
+
+export function getEmployeeLocations(): EmployeeLocationData[] {
+  return cacheGet('c_emp_locations', []);
+}
+
+export function saveEmployeeLocation(loc: EmployeeLocationData): void {
+  const all = getEmployeeLocations();
+  const idx = all.findIndex(l => l.empId === loc.empId);
+  if (idx !== -1) all[idx] = loc;
+  else all.push(loc);
+  cacheSet('c_emp_locations', all);
+}
+
+export function updateLocationsFromRecords(): void {
+  const today = getPKTDateString();
+  const records = getAttendanceRecords().filter(r => r.date === today && r.latitude && r.longitude);
+  const emps = getEmployees();
+  const locations: EmployeeLocationData[] = records
+    .filter(r => r.latitude != null && r.longitude != null)
+    .map(r => ({
+      empId: r.employeeId,
+      name: emps.find(e => e.id === r.employeeId)?.name || 'Unknown',
+      latitude: r.latitude!,
+      longitude: r.longitude!,
+      timestamp: r.checkIn || getPKTISOString(),
+      status: r.checkOut ? 'checked-out' : r.status,
+    }));
+  cacheSet('c_emp_locations', locations);
+}
+
 export async function syncAll(): Promise<void> {
   try {
     await Promise.all([
@@ -1530,6 +1573,7 @@ export async function syncAll(): Promise<void> {
       syncSalaryConfigs(),
       syncNotifications(),
     ]);
+    updateLocationsFromRecords();
   } catch {}
 }
 

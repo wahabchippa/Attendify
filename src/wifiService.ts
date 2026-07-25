@@ -13,6 +13,8 @@ export interface WiFiCheckResult {
   details:        string;
   locationLabel?: string;
   distance?:      number; // 🆕 Distance from nearest office in meters
+  latitude?: number;
+  longitude?: number;
 }
 
 // =============================================
@@ -236,7 +238,8 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
       method:        'public-ip-match',
       details:       `✅ Verified via IP match`,
       locationLabel: 'Office',
-      distance:      closest?.distance, // 🆕 Add distance
+      distance:      closest?.distance,
+      latitude: pos.coords.latitude, longitude: pos.coords.longitude,
     };
   }
 
@@ -249,7 +252,8 @@ export async function verifyWiFiConnection(): Promise<WiFiCheckResult> {
     method:        'public-ip-mismatch',
     details:       `❌ Not in office. Closest: ${closest.fence.name} (${closest.distance}m away)`,
     locationLabel: '',
-    distance:      closest.distance, // 🆕 Add distance
+    distance:      closest.distance,
+    latitude: pos.coords.latitude, longitude: pos.coords.longitude,
   };
 }
 
