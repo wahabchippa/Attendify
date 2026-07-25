@@ -1632,36 +1632,47 @@ function markAbsentsLocally(): void {
     const today = getPKTDate();
     const todayStr = getPKTDateString();
 
-    // Only mark absent for days AFTER the first-ever check-in
-    const allDates = records.filter(r => r.checkIn).map(r => r.date).sort();
-    if (allDates.length === 0) return;
-    const systemStartDate = allDates[0];
-
-    // Set for O(1) dedup
+    // Build lookup: existing employee+date combos (for dedup)
     const existingKeys = new Set(records.map(r => r.employeeId + '|' + r.date));
+
+    // Find EACH employee's first check-in date — only mark absent AFTER their first check-in
+    const empFirstCheckIn: Record<string, string> = {};
+    for (const r of records) {
+      if (r.checkIn && r.employeeId) {
+        if (!empFirstCheckIn[r.employeeId] || r.date < empFirstCheckIn[r.employeeId]) {
+          empFirstCheckIn[r.employeeId] = r.date;
+        }
+      }
+    }
+
     let added = false;
 
-    for (let dayOffset = 1; dayOffset <= 30; dayOffset++) {
-      const checkDate = new Date(today);
-      checkDate.setDate(checkDate.getDate() - dayOffset);
-      const dateStr = [
-        checkDate.getFullYear(),
-        String(checkDate.getMonth() + 1).padStart(2, '0'),
-        String(checkDate.getDate()).padStart(2, '0'),
-      ].join('-');
+    for (const emp of employees) {
+      // If this employee has NEVER checked in, don't mark them absent at all
+      const firstCheckIn = empFirstCheckIn[emp.id];
+      if (!firstCheckIn) continue;
 
-      if (dateStr === todayStr) continue;
-      if (checkDate.getDay() === 0) continue;
-      if (holidays_list.some(h => h.date === dateStr)) continue;
-      if (dateStr < systemStartDate) continue;
+      for (let dayOffset = 1; dayOffset <= 30; dayOffset++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(checkDate.getDate() - dayOffset);
+        const dateStr = [
+          checkDate.getFullYear(),
+          String(checkDate.getMonth() + 1).padStart(2, '0'),
+          String(checkDate.getDate()).padStart(2, '0'),
+        ].join('-');
 
-      for (const emp of employees) {
+        // Skip today
+        if (dateStr === todayStr) continue;
+        // Skip Sunday
+        if (checkDate.getDay() === 0) continue;
+        // Skip holidays
+        if (holidays_list.some(h => h.date === dateStr)) continue;
+        // Skip days BEFORE this employee's first ever check-in
+        if (dateStr < firstCheckIn) continue;
+        // Skip if record already exists
         const key = emp.id + '|' + dateStr;
         if (existingKeys.has(key)) continue;
-        if (emp.created_at) {
-          const createdDate = emp.created_at.split('T')[0];
-          if (dateStr < createdDate) continue;
-        }
+
         records.push({
           id: emp.id + '-' + dateStr,
           employeeId: emp.id,
@@ -1678,6 +1689,7 @@ function markAbsentsLocally(): void {
         added = true;
       }
     }
+
     if (added) cacheSet('c_rec', records);
   } catch (e) {
     console.warn('markAbsentsLocally error:', e);
