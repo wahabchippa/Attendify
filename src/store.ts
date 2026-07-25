@@ -1548,22 +1548,19 @@ async function markAbsentsForPastDays(): Promise<void> {
     const employees = getAttendanceEmployees();
     if (employees.length === 0) return;
     const records = getAttendanceRecords();
-    const holidays = getHolidays();
+    const holidays_list = getHolidays();
     const today = getPKTDate();
     for (let dayOffset = 1; dayOffset <= 30; dayOffset++) {
       const checkDate = new Date(today);
       checkDate.setDate(checkDate.getDate() - dayOffset);
       const dateStr = [checkDate.getFullYear(), String(checkDate.getMonth()+1).padStart(2,'0'), String(checkDate.getDate()).padStart(2,'0')].join('-');
       if (checkDate.getDay() === 0) continue;
-      if (holidays.some(h => h.date === dateStr)) continue;
+      if (holidays_list.some(h => h.date === dateStr)) continue;
       for (const emp of employees) {
         if (!records.some(r => r.employeeId === emp.id && r.date === dateStr)) {
           const absentRecord: AttendanceRecord = { id: emp.id+'-'+dateStr, employeeId: emp.id, date: dateStr, checkIn: null, checkOut: null, status: 'absent', totalHours: 0, wifiVerified: false, ipAddress: '', notes: 'Auto-marked absent' };
           records.push(absentRecord);
-          try {
-            const q = table('attendance_logs');
-            if (q) await q.upsert({ user_id: parseInt(emp.id.replace(/\D+/g,''),10)||1, user_name: emp.name, date: dateStr, status: 'absent', login_time: null, logout_time: null, total_hours: 0, wifi_connected: 'false', notes: 'Auto-marked absent' });
-          } catch {}
+          try { const q = table('attendance_logs'); if (q) await q.upsert({ user_id: parseInt(emp.id.replace(/\\D+/g,''),10)||1, user_name: emp.name, date: dateStr, status: 'absent', login_time: null, logout_time: null, total_hours: 0, wifi_connected: 'false', notes: 'Auto-marked absent' }); } catch {}
         }
       }
     }
