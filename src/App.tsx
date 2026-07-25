@@ -18,7 +18,9 @@ import { useLocationPermission } from './hooks/useLocationPermission';
 import LocationPermissionDialog from './components/LocationPermissionDialog';
 import NotificationBell from './components/NotificationBell';
 import WeatherWidget from './components/WeatherWidget';
-type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile';
+import GPSLiveMap from './components/GPSLiveMap';
+import PushNotifications from './components/PushNotifications';
+type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile' | 'gps-map' | 'notifications';
 
 const getInitials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
@@ -84,6 +86,25 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'gps-map',
+    label: 'GPS Map',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'notifications',
+    label: 'Alerts',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
       </svg>
     ),
   },
@@ -220,7 +241,9 @@ export default function App() {
     if (item.key === 'dashboard' || item.key === 'history') return true;
     if (item.key === 'ai-search')  return hasAccess(currentUser.id, 'ai');
     if (item.key === 'analytics')  return hasAccess(currentUser.id, 'analytics');
-    if (item.key === 'settings')   return hasAccess(currentUser.id, 'settings');
+    if (item.key === 'settings')       return hasAccess(currentUser.id, 'settings');
+    if (item.key === 'gps-map')        return hasAccess(currentUser.id, 'gps_map');
+    if (item.key === 'notifications')  return hasAccess(currentUser.id, 'push_notifications');
     if (item.key === 'leave')      return true;
     if (item.key === 'correction') return true;
     if (item.key === 'profile')    return true;
@@ -376,7 +399,9 @@ export default function App() {
             {currentPage === 'settings'   && <Settings         currentUser={currentUser} onLogout={handleLogout} />}
             {currentPage === 'leave'      && <LeaveManagement  currentUser={currentUser} />}
             {currentPage === 'correction' && <CorrectionRequest currentUser={currentUser} />}
-            {currentPage === 'profile'    && <EmployeeProfile  currentUser={currentUser} />}
+            {currentPage === 'profile'       && <EmployeeProfile    currentUser={currentUser} />}
+            {currentPage === 'gps-map'       && <GPSLiveMap         currentUser={currentUser} />}
+            {currentPage === 'notifications' && <PushNotifications  currentUser={currentUser} />}
           </div>
         </main>
 
@@ -466,7 +491,9 @@ import { useLocationPermission } from './hooks/useLocationPermission';
 import LocationPermissionDialog from './components/LocationPermissionDialog';
 import NotificationBell from './components/NotificationBell';
 import WeatherWidget from './components/WeatherWidget';
-type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile';
+import GPSLiveMap from './components/GPSLiveMap';
+import PushNotifications from './components/PushNotifications';
+type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile' | 'gps-map' | 'notifications';
 
 const getInitials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
@@ -532,6 +559,25 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'gps-map',
+    label: 'GPS Map',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'notifications',
+    label: 'Alerts',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
       </svg>
     ),
   },
@@ -639,7 +685,9 @@ export default function App() {
     if (item.key === 'dashboard' || item.key === 'history') return true;
     if (item.key === 'ai-search')  return hasAccess(currentUser.id, 'ai');
     if (item.key === 'analytics')  return hasAccess(currentUser.id, 'analytics');
-    if (item.key === 'settings')   return hasAccess(currentUser.id, 'settings');
+    if (item.key === 'settings')       return hasAccess(currentUser.id, 'settings');
+    if (item.key === 'gps-map')        return hasAccess(currentUser.id, 'gps_map');
+    if (item.key === 'notifications')  return hasAccess(currentUser.id, 'push_notifications');
     if (item.key === 'leave')      return true;
     if (item.key === 'correction') return true;
     if (item.key === 'profile')    return true;
@@ -795,7 +843,9 @@ export default function App() {
             {currentPage === 'settings'   && <Settings         currentUser={currentUser} onLogout={handleLogout} />}
             {currentPage === 'leave'      && <LeaveManagement  currentUser={currentUser} />}
             {currentPage === 'correction' && <CorrectionRequest currentUser={currentUser} />}
-            {currentPage === 'profile'    && <EmployeeProfile  currentUser={currentUser} />}
+            {currentPage === 'profile'       && <EmployeeProfile    currentUser={currentUser} />}
+            {currentPage === 'gps-map'       && <GPSLiveMap         currentUser={currentUser} />}
+            {currentPage === 'notifications' && <PushNotifications  currentUser={currentUser} />}
           </div>
         </main>
 

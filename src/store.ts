@@ -610,7 +610,9 @@ const DEFAULT_ACCESS: Record<string, string[]> = {
   alerts_view: ['emp-001', 'emp-005'],         // 🆕
   device_manage: ['emp-001', 'emp-005'],       // 🆕
   corrections_manage: ['emp-001', 'emp-005'],  // 🆕
-  notes_manage: ['emp-001', 'emp-005'],        // 🆕
+  notes_manage: ['emp-001', 'emp-005'],
+  gps_map: ['emp-001', 'emp-005'],
+  push_notifications: ['emp-001', 'emp-005'],        // 🆕
 };
 
 export function getAccessControl(): Record<string, string[]> {
@@ -623,6 +625,7 @@ export function getAccessControl(): Record<string, string[]> {
     'secret_override', 'view_all', 'leave_manage', 'salary_view',
     'audit_view', 'alerts_view', 'device_manage',
     'corrections_manage', 'notes_manage',
+    'gps_map', 'push_notifications',
   ];
 
   const merged: Record<string, string[]> = { ...cached };
@@ -1533,11 +1536,39 @@ export async function syncAll(): Promise<void> {
 export async function initializeApp(): Promise<void> {
   try {
     await syncAll();
-    // Sirf ek baar app start pe alerts generate karo
+    await markAbsentsForPastDays();
     await generateSmartAlerts();
   } catch (e) {
     console.warn('Sync failed — using local cache:', e);
   }
+}
+
+async function markAbsentsForPastDays(): Promise<void> {
+  try {
+    const employees = getAttendanceEmployees();
+    if (employees.length === 0) return;
+    const records = getAttendanceRecords();
+    const holidays = getHolidays();
+    const today = getPKTDate();
+    for (let dayOffset = 1; dayOffset <= 30; dayOffset++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() - dayOffset);
+      const dateStr = [checkDate.getFullYear(), String(checkDate.getMonth()+1).padStart(2,'0'), String(checkDate.getDate()).padStart(2,'0')].join('-');
+      if (checkDate.getDay() === 0) continue;
+      if (holidays.some(h => h.date === dateStr)) continue;
+      for (const emp of employees) {
+        if (!records.some(r => r.employeeId === emp.id && r.date === dateStr)) {
+          const absentRecord: AttendanceRecord = { id: emp.id+'-'+dateStr, employeeId: emp.id, date: dateStr, checkIn: null, checkOut: null, status: 'absent', totalHours: 0, wifiVerified: false, ipAddress: '', notes: 'Auto-marked absent' };
+          records.push(absentRecord);
+          try {
+            const q = table('attendance_logs');
+            if (q) await q.upsert({ user_id: parseInt(emp.id.replace(/\D+/g,''),10)||1, user_name: emp.name, date: dateStr, status: 'absent', login_time: null, logout_time: null, total_hours: 0, wifi_connected: 'false', notes: 'Auto-marked absent' });
+          } catch {}
+        }
+      }
+    }
+    cacheSet('c_rec', records);
+  } catch (e) { console.warn('markAbsentsForPastDays error:', e); }
 }
 
 // Naya function — manual scan ke liye

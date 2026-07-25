@@ -1,848 +1,491 @@
-// src/aiSearch.ts
+// src/aiSearch.ts — Professional AI Engine
 
 import {
   getEmployees, getAttendanceEmployees, getLocationFromIP,
-  getEmployeeTiming, canSeeOT
+  getEmployeeTiming, canSeeOT, getPKTDate, getPKTDateString,
 } from './store';
-import { AttendanceRecord, EmployeeSummary } from './types';
+import { AttendanceRecord } from './types';
 import {
-  format, parseISO, startOfMonth, endOfMonth,
-  eachDayOfInterval, isWeekend, subDays,
-  startOfWeek, endOfWeek, subWeeks
+  format, subDays, startOfMonth, endOfMonth,
+  eachDayOfInterval, startOfWeek, endOfWeek, subWeeks, subMonths,
 } from 'date-fns';
 
-// =============================================
-// 1. INTENT CLASSIFICATION
-// =============================================
+// ── Types ──
+interface EmployeeSummary {
+  id: string; name: string;
+  present: number; late: number; absent: number; halfDay: number; wfh: number;
+  totalHours: number; avgHours: number; totalDays: number;
+  onTimePercent: number;
+}
 
+// ── Intent Classification ──
 type Intent =
-  | 'ATTENDANCE_SUMMARY'
-  | 'LATE_REPORT'
-  | 'ABSENT_REPORT'
-  | 'EARLY_REPORT'
-  | 'HOURS_REPORT'
-  | 'OT_REPORT'
-  | 'WFH_REPORT'
-  | 'LOCATION_REPORT'
-  | 'TEAM_SUMMARY'
-  | 'COMPARISON'
-  | 'BEST_PERFORMER'
-  | 'PREDICTION'
-  | 'ANOMALY'
-  | 'EXPORT'
-  | 'HELP';
+  | 'TODAY_SUMMARY' | 'ATTENDANCE_SUMMARY' | 'LATE_REPORT' | 'ABSENT_REPORT'
+  | 'HOURS_REPORT' | 'OT_REPORT' | 'WFH_REPORT' | 'BEST_PERFORMER'
+  | 'TEAM_SUMMARY' | 'COMPARISON' | 'EMPLOYEE_DETAIL' | 'PREDICTION'
+  | 'EXPORT' | 'HELP' | 'GENERAL';
 
-function classifyIntent(query: string): Intent {
-  const q = query.toLowerCase();
+type DateRange = 'today' | 'yesterday' | 'week' | 'last_week' | 'month' | 'last_month' | '7d' | '30d' | 'all';
 
-  if (q.includes('help') || q.includes('madad') || q.includes('kya pooch') || q.includes('guide'))
-    return 'HELP';
-
-  if (q.includes('ot') || q.includes('overtime') || q.includes('extra') || q.includes('additional'))
-    return 'OT_REPORT';
-
-  if (q.includes('late') || q.includes('der') || q.includes('dair') || q.includes('deri') || q.includes('tard') || q.includes('time par nahi'))
-    return 'LATE_REPORT';
-
-  if (q.includes('absent') || q.includes('chutti') || q.includes('leave') || q.includes('nahi aaya') || q.includes('nhi aya') || q.includes('gayab'))
-    return 'ABSENT_REPORT';
-
-  if (q.includes('early') || q.includes('jaldi') || q.includes('ontime') || q.includes('on time') || q.includes('time se pehle'))
-    return 'EARLY_REPORT';
-
-  if (q.includes('wfh') || q.includes('work from home') || q.includes('ghar se') || q.includes('home'))
-    return 'WFH_REPORT';
-
-  if (q.includes('location') || q.includes('kahan') || q.includes('kidhar') || q.includes('zone') || q.includes('center'))
-    return 'LOCATION_REPORT';
-
-  if (q.includes('best') || q.includes('top') || q.includes('behtareen') || q.includes('number one') || q.includes('topper'))
-    return 'BEST_PERFORMER';
-
-  if (q.includes('predict') || q.includes('forecast') || q.includes('future') || q.includes('next') || q.includes('warn') || q.includes('agla'))
-    return 'PREDICTION';
-
-  if (q.includes('anomaly') || q.includes('fraud') || q.includes('alert') || q.includes('suspicious') || q.includes('shak'))
-    return 'ANOMALY';
-
-  if (q.includes('export') || q.includes('pdf') || q.includes('excel') || q.includes('download') || q.includes('print'))
-    return 'EXPORT';
-
-  if (q.includes('compare') || q.includes('vs') || q.includes('versus') || q.includes('performance'))
-    return 'COMPARISON';
-
-  if (q.includes('team') || q.includes('sab') || q.includes('everyone') || q.includes('all') || q.includes('sabki') || q.includes('sabka'))
-    return 'TEAM_SUMMARY';
-
-  if (q.includes('hour') || q.includes('ghant') || q.includes('kitne') || q.includes('kaam') || q.includes('work') || q.includes('time'))
-    return 'HOURS_REPORT';
-
-  if (q.includes('summary') || q.includes('report') || q.includes('present') || q.includes('attendance'))
-    return 'ATTENDANCE_SUMMARY';
-
-  return 'ATTENDANCE_SUMMARY';
-}
-
-// =============================================
-// 2. FUZZY SEARCH
-// =============================================
-
-function fuzzySearch(query: string, target: string): boolean {
-  const q = query.toLowerCase().trim();
-  const t = target.toLowerCase().trim();
-
-  if (t.includes(q) || q.includes(t)) return true;
-
-  const qWords = q.split(' ');
-  const tWords = t.split(' ');
-
-  for (const qw of qWords) {
-    for (const tw of tWords) {
-      if (qw.length >= 2 && tw.length >= 2) {
-        if (tw.includes(qw) || qw.includes(tw)) return true;
-        if (levenshtein(qw, tw) <= 2) return true;
-      }
-    }
+function classifyIntent(q: string): Intent {
+  const l = q.toLowerCase();
+  if (/^(hi|hello|salam|hey|sup|kya hal|kaise ho|assalam)/.test(l)) return 'GENERAL';
+  if (/help|madad|guide|kya pooch|kya kar sakt/.test(l)) return 'HELP';
+  if (/export|pdf|download|print|whatsapp|share|bhej|send/.test(l)) return 'EXPORT';
+  if (/aaj|today|abhi|right now|is waqt/.test(l)) return 'TODAY_SUMMARY';
+  if (/late|der|dair|deri|tard|time par nahi|늦/.test(l)) return 'LATE_REPORT';
+  if (/absent|chutti|gayab|nahi aaya|nhi aya|missing|غیر حاضر/.test(l)) return 'ABSENT_REPORT';
+  if (/ot |overtime|extra hour|zyada|over time/.test(l)) return 'OT_REPORT';
+  if (/wfh|work from home|ghar se|remote/.test(l)) return 'WFH_REPORT';
+  if (/best|top|behtareen|number.?one|topper|star|champion|award/.test(l)) return 'BEST_PERFORMER';
+  if (/compare|vs|versus|mukabla|difference|farq/.test(l)) return 'COMPARISON';
+  if (/predict|forecast|future|agla|next month|warning|risk/.test(l)) return 'PREDICTION';
+  if (/team|sab|everyone|all|sabki|sabka|poori|puri|staff|complete/.test(l)) return 'TEAM_SUMMARY';
+  if (/hour|ghant|kitne|kaam|work|time|waqt|total/.test(l)) return 'HOURS_REPORT';
+  // Check if asking about specific employee
+  const emps = getAttendanceEmployees();
+  for (const emp of emps) {
+    const names = emp.name.toLowerCase().split(' ');
+    if (names.some(n => n.length > 2 && l.includes(n))) return 'EMPLOYEE_DETAIL';
   }
-  return false;
+  if (/summary|report|present|attendance|hazri|حاضری/.test(l)) return 'ATTENDANCE_SUMMARY';
+  return 'GENERAL';
 }
 
-function levenshtein(a: string, b: string): number {
-  const matrix: number[][] = Array.from({ length: b.length + 1 }, (_, i) =>
-    Array.from({ length: a.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
-  );
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
-    }
+function detectDateRange(q: string): DateRange {
+  const l = q.toLowerCase();
+  if (/aaj|today|abhi/.test(l)) return 'today';
+  if (/kal|yesterday|guzashta/.test(l)) return 'yesterday';
+  if (/is haftey|this week|current week/.test(l)) return 'week';
+  if (/pichle hafte|last week|guzashta hafta/.test(l)) return 'last_week';
+  if (/is mahine|this month|current month|is mah/.test(l)) return 'month';
+  if (/pichle mahine|last month|guzashta mah/.test(l)) return 'last_month';
+  if (/7 din|7 day|week|haft/.test(l)) return '7d';
+  if (/30 din|30 day|month|mahina|mah/.test(l)) return '30d';
+  if (/all|sab|total|poora|pura|complete|overall/.test(l)) return 'all';
+  return '30d'; // default
+}
+
+function getDateRangeFilter(range: DateRange): { start: string; end: string; label: string } {
+  const today = getPKTDateString();
+  const now = getPKTDate();
+  switch (range) {
+    case 'today': return { start: today, end: today, label: 'Today' };
+    case 'yesterday': { const y = format(subDays(now, 1), 'yyyy-MM-dd'); return { start: y, end: y, label: 'Yesterday' }; }
+    case 'week': { const s = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'); return { start: s, end: today, label: 'This Week' }; }
+    case 'last_week': { const lw = subWeeks(now, 1); const s = format(startOfWeek(lw, { weekStartsOn: 1 }), 'yyyy-MM-dd'); const e = format(endOfWeek(lw, { weekStartsOn: 1 }), 'yyyy-MM-dd'); return { start: s, end: e, label: 'Last Week' }; }
+    case 'month': { const s = format(startOfMonth(now), 'yyyy-MM-dd'); return { start: s, end: today, label: format(now, 'MMMM yyyy') }; }
+    case 'last_month': { const lm = subMonths(now, 1); const s = format(startOfMonth(lm), 'yyyy-MM-dd'); const e = format(endOfMonth(lm), 'yyyy-MM-dd'); return { start: s, end: e, label: format(lm, 'MMMM yyyy') }; }
+    case '7d': { const s = format(subDays(now, 7), 'yyyy-MM-dd'); return { start: s, end: today, label: 'Last 7 Days' }; }
+    case '30d': { const s = format(subDays(now, 30), 'yyyy-MM-dd'); return { start: s, end: today, label: 'Last 30 Days' }; }
+    default: return { start: '2000-01-01', end: today, label: 'All Time' };
   }
-  return matrix[b.length][a.length];
 }
 
-// =============================================
-// 3. DATE HANDLING
-// =============================================
-
-interface DateRange {
-  start: string;
-  end: string;
-  label: string;
+function filterRecords(records: AttendanceRecord[], range: DateRange, empId?: string): AttendanceRecord[] {
+  const { start, end } = getDateRangeFilter(range);
+  let filtered = records.filter(r => r.date >= start && r.date <= end);
+  if (empId) filtered = filtered.filter(r => r.employeeId === empId);
+  return filtered;
 }
 
-function detectDateRange(query: string): DateRange | null {
-  const now = new Date();
-  const today = format(now, 'yyyy-MM-dd');
-  const q = query.toLowerCase();
-
-  const checks: Array<{ keywords: string[]; getRange: () => DateRange }> = [
-    {
-      keywords: ['today', 'aaj', 'aj'],
-      getRange: () => ({ start: today, end: today, label: 'Today' }),
-    },
-    {
-      keywords: ['yesterday', 'kal'],
-      getRange: () => {
-        const d = format(subDays(now, 1), 'yyyy-MM-dd');
-        return { start: d, end: d, label: 'Yesterday' };
-      },
-    },
-    {
-      keywords: ['this week', 'is hafte', 'is haftey'],
-      getRange: () => ({
-        start: format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-        end: today,
-        label: 'This Week',
-      }),
-    },
-    {
-      keywords: ['last week', 'pichle hafte', 'pichlay haftey'],
-      getRange: () => ({
-        start: format(startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-        end: format(endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-        label: 'Last Week',
-      }),
-    },
-    {
-      keywords: ['7 din', '7 days', 'last 7'],
-      getRange: () => ({ start: format(subDays(now, 7), 'yyyy-MM-dd'), end: today, label: 'Last 7 Days' }),
-    },
-    {
-      keywords: ['15 din', '15 days'],
-      getRange: () => ({ start: format(subDays(now, 15), 'yyyy-MM-dd'), end: today, label: 'Last 15 Days' }),
-    },
-    {
-      keywords: ['30 din', '30 days', 'last 30'],
-      getRange: () => ({ start: format(subDays(now, 30), 'yyyy-MM-dd'), end: today, label: 'Last 30 Days' }),
-    },
-    {
-      keywords: ['this month', 'is mahine', 'is mahinay', 'current month'],
-      getRange: () => ({
-        start: format(startOfMonth(now), 'yyyy-MM-dd'),
-        end: today,
-        label: 'This Month',
-      }),
-    },
-    {
-      keywords: ['last month', 'pichle mahine', 'pichlay mahinay', 'previous month'],
-      getRange: () => {
-        const d = new Date(now);
-        d.setMonth(d.getMonth() - 1);
-        return {
-          start: format(startOfMonth(d), 'yyyy-MM-dd'),
-          end: format(endOfMonth(d), 'yyyy-MM-dd'),
-          label: 'Last Month',
-        };
-      },
-    },
-  ];
-
-  for (const check of checks) {
-    if (check.keywords.some(kw => q.includes(kw))) {
-      return check.getRange();
-    }
+function findEmployee(query: string): string | null {
+  const l = query.toLowerCase();
+  const emps = getAttendanceEmployees();
+  for (const emp of emps) {
+    const names = emp.name.toLowerCase().split(' ');
+    if (names.some(n => n.length > 2 && l.includes(n))) return emp.id;
   }
   return null;
 }
 
-function detectMonthYear(query: string): { month?: number; year: number } {
-  const q = query.toLowerCase();
-  const months: Record<string, number> = {
-    january: 1, jan: 1, february: 2, feb: 2, march: 3, mar: 3,
-    april: 4, apr: 4, may: 5, june: 6, jun: 6,
-    july: 7, jul: 7, august: 8, aug: 8, september: 9, sep: 9,
-    october: 10, oct: 10, november: 11, nov: 11, december: 12, dec: 12,
-  };
-
-  let month: number | undefined;
-  for (const [name, num] of Object.entries(months)) {
-    if (q.includes(name)) { month = num; break; }
-  }
-
-  const ym = q.match(/20\d{2}/);
-  const year = ym ? parseInt(ym[0]) : new Date().getFullYear();
-  return { month, year };
+function buildSummary(records: AttendanceRecord[], empId: string): EmployeeSummary {
+  const emp = getEmployees().find(e => e.id === empId);
+  const recs = records.filter(r => r.employeeId === empId);
+  const present = recs.filter(r => r.status === 'present').length;
+  const late = recs.filter(r => r.status === 'late').length;
+  const absent = recs.filter(r => r.status === 'absent').length;
+  const halfDay = recs.filter(r => r.status === 'half-day').length;
+  const wfh = recs.filter(r => r.status === 'work-from-home').length;
+  const totalHours = Math.round(recs.reduce((s, r) => s + (r.totalHours || 0), 0) * 10) / 10;
+  const totalDays = recs.length;
+  const avgHours = totalDays > 0 ? Math.round((totalHours / Math.max(present + late, 1)) * 10) / 10 : 0;
+  const onTimePercent = totalDays > 0 ? Math.round((present / Math.max(present + late + absent, 1)) * 100) : 0;
+  return { id: empId, name: emp?.name || 'Unknown', present, late, absent, halfDay, wfh, totalHours, avgHours, totalDays, onTimePercent };
 }
 
-// =============================================
-// 4. FORMAT HELPERS
-// =============================================
+// ── Response Generators ──
 
-function fmtDate(d: string): string {
-  try { return format(parseISO(d), 'dd MMM yyyy (EEEE)'); } catch { return d; }
-}
+function todaySummary(records: AttendanceRecord[], isAdmin: boolean, userId: string): string {
+  const today = getPKTDateString();
+  const dayName = format(getPKTDate(), 'EEEE, dd MMMM yyyy');
+  const todayRecs = records.filter(r => r.date === today);
+  const emps = getAttendanceEmployees();
 
-function fmtTime(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  try { return format(parseISO(iso), 'hh:mm a'); } catch { return '—'; }
-}
-
-function fmtShortDate(d: string): string {
-  try { return format(parseISO(d), 'dd MMM (EEE)'); } catch { return d; }
-}
-
-function roundH(n: number): number {
-  return Math.round(n * 100) / 100;
-}
-
-// =============================================
-// 5. PREDICTIVE INSIGHTS
-// =============================================
-
-function predictNextLate(employeeId: string, records: AttendanceRecord[], employeeName: string): string {
-  const recs = records
-    .filter(r => r.employeeId === employeeId && r.status === 'late')
-    .sort((a, b) => a.date.localeCompare(b.date));
-
-  if (recs.length < 3) {
-    return `📊 **${employeeName}'s Late Pattern:**\n\nNot enough data yet. ${recs.length} late days recorded.`;
-  }
-
-  const dayFreq: Record<string, number> = {};
-  recs.forEach(r => {
-    const day = format(parseISO(r.date), 'EEEE');
-    dayFreq[day] = (dayFreq[day] || 0) + 1;
-  });
-  const mostLikelyDay = Object.keys(dayFreq).sort((a, b) => dayFreq[b] - dayFreq[a])[0];
-
-  const times = recs
-    .filter(r => r.checkIn)
-    .map(r => {
-      try {
-        const d = new Date(r.checkIn!);
-        return d.getHours() * 60 + d.getMinutes();
-      } catch { return 0; }
-    });
-
-  const avgTime = times.length > 0
-    ? Math.round(times.reduce((a, b) => a + b, 0) / times.length)
-    : 0;
-  const avgHour = Math.floor(avgTime / 60);
-  const avgMin = avgTime % 60;
-
-  const recent = recs.slice(-5).map(r => fmtShortDate(r.date));
-
-  return `🔮 **${employeeName} — Late Pattern Analysis**\n\n` +
-    `  ⚠️ Most likely late on: **${mostLikelyDay}**\n` +
-    `  ⏰ Average check-in: **${String(avgHour).padStart(2, '0')}:${String(avgMin).padStart(2, '0')}**\n` +
-    `  📊 Total late days: **${recs.length}**\n` +
-    `  📅 Recent: ${recent.join(', ')}\n\n` +
-    `  💡 Tip: Leave **15 min earlier** on ${mostLikelyDay}!`;
-}
-
-// =============================================
-// 6. TEAM BENCHMARKING
-// =============================================
-
-function teamBenchmarking(records: AttendanceRecord[], dateRange: DateRange): string {
-  const employees = getAttendanceEmployees();
-
-  const stats = employees.map(emp => {
-    const recs = records.filter(r =>
-      r.employeeId === emp.id &&
-      r.date >= dateRange.start &&
-      r.date <= dateRange.end
-    );
-    const totalH = roundH(recs.reduce((s, r) => s + (r.totalHours || 0), 0));
-    const present = recs.filter(r => ['present', 'late'].includes(r.status)).length;
-    const late    = recs.filter(r => r.status === 'late').length;
-    const absent  = recs.filter(r => r.status === 'absent').length;
-    const onTime  = present > 0 ? Math.round(((present - late) / present) * 100) : 0;
-    return { name: emp.name, hours: totalH, days: present, late, absent, onTime };
-  });
-
-  const byHours  = [...stats].sort((a, b) => b.hours - a.hours);
-  const byOnTime = [...stats].sort((a, b) => b.onTime - a.onTime);
-  const byAbsent = [...stats].filter(s => s.absent > 0).sort((a, b) => b.absent - a.absent);
-
-  const medals = ['🥇', '🥈', '🥉'];
-
-  let res = `📊 **Team Benchmark — ${dateRange.label}**\n\n`;
-
-  res += `🔥 **Most Hours Worked:**\n`;
-  byHours.slice(0, 3).forEach((s, i) =>
-    res += `  ${medals[i] || `${i + 1}.`} ${s.name} — **${s.hours}h** (${s.days} days)\n`
-  );
-
-  res += `\n🎯 **Best On-Time:**\n`;
-  byOnTime.slice(0, 3).forEach((s, i) =>
-    res += `  ${medals[i] || `${i + 1}.`} ${s.name} — **${s.onTime}%** (${s.days - s.late}/${s.days})\n`
-  );
-
-  if (byAbsent.length > 0) {
-    res += `\n📉 **Most Absences:**\n`;
-    byAbsent.slice(0, 3).forEach((s, i) =>
-      res += `  ${i + 1}. ${s.name} — ${s.absent} absent\n`
-    );
-  }
-
-  return res;
-}
-
-// =============================================
-// 7. ANOMALY DETECTION
-// =============================================
-
-function detectAnomalies(employeeId: string, records: AttendanceRecord[], employeeName: string): string {
-  const recs = records.filter(r => r.employeeId === employeeId);
-  if (recs.length < 5) return `⚠️ Not enough data for ${employeeName}.`;
-
-  const avgHours = recs.reduce((s, r) => s + (r.totalHours || 0), 0) / recs.length;
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const anomalies: string[] = [];
-
-  recs.slice(-10).forEach(r => {
-    if (r.totalHours > 0 && r.totalHours < avgHours * 0.4) {
-      anomalies.push(`⚠️ ${fmtShortDate(r.date)}: Only ${r.totalHours}h (avg: ${Math.round(avgHours)}h)`);
-    }
-    if (r.date === today && r.status === 'absent') {
-      anomalies.push(`🔴 **Absent today!**`);
-    }
-    if (r.date === today && r.status === 'late') {
-      anomalies.push(`🟡 **Late today!**`);
-    }
-    if (r.notes?.includes('OUTSIDE OFFICE')) {
-      anomalies.push(`🚨 ${fmtShortDate(r.date)}: Checked out **Outside Office**`);
-    }
-  });
-
-  if (anomalies.length === 0) {
-    return `✅ **${employeeName}** — No anomalies detected. All good!`;
-  }
-
-  return `🚨 **${employeeName} — Anomaly Report:**\n\n${anomalies.map(a => `  ${a}`).join('\n')}`;
-}
-
-// =============================================
-// 8. MAIN PROCESSOR
-// =============================================
-
-export function processAIQuery(
-  query: string,
-  allRecords: AttendanceRecord[],
-  askingEmployeeId: string,
-  isAdmin: boolean
-): string {
-  const intent = classifyIntent(query);
-  const q = query.toLowerCase();
-  const EMPS = getEmployees();
-  const showOT = canSeeOT(askingEmployeeId);
-
-  // ── Find target employee via fuzzy search ──
-  let targetEmployee = EMPS.find(emp => fuzzySearch(q, emp.name));
-
-  // Block non-admin from seeing others
-  if (!isAdmin && targetEmployee && targetEmployee.id !== askingEmployeeId) {
-    return '❌ Aap sirf apni details dekh saktey hain.';
-  }
-
-  const effectiveTarget = isAdmin
-    ? (targetEmployee ?? undefined)
-    : EMPS.find(e => e.id === askingEmployeeId);
-  const employeeName = effectiveTarget?.name || 'Unknown';
-
-  // ── Date range detection ──
-  const dateRange = detectDateRange(q);
-  const { month: dMonth, year: dYear } = detectMonthYear(q);
-
-  // ── Default month range ──
-  const defaultRange: DateRange = {
-    start: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
-    end: format(new Date(), 'yyyy-MM-dd'),
-    label: 'This Month',
-  };
-  const defaultLast30: DateRange = {
-    start: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
-    end: format(new Date(), 'yyyy-MM-dd'),
-    label: 'Last 30 Days',
-  };
-
-  // ── Filter records by employee + date ──
-  function filterByDate(records: AttendanceRecord[], empId: string): AttendanceRecord[] {
-    let filtered = records.filter(r => r.employeeId === empId);
-    if (dateRange) {
-      filtered = filtered.filter(r => r.date >= dateRange.start && r.date <= dateRange.end);
-    } else if (dMonth) {
-      const pfx = `${dYear}-${String(dMonth).padStart(2, '0')}`;
-      filtered = filtered.filter(r => r.date.startsWith(pfx));
-    }
-    return filtered;
-  }
-
-  const periodLabel = dateRange?.label
-    ?? (dMonth ? format(new Date(dYear, dMonth - 1), 'MMMM yyyy') : 'All Time');
-
-  // ── HELP ──
-  if (intent === 'HELP') {
-    return `🤖 **Attendify AI — Guide**\n\n` +
-      `  👤 **Personal:**\n` +
-      `  • "Meri attendance dikhao"\n` +
-      `  • "Maine kitne ghante kaam kia?"\n` +
-      `  • "Mera overtime kya hai?"\n\n` +
-      `  📋 **Reports:**\n` +
-      `  • "Hamza kis din late aaya?"\n` +
-      `  • "Sohail ne is mahine kitne WFH liye?"\n` +
-      `  • "Ishtiaq ki last week ki summary"\n\n` +
-      `  👥 **Admin Only:**\n` +
-      `  • "Aaj kaun absent hai?"\n` +
-      `  • "Sabki attendance dikhao"\n` +
-      `  • "Best performer kaun hai?"\n` +
-      `  • "Team benchmarking karo"\n\n` +
-      `  🔮 **Advanced:**\n` +
-      `  • "Predict karo agla late kab hoga"\n` +
-      `  • "Anomaly report dikhao"\n\n` +
-      `  Urdu + English dono chalte hain! ✅`;
-  }
-
-  // ── TEAM SUMMARY / BENCHMARKING ──
-  if (intent === 'TEAM_SUMMARY' || intent === 'COMPARISON') {
-    if (!isAdmin) return '❌ Yeh feature sirf admin ke liye hai.';
-    const range = dateRange ?? defaultLast30;
-    return teamBenchmarking(allRecords, range);
-  }
-
-  // ── BEST PERFORMER ──
-  if (intent === 'BEST_PERFORMER') {
-    if (!isAdmin) return '❌ Yeh feature sirf admin ke liye hai.';
-    const range = dateRange ?? defaultRange;
-    const recs = allRecords.filter(r => r.date >= range.start && r.date <= range.end);
-
-    const stats = getAttendanceEmployees().map(emp => {
-      const er = recs.filter(r => r.employeeId === emp.id);
-      const present = er.filter(r => ['present', 'late'].includes(r.status)).length;
-      const late = er.filter(r => r.status === 'late').length;
-      const totalH = roundH(er.reduce((s, r) => s + (r.totalHours || 0), 0));
-      const onTime = present > 0 ? Math.round(((present - late) / present) * 100) : 0;
-      return { name: emp.name, onTime, present, late, totalH, days: er.length };
-    }).filter(s => s.days > 0);
-
-    if (stats.length === 0) return `📊 **${range.label}** — No data available yet.`;
-
-    const best = [...stats].sort((a, b) => b.onTime - a.onTime)[0];
-    return `🏆 **Best Performer — ${range.label}**\n\n` +
-      `  👤 **${best.name}**\n` +
-      `  🎯 On-Time: **${best.onTime}%**\n` +
-      `  ✅ Present: **${best.present}** days\n` +
-      `  ⚠️ Late: **${best.late}** days\n` +
-      `  ⏱️ Total Hours: **${best.totalH}h**`;
-  }
-
-  // ── PREDICTION ──
-  if (intent === 'PREDICTION') {
-    if (!effectiveTarget) return 'Employee ka naam likhein prediction ke liye.';
-    return predictNextLate(effectiveTarget.id, allRecords, employeeName);
-  }
-
-  // ── ANOMALY ──
-  if (intent === 'ANOMALY') {
-    if (!isAdmin) return '❌ Yeh feature sirf admin ke liye hai.';
-    if (!effectiveTarget) return 'Employee ka naam likhein anomaly check ke liye.';
-    return detectAnomalies(effectiveTarget.id, allRecords, employeeName);
-  }
-
-  // ── EXPORT ──
-  if (intent === 'EXPORT') {
-    if (!effectiveTarget) return 'Employee ka naam likhein export ke liye.';
-    const recs = filterByDate(allRecords, effectiveTarget.id);
-    if (recs.length === 0) return `${employeeName} ke liye koi record nahi mila.`;
-    const totalH = roundH(recs.reduce((s, r) => s + (r.totalHours || 0), 0));
-    return `📄 **Export Summary — ${employeeName} (${periodLabel})**\n\n` +
-      `  📅 Records: **${recs.length}**\n` +
-      `  ⏱️ Total Hours: **${totalH}h**\n` +
-      `  ✅ Present: **${recs.filter(r => ['present', 'late'].includes(r.status)).length}**\n` +
-      `  ⚠️ Late: **${recs.filter(r => r.status === 'late').length}**\n` +
-      `  ❌ Absent: **${recs.filter(r => r.status === 'absent').length}**\n` +
-      `  🏠 WFH: **${recs.filter(r => r.status === 'work-from-home').length}**\n\n` +
-      `  📎 History tab se CSV download kar saktey hain!`;
-  }
-
-  // ── EARLY / ON-TIME ──
-  if (intent === 'EARLY_REPORT') {
-    if (!effectiveTarget) return 'Employee ka naam likhein.';
-    const recs = filterByDate(allRecords, effectiveTarget.id)
-      .filter(r => r.status === 'present' && r.checkIn);
-    if (recs.length === 0) return `✅ ${employeeName} — ${periodLabel} mein koi on-time record nahi.`;
-
-    const sorted = [...recs].sort((a, b) => {
-      const tA = new Date(a.checkIn!).getHours() * 60 + new Date(a.checkIn!).getMinutes();
-      const tB = new Date(b.checkIn!).getHours() * 60 + new Date(b.checkIn!).getMinutes();
-      return tA - tB;
-    });
-
-    return `✅ **${employeeName} — On-Time Days (${periodLabel})**\n\n` +
-      `Total: **${recs.length} days**\n\n` +
-      sorted.slice(0, 10).map(r =>
-        `  • ${fmtDate(r.date)} — ${fmtTime(r.checkIn)} — ${getLocationFromIP(r.ipAddress)}`
-      ).join('\n') +
-      (sorted.length > 10 ? `\n  ...and ${sorted.length - 10} more` : '');
-  }
-
-  // ── LATE REPORT ──
-  if (intent === 'LATE_REPORT') {
-    if (!effectiveTarget) {
-      // Admin: show today's late entries
-      if (isAdmin) {
-        const today = format(new Date(), 'yyyy-MM-dd');
-        const lateToday = allRecords.filter(r => r.date === today && r.status === 'late');
-        if (lateToday.length === 0) return `✅ Aaj koi late nahi aaya!`;
-        return `⚠️ **Aaj Late Aaye (${lateToday.length}):**\n\n` +
-          lateToday.map(r => {
-            const emp = EMPS.find(e => e.id === r.employeeId);
-            return `  • **${emp?.name || 'Unknown'}** — ${fmtTime(r.checkIn)} — ${getLocationFromIP(r.ipAddress)}`;
-          }).join('\n');
-      }
-      return 'Employee ka naam likhein.';
-    }
-
-    const recs = filterByDate(allRecords, effectiveTarget.id).filter(r => r.status === 'late');
-    if (recs.length === 0) return `✅ **${employeeName}** — ${periodLabel} mein koi late entry nahi!`;
-
-    return `⚠️ **${employeeName} — Late Days (${periodLabel})**\n\n` +
-      `Total: **${recs.length} days**\n\n` +
-      recs.map(r => `  • ${fmtDate(r.date)} — ${fmtTime(r.checkIn)} — ${getLocationFromIP(r.ipAddress)}`).join('\n');
-  }
-
-  // ── ABSENT REPORT ──
-  if (intent === 'ABSENT_REPORT') {
-    if (!effectiveTarget) {
-      // Admin: show today's absents
-      if (isAdmin) {
-        const today = format(new Date(), 'yyyy-MM-dd');
-        const attendees = getAttendanceEmployees();
-        const checkedIn = allRecords.filter(r => r.date === today).map(r => r.employeeId);
-        const absent = attendees.filter(e => !checkedIn.includes(e.id));
-        if (absent.length === 0) return `✅ Aaj sab ne check-in kar liya!`;
-        return `❌ **Aaj Check-in Nahi Kia (${absent.length}):**\n\n` +
-          absent.map(e => `  • **${e.name}**`).join('\n');
-      }
-      return 'Employee ka naam likhein.';
-    }
-
-    const recs = filterByDate(allRecords, effectiveTarget.id).filter(r => r.status === 'absent');
-    if (recs.length === 0) return `✅ **${employeeName}** — ${periodLabel} mein koi absent nahi!`;
-
-    return `❌ **${employeeName} — Absent Days (${periodLabel})**\n\n` +
-      `Total: **${recs.length} days**\n\n` +
-      recs.map(r => `  • ${fmtDate(r.date)}`).join('\n');
-  }
-
-  // ── WFH REPORT ──
-  if (intent === 'WFH_REPORT') {
-    if (effectiveTarget) {
-      const recs = filterByDate(allRecords, effectiveTarget.id).filter(r => r.status === 'work-from-home');
-      if (recs.length === 0) return `🏠 **${employeeName}** ne ${periodLabel} mein koi WFH nahi li.`;
-      return `🏠 **${employeeName} — WFH Days (${periodLabel})**\n\n` +
-        `Total: **${recs.length} days**\n\n` +
-        recs.map(r => `  • ${fmtDate(r.date)}`).join('\n');
-    }
-
-    if (!isAdmin) {
-      const count = allRecords.filter(r => r.employeeId === askingEmployeeId && r.status === 'work-from-home').length;
-      return `🏠 Aapne **${count}** WFH days liye hain.`;
-    }
-
-    const byEmp = getAttendanceEmployees().map(e => ({
-      name: e.name,
-      count: allRecords.filter(r => r.employeeId === e.id && r.status === 'work-from-home').length,
-    })).filter(e => e.count > 0);
-
-    if (byEmp.length === 0) return '🏠 Kisi ne WFH nahi li abhi tak.';
-    return `🏠 **WFH Report**\n\n${byEmp.map(e => `  • ${e.name}: **${e.count} days**`).join('\n')}`;
-  }
-
-  // ── OT REPORT ──
-  if (intent === 'OT_REPORT') {
-    if (!showOT) return '❌ Overtime dekhne ki permission nahi hai.';
-
-    if (effectiveTarget) {
-      const t = getEmployeeTiming(effectiveTarget.id);
-      const recs = filterByDate(allRecords, effectiveTarget.id)
-        .filter(r => r.totalHours > t.minHoursForFullDay || r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY'));
-
-      if (recs.length === 0) return `⏱️ **${employeeName}** — ${periodLabel} mein koi overtime nahi.`;
-
-      const totalOT = roundH(recs.reduce((s, r) => {
-        const isSun = r.notes?.includes('SUNDAY');
-        const isHol = r.notes?.includes('HOLIDAY');
-        return s + ((isSun || isHol) ? r.totalHours : Math.max(0, r.totalHours - t.minHoursForFullDay));
-      }, 0));
-
-      return `⏱️ **${employeeName} — Overtime (${periodLabel})**\n\n` +
-        `Total OT: **${totalOT}h** | Days: **${recs.length}** | Duty: **${t.minHoursForFullDay}h/day**\n\n` +
-        recs.map(r => {
-          const isSun = r.notes?.includes('SUNDAY');
-          const isHol = r.notes?.includes('HOLIDAY');
-          const ot = (isSun || isHol) ? r.totalHours : roundH(r.totalHours - t.minHoursForFullDay);
-          const tag = isSun ? '🌙 Sunday' : isHol ? '🎉 Holiday' : 'OT';
-          return `  • ${fmtShortDate(r.date)} — ${r.totalHours}h — **+${ot}h ${tag}** — ${getLocationFromIP(r.ipAddress)}`;
-        }).join('\n');
-    }
-
-    if (isAdmin) {
-      const range = dateRange ?? defaultRange;
-      const recs = allRecords.filter(r => r.date >= range.start && r.date <= range.end);
-      const withOT = getAttendanceEmployees().map(e => {
-        const t = getEmployeeTiming(e.id);
-        const er = recs.filter(r =>
-          r.employeeId === e.id &&
-          (r.totalHours > t.minHoursForFullDay || r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY'))
-        );
-        const total = roundH(er.reduce((s, r) => {
-          const isSun = r.notes?.includes('SUNDAY');
-          const isHol = r.notes?.includes('HOLIDAY');
-          return s + ((isSun || isHol) ? r.totalHours : Math.max(0, r.totalHours - t.minHoursForFullDay));
-        }, 0));
-        return { name: e.name, totalOT: total, days: er.length };
-      }).filter(e => e.totalOT > 0);
-
-      if (withOT.length === 0) return `⏱️ Kisi ka overtime nahi (${range.label}).`;
-      const grandTotal = roundH(withOT.reduce((a, b) => a + b.totalOT, 0));
-      return `⏱️ **Team Overtime (${range.label})**\n\n` +
-        withOT.map(s => `  • **${s.name}** — +${s.totalOT}h (${s.days} days)`).join('\n') +
-        `\n\n  📊 Grand Total: **+${grandTotal}h**`;
-    }
-  }
-
-  // ── LOCATION REPORT ──
-  if (intent === 'LOCATION_REPORT') {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const recs = allRecords.filter(r => r.date === today && r.checkIn);
-    if (recs.length === 0) return '📍 Aaj abhi tak kisi ne check-in nahi kia.';
-    return `📍 **Today's Locations (${recs.length} checked in)**\n\n` +
-      recs.map(r => {
-        const e = EMPS.find(x => x.id === r.employeeId);
-        return `  • **${e?.name || 'Unknown'}** — ${getLocationFromIP(r.ipAddress)} — ${fmtTime(r.checkIn)}`;
-      }).join('\n');
-  }
-
-  // ── HOURS REPORT ──
-  if (intent === 'HOURS_REPORT') {
-    if (!effectiveTarget) return 'Employee ka naam likhein.';
-    const recs = filterByDate(allRecords, effectiveTarget.id).filter(r => r.totalHours > 0);
-    if (recs.length === 0) return `⏱️ **${employeeName}** — ${periodLabel} mein koi working hours record nahi.`;
-
-    const total = roundH(recs.reduce((s, r) => s + r.totalHours, 0));
-    const avg = roundH(total / recs.length);
-    const recent = [...recs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
-
-    return `⏱️ **${employeeName} — Working Hours (${periodLabel})**\n\n` +
-      `  Total: **${total}h** | Days: **${recs.length}** | Avg/Day: **${avg}h**\n\n` +
-      `Recent:\n` +
-      recent.map(r =>
-        `  • ${fmtShortDate(r.date)} — ${r.totalHours}h — ${fmtTime(r.checkIn)} → ${fmtTime(r.checkOut)} — ${getLocationFromIP(r.ipAddress)}`
-      ).join('\n');
-  }
-
-  // ── ATTENDANCE SUMMARY (default) ──
-  if (effectiveTarget) {
-    const recs = filterByDate(allRecords, effectiveTarget.id);
-    const present  = recs.filter(r => ['present', 'late'].includes(r.status)).length;
-    const late     = recs.filter(r => r.status === 'late').length;
-    const absent   = recs.filter(r => r.status === 'absent').length;
-    const halfDay  = recs.filter(r => r.status === 'half-day').length;
-    const wfh      = recs.filter(r => r.status === 'work-from-home').length;
-    const totalH   = roundH(recs.reduce((s, r) => s + (r.totalHours || 0), 0));
-    const worked   = present + halfDay + wfh;
-    const avgH     = worked > 0 ? roundH(totalH / worked) : 0;
-    const onTimePct = present > 0 ? Math.round(((present - late) / present) * 100) : 0;
-
-    let res = `📊 **${employeeName} — ${periodLabel}**\n\n`;
-    res += `  ✅ Present: **${present}** days\n`;
-    if (late > 0) res += `  ⚠️ Late: **${late}** days\n`;
-    if (absent > 0) res += `  ❌ Absent: **${absent}** days\n`;
-    if (halfDay > 0) res += `  📋 Half Day: **${halfDay}**\n`;
-    if (wfh > 0) res += `  🏠 WFH: **${wfh}**\n`;
-    res += `  ⏱️ Total Hours: **${totalH}h**\n`;
-    res += `  ⏰ Avg/Day: **${avgH}h**\n`;
-    if (present > 0) res += `  🎯 On-Time: **${onTimePct}%**\n`;
-
-    if (showOT) {
-      const t = getEmployeeTiming(effectiveTarget.id);
-      const otRecs = recs.filter(r =>
-        r.totalHours > t.minHoursForFullDay || r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY')
-      );
-      const totalOT = roundH(otRecs.reduce((s, r) => {
-        const special = r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY');
-        return s + (special ? r.totalHours : Math.max(0, r.totalHours - t.minHoursForFullDay));
-      }, 0));
-      if (totalOT > 0) res += `  💪 Overtime: **+${totalOT}h**\n`;
-    }
-
-    const lateDays = recs.filter(r => r.status === 'late');
-    if (lateDays.length > 0 && lateDays.length <= 10) {
-      res += `\n⚠️ Late Days:\n` +
-        lateDays.map(r => `  • ${fmtDate(r.date)} — ${fmtTime(r.checkIn)}`).join('\n');
-    }
-
-    const absDays = recs.filter(r => r.status === 'absent');
-    if (absDays.length > 0 && absDays.length <= 10) {
-      res += `\n\n❌ Absent Days:\n` +
-        absDays.map(r => `  • ${fmtDate(r.date)}`).join('\n');
-    }
-
-    return res;
-  }
-
-  // ── NON-ADMIN FALLBACK ──
   if (!isAdmin) {
-    const s = generateEmployeeSummary(askingEmployeeId, allRecords, dYear, dMonth);
-    const label = dMonth ? format(new Date(dYear, dMonth - 1), 'MMMM yyyy') : 'This Month';
-    return `📊 **${employeeName} — ${label}**\n\n` +
-      `  ✅ Present: **${s.presentDays}**\n` +
-      `  ⚠️ Late: **${s.lateDays}**\n` +
-      `  ❌ Absent: **${s.absentDays}**\n` +
-      `  ⏱️ Hours: **${s.totalHours}h**\n` +
-      `  🎯 On-Time: **${s.onTimePercentage}%**`;
+    const myRec = todayRecs.find(r => r.employeeId === userId);
+    if (!myRec) return `📅 **${dayName}**\n\n❌ You have **not checked in** today yet.`;
+    const checkIn = myRec.checkIn ? format(new Date(myRec.checkIn), 'hh:mm a') : '—';
+    const checkOut = myRec.checkOut ? format(new Date(myRec.checkOut), 'hh:mm a') : 'Still working';
+    return `📅 **${dayName}**\n\n• **Status:** ${myRec.status.toUpperCase()}\n• **Check In:** ${checkIn}\n• **Check Out:** ${checkOut}\n• **Hours:** ${myRec.totalHours.toFixed(1)}h`;
   }
 
-  // ── ADMIN TEAM SUMMARY ──
-  if (isAdmin) {
-    const range = dateRange ?? defaultRange;
-    const recs = allRecords.filter(r => r.date >= range.start && r.date <= range.end);
-    let res = `📊 **Team Summary — ${range.label}**\n\n`;
-    getAttendanceEmployees().forEach(emp => {
-      const er = recs.filter(r => r.employeeId === emp.id);
-      const present = er.filter(r => ['present', 'late'].includes(r.status)).length;
-      const late = er.filter(r => r.status === 'late').length;
-      const absent = er.filter(r => r.status === 'absent').length;
-      const totalH = roundH(er.reduce((s, r) => s + (r.totalHours || 0), 0));
-      const onTime = present > 0 ? Math.round(((present - late) / present) * 100) : 0;
-      res += `**${emp.name}** — ✅${present} ⚠️${late} ❌${absent} — ${totalH}h — 🎯${onTime}%\n`;
+  const present = todayRecs.filter(r => r.status === 'present').length;
+  const late = todayRecs.filter(r => r.status === 'late').length;
+  const absent = emps.length - todayRecs.length;
+  const checkedIn = todayRecs.filter(r => r.checkIn && !r.checkOut);
+  const completed = todayRecs.filter(r => r.checkOut);
+
+  let response = `📅 **Today's Report — ${dayName}**\n\n`;
+  response += `✅ **Present:** ${present}  |  ⚠️ **Late:** ${late}  |  ❌ **Absent:** ${absent}\n`;
+  response += `🔄 **Working now:** ${checkedIn.length}  |  ✓ **Completed:** ${completed.length}\n\n`;
+
+  if (todayRecs.length > 0) {
+    response += `**Employee Details:**\n`;
+    todayRecs.forEach(r => {
+      const name = getEmployees().find(e => e.id === r.employeeId)?.name || 'Unknown';
+      const statusIcon = r.status === 'present' ? '✅' : r.status === 'late' ? '⚠️' : '❌';
+      const time = r.checkIn ? format(new Date(r.checkIn), 'hh:mm a') : '—';
+      response += `• ${statusIcon} **${name}** — ${r.status.toUpperCase()} (In: ${time})\n`;
     });
-    return res;
   }
 
-  // ── DEFAULT HELP ──
-  return `🤖 **Yeh pooch sakte hain:**\n\n` +
-    `  • "Hamza ki attendance dikhao"\n` +
-    `  • "Aaj kaun late aaya?"\n` +
-    `  • "Kaun absent hai?"\n` +
-    `  • "Overtime report"\n` +
-    `  • "WFH report"\n` +
-    `  • "Team summary"\n` +
-    `  • "Best performer kaun hai?"\n\n` +
-    `  Urdu + English dono chalte hain!`;
+  if (absent > 0) {
+    const absentEmps = emps.filter(e => !todayRecs.some(r => r.employeeId === e.id));
+    response += `\n**Absent Today:**\n`;
+    absentEmps.forEach(e => { response += `• ❌ ${e.name}\n`; });
+  }
+
+  return response;
 }
 
-// =============================================
-// 9. SUMMARY GENERATOR
-// =============================================
+function lateReport(records: AttendanceRecord[], range: DateRange): string {
+  const { label } = getDateRangeFilter(range);
+  const filtered = filterRecords(records, range);
+  const lateRecs = filtered.filter(r => r.status === 'late');
 
+  if (lateRecs.length === 0) return `⏰ **Late Report — ${label}**\n\n✅ No one was late! Great discipline! 👏`;
+
+  // Group by employee
+  const byEmp: Record<string, number> = {};
+  lateRecs.forEach(r => { byEmp[r.employeeId] = (byEmp[r.employeeId] || 0) + 1; });
+  const sorted = Object.entries(byEmp).sort((a, b) => b[1] - a[1]);
+
+  let response = `⏰ **Late Report — ${label}**\n\n`;
+  response += `Total late entries: **${lateRecs.length}**\n\n`;
+  sorted.forEach(([empId, count], i) => {
+    const name = getEmployees().find(e => e.id === empId)?.name || 'Unknown';
+    const bar = '█'.repeat(Math.min(count, 10));
+    response += `• **${name}** — ${count} time${count > 1 ? 's' : ''} late ${bar}\n`;
+  });
+
+  if (sorted.length > 0) {
+    response += `\n⚠️ **Most Late:** ${getEmployees().find(e => e.id === sorted[0][0])?.name} (${sorted[0][1]} times)`;
+  }
+  return response;
+}
+
+function absentReport(records: AttendanceRecord[], range: DateRange): string {
+  const { label } = getDateRangeFilter(range);
+  const filtered = filterRecords(records, range);
+  const absentRecs = filtered.filter(r => r.status === 'absent');
+
+  if (absentRecs.length === 0) return `📋 **Absent Report — ${label}**\n\n✅ Zero absences! Everyone showed up! 🎉`;
+
+  const byEmp: Record<string, number> = {};
+  absentRecs.forEach(r => { byEmp[r.employeeId] = (byEmp[r.employeeId] || 0) + 1; });
+  const sorted = Object.entries(byEmp).sort((a, b) => b[1] - a[1]);
+
+  let response = `📋 **Absent Report — ${label}**\n\n`;
+  response += `Total absent days: **${absentRecs.length}**\n\n`;
+  sorted.forEach(([empId, count]) => {
+    const name = getEmployees().find(e => e.id === empId)?.name || 'Unknown';
+    response += `• ❌ **${name}** — ${count} day${count > 1 ? 's' : ''} absent\n`;
+  });
+  return response;
+}
+
+function hoursReport(records: AttendanceRecord[], range: DateRange, targetEmpId?: string): string {
+  const { label } = getDateRangeFilter(range);
+  const filtered = filterRecords(records, range, targetEmpId || undefined);
+
+  if (targetEmpId) {
+    const sum = buildSummary(filtered, targetEmpId);
+    return `⏱️ **Hours Report — ${sum.name} (${label})**\n\n• **Total Hours:** ${sum.totalHours}h\n• **Avg Hours/Day:** ${sum.avgHours}h\n• **Days Present:** ${sum.present + sum.late}\n• **Days Absent:** ${sum.absent}\n• **On-Time Rate:** ${sum.onTimePercent}%`;
+  }
+
+  const emps = getAttendanceEmployees();
+  const summaries = emps.map(e => buildSummary(filtered, e.id)).sort((a, b) => b.totalHours - a.totalHours);
+
+  let response = `⏱️ **Hours Report — ${label}**\n\n`;
+  summaries.forEach((s, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '  ';
+    response += `${medal} **${s.name}** — ${s.totalHours}h (avg ${s.avgHours}h/day)\n`;
+  });
+  return response;
+}
+
+function bestPerformer(records: AttendanceRecord[], range: DateRange): string {
+  const { label } = getDateRangeFilter(range);
+  const filtered = filterRecords(records, range);
+  const emps = getAttendanceEmployees();
+  const summaries = emps.map(e => buildSummary(filtered, e.id))
+    .filter(s => s.totalDays > 0)
+    .sort((a, b) => {
+      const scoreA = a.onTimePercent * 0.4 + (a.avgHours / 9 * 100) * 0.3 + ((a.totalDays - a.absent) / Math.max(a.totalDays, 1) * 100) * 0.3;
+      const scoreB = b.onTimePercent * 0.4 + (b.avgHours / 9 * 100) * 0.3 + ((b.totalDays - b.absent) / Math.max(b.totalDays, 1) * 100) * 0.3;
+      return scoreB - scoreA;
+    });
+
+  if (summaries.length === 0) return `🏆 **Best Performer — ${label}**\n\nNot enough data to determine.`;
+
+  let response = `🏆 **Performance Rankings — ${label}**\n\n`;
+  summaries.forEach((s, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+    const score = Math.round(s.onTimePercent * 0.4 + (s.avgHours / 9 * 100) * 0.3 + ((s.totalDays - s.absent) / Math.max(s.totalDays, 1) * 100) * 0.3);
+    response += `${medal} **${s.name}** — Score: ${score}/100\n`;
+    response += `   ✅ ${s.present} present | ⚠️ ${s.late} late | ❌ ${s.absent} absent | ⏱️ ${s.avgHours}h avg\n\n`;
+  });
+  return response;
+}
+
+function teamSummary(records: AttendanceRecord[], range: DateRange): string {
+  const { label } = getDateRangeFilter(range);
+  const filtered = filterRecords(records, range);
+  const emps = getAttendanceEmployees();
+  const summaries = emps.map(e => buildSummary(filtered, e.id)).sort((a, b) => b.onTimePercent - a.onTimePercent);
+
+  const totalP = summaries.reduce((s, e) => s + e.present, 0);
+  const totalL = summaries.reduce((s, e) => s + e.late, 0);
+  const totalA = summaries.reduce((s, e) => s + e.absent, 0);
+  const totalH = Math.round(summaries.reduce((s, e) => s + e.totalHours, 0) * 10) / 10;
+
+  let response = `📊 **Team Summary — ${label}**\n\n`;
+  response += `**Overall:**\n`;
+  response += `• ✅ Present: **${totalP}** days\n`;
+  response += `• ⚠️ Late: **${totalL}** days\n`;
+  response += `• ❌ Absent: **${totalA}** days\n`;
+  response += `• ⏱️ Total Hours: **${totalH}h**\n\n`;
+  response += `**Per Employee:**\n`;
+  summaries.forEach(s => {
+    const statusBar = s.onTimePercent >= 80 ? '🟢' : s.onTimePercent >= 50 ? '🟡' : '🔴';
+    response += `• ${statusBar} **${s.name}** — ${s.onTimePercent}% on-time | ${s.totalHours}h | ${s.absent} absent\n`;
+  });
+  return response;
+}
+
+function employeeDetail(records: AttendanceRecord[], query: string, range: DateRange): string {
+  const empId = findEmployee(query);
+  if (!empId) return `❓ Employee not found. Try using their exact name.`;
+
+  const { label } = getDateRangeFilter(range);
+  const filtered = filterRecords(records, range, empId);
+  const s = buildSummary(filtered, empId);
+
+  let response = `👤 **${s.name} — ${label}**\n\n`;
+  response += `**Attendance:**\n`;
+  response += `• ✅ Present: **${s.present}** days\n`;
+  response += `• ⚠️ Late: **${s.late}** days\n`;
+  response += `• ❌ Absent: **${s.absent}** days\n`;
+  response += `• 🏠 WFH: **${s.wfh}** days\n\n`;
+  response += `**Performance:**\n`;
+  response += `• ⏱️ Total Hours: **${s.totalHours}h**\n`;
+  response += `• 📊 Avg Hours/Day: **${s.avgHours}h**\n`;
+  response += `• 🎯 On-Time Rate: **${s.onTimePercent}%**\n`;
+
+  // Recent 5 records
+  const recent = filtered.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+  if (recent.length > 0) {
+    response += `\n**Recent Activity:**\n`;
+    recent.forEach(r => {
+      const icon = r.status === 'present' ? '✅' : r.status === 'late' ? '⚠️' : r.status === 'absent' ? '❌' : '📋';
+      const dateStr = format(new Date(r.date + 'T00:00:00'), 'dd MMM, EEE');
+      response += `• ${icon} ${dateStr} — ${r.status.toUpperCase()} (${r.totalHours.toFixed(1)}h)\n`;
+    });
+  }
+  return response;
+}
+
+function generateExportText(records: AttendanceRecord[], range: DateRange, forWhatsApp: boolean): string {
+  const { label } = getDateRangeFilter(range);
+  const filtered = filterRecords(records, range);
+  const emps = getAttendanceEmployees();
+  const summaries = emps.map(e => buildSummary(filtered, e.id));
+
+  const totalP = summaries.reduce((s, e) => s + e.present, 0);
+  const totalL = summaries.reduce((s, e) => s + e.late, 0);
+  const totalA = summaries.reduce((s, e) => s + e.absent, 0);
+  const totalH = Math.round(summaries.reduce((s, e) => s + e.totalHours, 0) * 10) / 10;
+
+  if (forWhatsApp) {
+    let txt = `📋 *ATTENDIFY REPORT*\n📅 ${label}\n${'─'.repeat(25)}\n\n`;
+    txt += `✅ Present: ${totalP}\n⚠️ Late: ${totalL}\n❌ Absent: ${totalA}\n⏱️ Hours: ${totalH}h\n\n`;
+    summaries.forEach(s => {
+      txt += `👤 *${s.name}*\n   P:${s.present} L:${s.late} A:${s.absent} | ${s.totalHours}h\n`;
+    });
+    txt += `\n_Generated by Attendify_`;
+    return txt;
+  }
+
+  // Plain text for PDF
+  let txt = `ATTENDIFY ATTENDANCE REPORT\n${label}\n${'='.repeat(40)}\n\n`;
+  txt += `SUMMARY\nPresent: ${totalP} | Late: ${totalL} | Absent: ${totalA} | Hours: ${totalH}h\n\n`;
+  txt += `EMPLOYEE DETAILS\n${'-'.repeat(40)}\n`;
+  summaries.forEach(s => {
+    txt += `${s.name}\n  Present: ${s.present} | Late: ${s.late} | Absent: ${s.absent} | Hours: ${s.totalHours}h | Avg: ${s.avgHours}h/day\n\n`;
+  });
+  return txt;
+}
+
+function helpText(): string {
+  return `🤖 **Attendify AI Assistant — Help Guide**
+
+**Ask me anything! Here are some examples:**
+
+📅 **Today's Report:**
+• "Aaj ki report dikhao"
+• "Today's summary"
+• "Kaun present hai?"
+
+⏰ **Late Reports:**
+• "Kaun late aaya?"
+• "Late report this month"
+• "Is hafte kaun late tha?"
+
+❌ **Absent Reports:**
+• "Kaun absent hai?"
+• "Absent report last month"
+
+👤 **Employee Details:**
+• "Hamza ki attendance"
+• "Ishtiaq ka record dikhao"
+• "Behzad ne kitne ghante kaam kia?"
+
+🏆 **Performance:**
+• "Best performer kaun hai?"
+• "Team summary dikhao"
+• "Sabki performance compare karo"
+
+📊 **Reports & Export:**
+• "PDF report banao"
+• "WhatsApp ke liye report"
+• "Monthly report download karo"
+
+💡 **Tips:**
+• You can ask in **English** or **Urdu**
+• Specify time: "this week", "last month", "today"
+• Ask about specific people by name`;
+}
+
+// ── Main Entry Point ──
+
+export function processAIQuery(query: string, records: AttendanceRecord[], userId: string, isAdmin: boolean): string {
+  try {
+    if (!query || query.trim().length === 0) return 'Please type a question or type **"help"** for guidance.';
+
+    const intent = classifyIntent(query);
+    const range = detectDateRange(query);
+
+    // Non-admin can only see their own data
+    const viewRecords = isAdmin ? records : records.filter(r => r.employeeId === userId);
+
+    switch (intent) {
+      case 'HELP': return helpText();
+      case 'TODAY_SUMMARY': return todaySummary(viewRecords, isAdmin, userId);
+      case 'LATE_REPORT': return lateReport(viewRecords, range);
+      case 'ABSENT_REPORT': return absentReport(viewRecords, range);
+      case 'HOURS_REPORT': {
+        const targetEmp = findEmployee(query);
+        return hoursReport(viewRecords, range, isAdmin ? (targetEmp || undefined) : userId);
+      }
+      case 'OT_REPORT': return hoursReport(viewRecords, range); // OT same as hours for now
+      case 'WFH_REPORT': {
+        const { label } = getDateRangeFilter(range);
+        const filtered = filterRecords(viewRecords, range);
+        const wfhRecs = filtered.filter(r => r.status === 'work-from-home');
+        if (wfhRecs.length === 0) return `🏠 **WFH Report — ${label}**\n\nNo WFH records found.`;
+        const byEmp: Record<string, number> = {};
+        wfhRecs.forEach(r => { byEmp[r.employeeId] = (byEmp[r.employeeId] || 0) + 1; });
+        let res = `🏠 **WFH Report — ${label}**\n\nTotal WFH days: **${wfhRecs.length}**\n\n`;
+        Object.entries(byEmp).sort((a, b) => b[1] - a[1]).forEach(([id, c]) => {
+          res += `• **${getEmployees().find(e => e.id === id)?.name}** — ${c} day${c > 1 ? 's' : ''}\n`;
+        });
+        return res;
+      }
+      case 'BEST_PERFORMER': return bestPerformer(viewRecords, range);
+      case 'TEAM_SUMMARY': return teamSummary(viewRecords, range);
+      case 'COMPARISON': return bestPerformer(viewRecords, range);
+      case 'EMPLOYEE_DETAIL': return employeeDetail(viewRecords, query, range);
+      case 'PREDICTION': {
+        const filtered = filterRecords(viewRecords, '30d');
+        const emps = getAttendanceEmployees();
+        const risks = emps.map(e => {
+          const s = buildSummary(filtered, e.id);
+          const riskScore = s.late * 2 + s.absent * 5;
+          return { ...s, riskScore };
+        }).filter(s => s.riskScore > 5).sort((a, b) => b.riskScore - a.riskScore);
+
+        let res = `🔮 **Prediction & Warnings (Last 30 Days)**\n\n`;
+        if (risks.length === 0) { res += '✅ No employees at risk. Everyone is performing well!'; }
+        else {
+          risks.forEach(r => {
+            const level = r.riskScore > 20 ? '🔴 HIGH' : r.riskScore > 10 ? '🟡 MEDIUM' : '🟢 LOW';
+            res += `• ${level} **${r.name}** — ${r.late} late, ${r.absent} absent (Risk: ${r.riskScore})\n`;
+          });
+        }
+        return res;
+      }
+      case 'EXPORT': {
+        const isWA = /whatsapp|wa|share|bhej|send/.test(query.toLowerCase());
+        return generateExportText(viewRecords, range, isWA);
+      }
+      case 'GENERAL': {
+        const name = getEmployees().find(e => e.id === userId)?.name || 'there';
+        return `👋 **Hello ${name}!**\n\nI'm your Attendify AI Assistant. I can help you with:\n\n• 📅 Today's attendance report\n• ⏰ Late/Absent reports\n• 👤 Employee details\n• 🏆 Performance rankings\n• 📊 Team summaries\n• 📄 PDF/WhatsApp reports\n\nJust ask me anything! Type **"help"** for full guide.`;
+      }
+      default: return teamSummary(viewRecords, range);
+    }
+  } catch (error) {
+    console.error('AI Query Error:', error);
+    return `⚠️ **Oops!** Something went wrong. Please try again.\n\nTip: Type **"help"** to see what I can do.`;
+  }
+}
+
+// Keep backward compatibility — returns EmployeeSummary from types.ts
 export function generateEmployeeSummary(
-  employeeId: string,
+  empId: string,
   records: AttendanceRecord[],
-  year?: number,
-  month?: number
-): EmployeeSummary {
-  const emp = getEmployees().find(e => e.id === employeeId);
-  let filtered = records.filter(r => r.employeeId === employeeId);
-
-  if (year && month) {
-    const pfx = `${year}-${String(month).padStart(2, '0')}`;
-    filtered = filtered.filter(r => r.date.startsWith(pfx));
-  }
-
-  const presentDays = filtered.filter(r => ['present', 'late', 'half-day', 'work-from-home'].includes(r.status)).length;
-  const absentDays  = filtered.filter(r => r.status === 'absent').length;
-  const lateDays    = filtered.filter(r => r.status === 'late').length;
-  const wfhDays     = filtered.filter(r => r.status === 'work-from-home').length;
-  const totalHours  = roundH(filtered.reduce((s, r) => s + (r.totalHours || 0), 0));
-  const lateDates   = filtered.filter(r => r.status === 'late').map(r => r.date);
-  const absentDates = filtered.filter(r => r.status === 'absent').map(r => r.date);
-
-  let totalWorkingDays = presentDays + absentDays;
-  if (year && month) {
-    const s = startOfMonth(new Date(year, month - 1));
-    const e = endOfMonth(new Date(year, month - 1));
-    totalWorkingDays = eachDayOfInterval({ start: s, end: e }).filter(d => !isWeekend(d)).length;
-  }
-
-  const timing = getEmployeeTiming(employeeId);
-  const totalOT = roundH(
-    filtered
-      .filter(r => r.totalHours > timing.minHoursForFullDay)
-      .reduce((s, r) => s + (r.totalHours - timing.minHoursForFullDay), 0)
-  );
+  _startDate?: string | number,
+  _endDate?: string | number,
+): import('./types').EmployeeSummary {
+  const emp = getEmployees().find(e => e.id === empId);
+  const recs = records.filter(r => r.employeeId === empId);
+  const present = recs.filter(r => r.status === 'present').length;
+  const late = recs.filter(r => r.status === 'late').length;
+  const absent = recs.filter(r => r.status === 'absent').length;
+  const wfh = recs.filter(r => r.status === 'work-from-home').length;
+  const totalHours = Math.round(recs.reduce((s, r) => s + (r.totalHours || 0), 0) * 10) / 10;
+  const workDays = Math.max(present + late, 1);
+  const avgHours = Math.round((totalHours / workDays) * 10) / 10;
+  const totalDays = recs.length;
+  const onTime = totalDays > 0 ? Math.round((present / Math.max(present + late + absent, 1)) * 100) : 0;
+  const lateDates = recs.filter(r => r.status === 'late').map(r => r.date);
+  const absentDates = recs.filter(r => r.status === 'absent').map(r => r.date);
+  const otHours = Math.round(recs.reduce((s, r) => s + (r.overtime_hours || 0), 0) * 10) / 10;
 
   return {
-    employeeId,
+    employeeId: empId,
     employeeName: emp?.name || 'Unknown',
-    totalDays: totalWorkingDays || filtered.length,
-    presentDays,
-    absentDays,
-    lateDays,
-    wfhDays,
+    totalDays,
+    presentDays: present,
+    absentDays: absent,
+    lateDays: late,
+    wfhDays: wfh,
     totalHours,
-    avgHoursPerDay: presentDays > 0 ? roundH(totalHours / presentDays) : 0,
+    avgHoursPerDay: avgHours,
     lateDates,
     absentDates,
-    onTimePercentage: presentDays > 0
-      ? Math.round(((presentDays - lateDays) / presentDays) * 100)
-      : 0,
-    totalOT,
+    onTimePercentage: onTime,
+    totalOT: otHours,
   };
 }

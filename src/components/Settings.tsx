@@ -426,6 +426,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                 salary_view: 'View Salary', audit_view: 'View Audit Log',
                 alerts_view: 'View Alerts', device_manage: 'Device Management',
                 corrections_manage: 'Manage Corrections', notes_manage: 'Manager Notes',
+                gps_map: '🗺️ GPS Live Map', push_notifications: '🔔 Push Notifications',
               };
               return Object.keys(ac).map(feat => (
                 <div key={feat} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
@@ -543,7 +544,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
     { key: 'employees', label: 'Employees', icon: '👥', show: canViewAll },
     { key: 'audit',     label: 'Audit Log', icon: '📋', show: canViewAudit },
     { key: 'alerts',    label: 'Alerts',    icon: '🔔', show: ha('alerts_view') },
-    { key: 'salary',    label: 'Salary',    icon: '💰', show: ha('salary_view') },
+    // Salary removed
     { key: 'about',     label: 'About',     icon: 'ℹ️', show: true },
   ].filter(t => t.show);
 
@@ -797,10 +798,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
         <AdminAlerts currentUser={currentUser} />
       )}
 
-      {/* ===== SALARY ===== */}
-      {activeTab === 'salary' && ha('salary_view') && (
-        <SalaryCalculator currentUser={currentUser} />
-      )}
+      {/* Salary removed */}
 
       {/* ===== ABOUT ===== */}
       {activeTab === 'about' && (
@@ -829,7 +827,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   'Device binding & security',
                   'Complete audit trail',
                   'Smart admin alerts',
-                  'Salary calculator',
+                  'GPS Live Map',
                 ].map((f, i) => (
                   <li key={i} className="flex items-center gap-2.5 text-slate-600 text-sm font-medium">
                     <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center shrink-0">

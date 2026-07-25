@@ -109,11 +109,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
     return days;
   }, [allRecords]);
 
-  // ✅ Leaderboard ranking
-  const ranking = useMemo(() =>
-    [...summaries].sort((a, b) => b.onTimePercentage - a.onTimePercentage),
-    [summaries]
-  );
+  // Leaderboard removed
 
   // ✅ OT Data — extracted from IIFE
   const otData = useMemo(() => {
@@ -269,46 +265,7 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
         ))}
       </div>
 
-      {/* ===== LEADERBOARD ===== */}
-      {isAdmin && ranking.length > 0 && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/30">
-            <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
-              <span>🏆</span> Performance Leaderboard
-              <span className="ml-auto text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                {format(new Date(selectedMonth.year, selectedMonth.month - 1), 'MMMM yyyy')}
-              </span>
-            </h3>
-          </div>
-          <div className="p-4 space-y-2">
-            {ranking.map((s, idx) => {
-              const medals = ['🥇', '🥈', '🥉'];
-              const barColor = idx === 0 ? 'bg-emerald-500' : idx === 1 ? 'bg-blue-500' : idx === 2 ? 'bg-amber-500' : 'bg-slate-300';
-              return (
-                <div key={s.employeeId} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${idx === 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-slate-100'}`}>
-                  <span className="text-lg w-7 text-center shrink-0">{medals[idx] || `${idx + 1}`}</span>
-                  <div className="w-9 h-9 bg-gradient-to-br from-[#1E40AF] to-[#2563EB] text-white rounded-xl flex items-center justify-center text-[10px] font-black shadow-md shadow-blue-500/20 shrink-0">
-                    {getInitials(s.employeeName)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-slate-800 text-sm font-bold truncate">{s.employeeName}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${s.onTimePercentage}%` }} />
-                      </div>
-                      <span className="text-[10px] font-black text-slate-500 shrink-0">{s.onTimePercentage}%</span>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-[#1E40AF] font-black text-sm">{s.totalHours.toFixed(0)}h</p>
-                    <p className="text-slate-400 text-[10px] font-bold">{s.presentDays}d present</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Leaderboard removed */}
 
       {/* ===== CHARTS ROW 1 ===== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
