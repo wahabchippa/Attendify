@@ -407,51 +407,96 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
           </div>
         </div>
 
-        {/* Access Control */}
+        {/* Access Control — Employee-centric view */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <SectionHeader
             icon={<svg className="w-4 h-4 text-[#1E40AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>}
             title="Access Control"
-            subtitle="Grant or revoke feature access per employee"
+            subtitle="Manage who can access what"
           />
-          <div className="p-5 space-y-3">
+          <div className="p-5">
             {(() => {
               const ac = getAccessControl();
-              const labels: Record<string, string> = {
-                ot: 'View Overtime', ai: 'AI Search', analytics: 'Analytics',
-                settings: 'Settings', pin_change: 'Change PINs', add_employee: 'Add Employee',
-                remove_employee: 'Remove Employee', timings: 'Employee Timings',
-                wfh_approve: 'Approve WFH', secret_override: 'Secret Override',
-                view_all: 'View All Data', leave_manage: 'Manage Leaves',
-                salary_view: 'View Salary', audit_view: 'View Audit Log',
-                alerts_view: 'View Alerts', device_manage: 'Device Management',
-                corrections_manage: 'Manage Corrections', notes_manage: 'Manager Notes',
-                gps_map: '🗺️ GPS Live Map', push_notifications: '🔔 Push Notifications',
-              };
-              return Object.keys(ac).map(feat => (
-                <div key={feat} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                  <h4 className="text-slate-700 text-xs font-black uppercase tracking-wider mb-3">{labels[feat] || feat}</h4>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {(ac[feat] || []).map(eid => {
-                      const emp = employees.find(e => e.id === eid);
-                      return (
-                        <span key={eid} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-200">
-                          {emp?.name || eid}
-                          <button onClick={() => { revokeAccess(eid, feat); refreshEmps(); }} className="text-red-400 hover:text-red-600 transition-colors">✕</button>
-                        </span>
-                      );
-                    })}
-                    {!(ac[feat] || []).length && <span className="text-slate-400 text-xs font-medium">No access granted</span>}
-                  </div>
-                  <select onChange={e => { if (e.target.value) { grantAccess(e.target.value, feat); refreshEmps(); e.target.value = ''; }}}
-                    className={`${selectCls} text-xs`} defaultValue="">
-                    <option value="">+ Grant access...</option>
-                    {employees.filter(e => !(ac[feat] || []).includes(e.id)).map(e => (
-                      <option key={e.id} value={e.id}>{e.name}</option>
-                    ))}
-                  </select>
+              const features = [
+                { key: 'settings', label: 'Settings', icon: '⚙️', desc: 'System configuration' },
+                { key: 'analytics', label: 'Analytics', icon: '📊', desc: 'Charts & reports' },
+                { key: 'ai', label: 'AI Search', icon: '🤖', desc: 'AI assistant access' },
+                { key: 'view_all', label: 'View All Data', icon: '👁️', desc: 'See all employee records' },
+                { key: 'gps_map', label: 'GPS Map', icon: '🗺️', desc: 'Live location tracking' },
+                { key: 'push_notifications', label: 'Push Alerts', icon: '🔔', desc: 'Send notifications' },
+                { key: 'wfh_approve', label: 'WFH Approve', icon: '🏠', desc: 'Approve WFH requests' },
+                { key: 'leave_manage', label: 'Leave Manage', icon: '📅', desc: 'Handle leave requests' },
+                { key: 'corrections_manage', label: 'Corrections', icon: '✏️', desc: 'Review corrections' },
+                { key: 'ot', label: 'Overtime', icon: '⏱️', desc: 'View overtime data' },
+                { key: 'add_employee', label: 'Add Employee', icon: '➕', desc: 'Create new employees' },
+                { key: 'remove_employee', label: 'Remove Employee', icon: '🗑️', desc: 'Delete employees' },
+                { key: 'pin_change', label: 'Change PINs', icon: '🔑', desc: 'Reset employee PINs' },
+                { key: 'timings', label: 'Timings', icon: '⏰', desc: 'Set office timings' },
+                { key: 'secret_override', label: 'Override Panel', icon: '🛡️', desc: 'Full record control' },
+                { key: 'audit_view', label: 'Audit Log', icon: '📋', desc: 'View system audit log' },
+                { key: 'alerts_view', label: 'Alerts', icon: '🚨', desc: 'View admin alerts' },
+              ];
+
+              return (
+                <div className="space-y-4">
+                  {/* Employee Cards */}
+                  {employees.map(emp => {
+                    const empFeatures = features.filter(f => (ac[f.key] || []).includes(emp.id));
+                    const missingFeatures = features.filter(f => !(ac[f.key] || []).includes(emp.id));
+                    const isAdmin = emp.role === 'admin';
+                    const isManager = emp.role === 'manager';
+
+                    return (
+                      <div key={emp.id} className="border border-slate-200 rounded-2xl overflow-hidden">
+                        {/* Employee Header */}
+                        <div className={`px-4 py-3 flex items-center gap-3 ${isAdmin ? 'bg-blue-50 border-b border-blue-100' : isManager ? 'bg-purple-50 border-b border-purple-100' : 'bg-slate-50 border-b border-slate-100'}`}>
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-[10px] font-black ${isAdmin ? 'bg-blue-600' : isManager ? 'bg-purple-600' : 'bg-slate-400'}`}>
+                            {getInitials(emp.name)}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-slate-800">{emp.name}</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase">{emp.role} • {empFeatures.length}/{features.length} features</p>
+                          </div>
+                          {isAdmin && <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-lg">FULL ACCESS</span>}
+                        </div>
+
+                        {/* Feature Grid */}
+                        <div className="p-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
+                            {features.map(feat => {
+                              const hasIt = (ac[feat.key] || []).includes(emp.id);
+                              return (
+                                <button
+                                  key={feat.key}
+                                  onClick={() => {
+                                    if (hasIt) revokeAccess(emp.id, feat.key);
+                                    else grantAccess(emp.id, feat.key);
+                                    refreshEmps();
+                                  }}
+                                  className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-[10px] font-bold border transition-all ${
+                                    hasIt
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+                                      : 'bg-slate-50 text-slate-400 border-slate-100 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
+                                  }`}
+                                  title={hasIt ? `Click to revoke: ${feat.label}` : `Click to grant: ${feat.label}`}
+                                >
+                                  <span className="text-sm">{feat.icon}</span>
+                                  <span className="truncate">{feat.label}</span>
+                                  {hasIt ? (
+                                    <span className="ml-auto text-emerald-500 shrink-0">✓</span>
+                                  ) : (
+                                    <span className="ml-auto text-slate-300 shrink-0">○</span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ));
+              );
             })()}
           </div>
         </div>
