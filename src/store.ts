@@ -102,16 +102,14 @@ const DEFAULT_LOCATIONS: OfficeLocation[] = [
 ];
 
 export function getOfficeLocations(): OfficeLocation[] {
-  const cached = cacheGet<OfficeLocation[]>('c_locations', []);
-  // If cached data is old format (no lat/lng) or has duplicates, reset to defaults
-  if (!cached || cached.length === 0 || !cached[0]?.lat) {
-    cacheSet('c_locations', DEFAULT_LOCATIONS);
-    return DEFAULT_LOCATIONS;
-  }
-  return cached;
+  // Admin settings stored separately so sync can never overwrite them
+  const adminEdited = cacheGet<OfficeLocation[]>('c_office_admin', []);
+  if (adminEdited && adminEdited.length > 0) return adminEdited;
+  return DEFAULT_LOCATIONS;
 }
 
 export async function saveOfficeLocations(locs: OfficeLocation[]): Promise<void> {
+  cacheSet('c_office_admin', locs);
   cacheSet('c_locations', locs);
   // Also save to Supabase so all devices get the update
   try {
