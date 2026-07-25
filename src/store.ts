@@ -152,15 +152,20 @@ async function syncLocations(): Promise<void> {
     if (!q) return;
     const { data } = await q.select('*');
     if (data && data.length > 0) {
-      const mapped = data.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        ip_address: r.ip_address,
-        is_active: r.is_active !== false,
-        lat: r.lat || null,
-        lng: r.lng || null,
-        radius: r.radius || 200,
-      }));
+      const mapped = data.map((r: any) => {
+        // Parse encoded format: "IP|LAT|LNG|RADIUS"
+        const parts = (r.ip_address || '').split('|');
+        const hasEncoded = parts.length >= 4;
+        return {
+          id: r.id,
+          name: r.name,
+          ip_address: hasEncoded ? parts[0] : r.ip_address,
+          is_active: r.is_active !== false,
+          lat: hasEncoded ? parseFloat(parts[1]) : (r.lat || null),
+          lng: hasEncoded ? parseFloat(parts[2]) : (r.lng || null),
+          radius: hasEncoded ? parseInt(parts[3]) : (r.radius || 200),
+        };
+      });
       cacheSet('c_locations', mapped);
     }
   } catch {}
