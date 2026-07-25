@@ -518,17 +518,6 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
         </div>
         );
       })()}
-more sessions
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
