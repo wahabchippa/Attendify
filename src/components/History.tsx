@@ -127,12 +127,13 @@ export default function History({ currentUser }: HistoryProps) {
 
   // Helper for weekly per-employee row
   const getWeeklyEmployeeData = () => {
-    const empIds = selectedEmployee === 'all'
-      ? [...new Set(weekRecords.map(r => r.employeeId))]
-      : [selectedEmployee];
-    // Also add employees with no records
+    let empIds: string[];
     if (selectedEmployee === 'all') {
-      attendanceEmps.forEach(e => { if (!empIds.includes(e.id)) empIds.push(e.id); });
+      // Show all attendance employees
+      empIds = attendanceEmps.map(e => e.id);
+    } else {
+      // ONLY the selected employee
+      empIds = [selectedEmployee];
     }
     return empIds.map(empId => ({
       empId,
@@ -211,10 +212,20 @@ export default function History({ currentUser }: HistoryProps) {
       {/* ═══════════════════════════════════════ */}
       {viewMode === 'daily' && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          {/* Selected Employee Banner */}
+          {selectedEmployee !== 'all' && (
+            <div className="px-4 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+              <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white text-[9px] font-black">
+                {getInitials(getEmpName(selectedEmployee))}
+              </div>
+              <p className="text-sm font-bold text-blue-800">{getEmpName(selectedEmployee)}</p>
+              <button onClick={() => setSelectedEmployee('all')} className="ml-auto text-[10px] font-bold text-blue-500 hover:text-blue-700 bg-blue-100 px-2 py-0.5 rounded">✕ Clear</button>
+            </div>
+          )}
           {dailyRecords.length === 0 ? (
             <div className="py-16 text-center">
               <div className="text-4xl mb-3">📭</div>
-              <p className="text-sm font-bold text-slate-400">No records for this day</p>
+              <p className="text-sm font-bold text-slate-400">{selectedEmployee !== 'all' ? `No records for ${getEmpName(selectedEmployee)}` : 'No records for this day'}</p>
               <p className="text-xs text-slate-300 mt-1">{format(currentDate, 'EEEE, dd MMMM yyyy')}</p>
             </div>
           ) : (

@@ -233,8 +233,8 @@ export default function App() {
     if (item.key === 'ai-search')  return hasAccess(currentUser.id, 'ai');
     if (item.key === 'analytics')  return hasAccess(currentUser.id, 'analytics');
     if (item.key === 'settings')       return hasAccess(currentUser.id, 'settings');
-    if (item.key === 'gps-map')        return hasAccess(currentUser.id, 'gps_map');
-    if (item.key === 'notifications')  return hasAccess(currentUser.id, 'push_notifications');
+    if (item.key === 'gps-map')        return currentUser.role === 'admin' || hasAccess(currentUser.id, 'gps_map');
+    if (item.key === 'notifications')  return currentUser.role === 'admin' || hasAccess(currentUser.id, 'push_notifications');
     if (item.key === 'leave')      return true;
     if (item.key === 'correction') return true;
     if (item.key === 'profile')    return true;
