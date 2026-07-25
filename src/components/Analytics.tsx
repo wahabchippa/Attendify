@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { Employee } from '../types';
 import { getAttendanceEmployees, getAttendanceRecords, getEmployeeTiming, getLocationFromIP } from '../store';
 import { generateEmployeeSummary } from '../aiSearch';
-import { format, subDays } from 'date-fns';
+import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from 'date-fns';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend
@@ -35,6 +35,8 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
   const [mounted, setMounted] = useState(false);
 
   // ✅ Fix: Month selector with navigation
+  const [otPeriod, setOtPeriod] = useState<'week'|'month'|'all'>('month');
+  const [otEmployee, setOtEmployee] = useState('all');
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() + 1 };
@@ -365,94 +367,152 @@ export default function Analytics({ currentUser }: AnalyticsProps) {
               <YAxis type="category" dataKey="name" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} width={55} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
-              <Bar dataKey="Total Hours" fill="#2563EB" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
+              <B      {isAdmin && (() => {
+        // OT data filtered by period and employee
+        const now = new Date();
+        const otStartDate = otPeriod === 'week' 
+          ? format(startOfWeek(now, {weekStartsOn:1}), 'yyyy-MM-dd')
+          : otPeriod === 'month'
+            ? format(startOfMonth(now), 'yyyy-MM-dd')
+            : '2000-01-01';
+        const otEndDate = format(now, 'yyyy-MM-dd');
 
-      {/* ===== OVERTIME DETAILS (Admin) ===== */}
-      {isAdmin && (
+        const filteredOT = getAttendanceEmployees()
+          .filter(emp => otEmployee === 'all' || emp.id === otEmployee)
+          .map(emp => {
+            const t = getEmployeeTiming(emp.id);
+            const recs = allRecords.filter(r => r.employeeId === emp.id && r.totalHours > 0 && r.date >= otStartDate && r.date <= otEndDate);
+            const otRecs = recs.filter(r => r.totalHours > t.minHoursForFullDay || r.notes?.includes('SUNDAY') || r.notes?.includes('HOLIDAY'));
+            const sundayOT = otRecs.filter(r => r.notes?.includes('SUNDAY')).reduce((s, r) => s + r.totalHours, 0);
+            const holidayOT = otRecs.filter(r => r.notes?.includes('HOLIDAY')).reduce((s, r) => s + r.totalHours, 0);
+            const regularOT = otRecs.filter(r => !r.notes?.includes('SUNDAY') && !r.notes?.includes('HOLIDAY'))
+              .reduce((s, r) => s + Math.max(0, r.totalHours - t.minHoursForFullDay), 0);
+            return { emp, otRecs, sundayOT: Math.round(sundayOT*100)/100, holidayOT: Math.round(holidayOT*100)/100, regularOT: Math.round(regularOT*100)/100, totalOT: Math.round((sundayOT+holidayOT+regularOT)*100)/100 };
+          }).filter(d => d.totalOT > 0);
+
+        const totalAllOT = Math.round(filteredOT.reduce((s,d) => s + d.totalOT, 0) * 100) / 100;
+
+        // Calendar data for the month
+        const calMonth = startOfMonth(now);
+        const calDays = eachDayOfInterval({ start: calMonth, end: endOfMonth(now) });
+        const calTargetEmp = otEmployee !== 'all' ? otEmployee : null;
+
+        return (
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-indigo-50">
-            <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
-              <span>⚡</span> Overtime Details
-              {otData.length > 0 && (
-                <span className="ml-auto bg-purple-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-                  {otData.length} employees
-                </span>
-              )}
-            </h3>
+          {/* Header */}
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
+                <span>⚡</span> Overtime Details
+              </h3>
+              {totalAllOT > 0 && <span className="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">Total: +{totalAllOT}h</span>}
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="px-5 py-3 border-b border-slate-100 flex flex-wrap items-center gap-2">
+            {/* Period */}
+            <div className="flex bg-slate-100 rounded-lg p-0.5 gap-0.5">
+              {(['week','month','all'] as const).map(p => (
+                <button key={p} onClick={() => setOtPeriod(p)}
+                  className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all capitalize ${otPeriod===p ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>
+                  {p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'All Time'}
+                </button>
+              ))}
+            </div>
+            {/* Employee */}
+            <select value={otEmployee} onChange={e => setOtEmployee(e.target.value)}
+              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-semibold focus:outline-none">
+              <option value="all">All Employees</option>
+              {getAttendanceEmployees().map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+            </select>
           </div>
 
           <div className="p-4">
-            {otData.length === 0 ? (
-              <div className="py-12 text-center">
-                <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-slate-400 font-bold text-sm">No overtime recorded</p>
-                <p className="text-slate-300 text-xs mt-1">Overtime will appear here when logged</p>
+            {filteredOT.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="text-3xl mb-2">⏱️</div>
+                <p className="text-slate-400 font-bold text-sm">No overtime for this period</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {otData.map(({ emp, otRecs, sundayOT, holidayOT, regularOT, totalOT }) => (
-                  <div key={emp.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-100 hover:border-purple-200 transition-all">
+              <div className="space-y-3">
+                {/* OT Calendar (when single employee selected) */}
+                {calTargetEmp && otPeriod === 'month' && (
+                  <div className="bg-purple-50 rounded-2xl p-3 border border-purple-100 mb-3">
+                    <p className="text-[10px] font-black text-purple-600 uppercase tracking-wider mb-2">{format(calMonth, 'MMMM yyyy')} — OT Calendar</p>
+                    <div className="grid grid-cols-7 gap-0.5 mb-1">
+                      {['S','M','T','W','T','F','S'].map((d,i) => <div key={i} className="text-center text-[8px] font-bold text-purple-400">{d}</div>)}
+                    </div>
+                    <div className="grid grid-cols-7 gap-0.5">
+                      {Array.from({length: calDays[0]?.getDay() || 0}).map((_,i) => <div key={`e${i}`} />)}
+                      {calDays.map(day => {
+                        const ds = format(day, 'yyyy-MM-dd');
+                        const t = getEmployeeTiming(calTargetEmp);
+                        const rec = allRecords.find(r => r.employeeId === calTargetEmp && r.date === ds && r.totalHours > 0);
+                        const hasOT = rec && (rec.totalHours > t.minHoursForFullDay || rec.notes?.includes('SUNDAY') || rec.notes?.includes('HOLIDAY'));
+                        const otHrs = hasOT ? (rec.notes?.includes('SUNDAY') || rec.notes?.includes('HOLIDAY') ? rec.totalHours : Math.max(0, rec.totalHours - t.minHoursForFullDay)) : 0;
+                        const isSun = day.getDay() === 0;
+                        return (
+                          <div key={ds} className={`aspect-square rounded-md flex flex-col items-center justify-center text-[9px] ${
+                            hasOT ? 'bg-purple-200 text-purple-800 font-black' : isSun ? 'bg-slate-100 text-slate-300' : 'bg-purple-50 text-purple-300'
+                          }`} title={hasOT ? `+${otHrs.toFixed(1)}h OT` : ''}>
+                            <span>{format(day,'d')}</span>
+                            {hasOT && <span className="text-[7px] font-black">+{otHrs.toFixed(1)}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Employee OT Cards */}
+                {filteredOT.map(({ emp, otRecs, sundayOT, holidayOT, regularOT, totalOT }) => (
+                  <div key={emp.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl flex items-center justify-center text-xs font-black shadow-md shadow-purple-500/20">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl flex items-center justify-center text-[10px] font-black">
                           {getInitials(emp.name)}
                         </div>
                         <div>
                           <p className="text-slate-800 font-bold text-sm">{emp.name}</p>
-                          <p className="text-slate-400 text-[10px] font-bold">{otRecs.length} OT session{otRecs.length !== 1 ? 's' : ''}</p>
+                          <p className="text-slate-400 text-[10px] font-bold">{otRecs.length} session{otRecs.length!==1?'s':''}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-purple-600 font-black text-xl">+{totalOT}h</p>
-                        <div className="flex flex-wrap gap-1.5 mt-1 justify-end">
-                          {sundayOT > 0 && (
-                            <span className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-lg border border-purple-200 font-bold">
-                              Sun: +{sundayOT}h
-                            </span>
-                          )}
-                          {holidayOT > 0 && (
-                            <span className="text-[10px] bg-pink-50 text-pink-600 px-2 py-0.5 rounded-lg border border-pink-200 font-bold">
-                              Holiday: +{holidayOT}h
-                            </span>
-                          )}
-                          {regularOT > 0 && (
-                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-lg border border-blue-200 font-bold">
-                              Regular: +{regularOT}h
-                            </span>
-                          )}
+                        <p className="text-purple-600 font-black text-lg">+{totalOT}h</p>
+                        <div className="flex flex-wrap gap-1 mt-0.5 justify-end">
+                          {sundayOT > 0 && <span className="text-[9px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-bold">Sun:{sundayOT}h</span>}
+                          {holidayOT > 0 && <span className="text-[9px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded font-bold">Hol:{holidayOT}h</span>}
+                          {regularOT > 0 && <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">Reg:{regularOT}h</span>}
                         </div>
                       </div>
                     </div>
-
-                    <div className="space-y-1.5">
-                      {otRecs.slice(0, 5).map(r => {
+                    {/* Session list */}
+                    <div className="space-y-1">
+                      {otRecs.map(r => {
                         const isSun = r.notes?.includes('SUNDAY');
                         const isHol = r.notes?.includes('HOLIDAY');
-                        const ot = (isSun || isHol)
-                          ? r.totalHours
-                          : Math.round((r.totalHours - getEmployeeTiming(emp.id).minHoursForFullDay) * 100) / 100;
+                        const ot = (isSun||isHol) ? r.totalHours : Math.round((r.totalHours-getEmployeeTiming(emp.id).minHoursForFullDay)*100)/100;
                         return (
-                          <div key={r.id} className="flex items-center justify-between text-xs bg-white rounded-xl px-3.5 py-2.5 border border-slate-100">
-                            <span className="text-slate-600 font-medium">{format(new Date(r.date), 'dd MMM (EEE)')}</span>
-                            <span className="text-slate-400 font-medium hidden sm:block">{getLocationFromIP(r.ipAddress)}</span>
-                            <span className="text-slate-500 font-medium">{r.totalHours.toFixed(1)}h worked</span>
-                            <span className={`font-black ${isSun ? 'text-purple-600' : isHol ? 'text-pink-600' : 'text-blue-600'}`}>
-                              +{ot}h {isSun ? '🌙' : isHol ? '🎉' : 'OT'}
+                          <div key={r.id} className="flex items-center justify-between text-[11px] bg-white rounded-xl px-3 py-2 border border-slate-100">
+                            <span className="text-slate-600 font-medium w-24">{format(new Date(r.date), 'dd MMM (EEE)')}</span>
+                            <span className="text-slate-400">{r.totalHours.toFixed(1)}h total</span>
+                            <span className={`font-black ${isSun?'text-purple-600':isHol?'text-pink-600':'text-blue-600'}`}>
+                              +{ot}h {isSun?'🌙':isHol?'🎉':'OT'}
                             </span>
                           </div>
                         );
                       })}
-                      {otRecs.length > 5 && (
-                        <p className="text-slate-400 text-xs text-center font-bold py-1">
-                          +{otRecs.length - 5} more sessions
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        );
+      })()}
+more sessions
                         </p>
                       )}
                     </div>
