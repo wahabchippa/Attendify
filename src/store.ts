@@ -367,11 +367,20 @@ export function getActiveRecord(empId: string): AttendanceRecord | undefined {
 }
 
 export async function addAttendanceRecord(record: AttendanceRecord): Promise<void> {
-  const records = getAttendanceRecords();
-  const exists = records.find(
-    r => r.id === record.id || (r.employeeId === record.employeeId && r.date === record.date)
+  let records = cacheGet<AttendanceRecord[]>('c_rec', []);
+  
+  // Check if a REAL check-in already exists (not auto-absent)
+  const existingReal = records.find(
+    r => (r.id === record.id || (r.employeeId === record.employeeId && r.date === record.date))
+      && r.checkIn !== null && r.status !== 'absent'
   );
-  if (exists) return;
+  if (existingReal) return; // Already checked in — don't duplicate
+  
+  // Remove any auto-absent record for this employee+date (so check-in can replace it)
+  records = records.filter(
+    r => !(r.employeeId === record.employeeId && r.date === record.date && r.status === 'absent')
+  );
+  
   records.push(record);
   cacheSet('c_rec', records);
 

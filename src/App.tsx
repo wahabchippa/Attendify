@@ -133,20 +133,27 @@ export default function App() {
       try {
         const parsedUser = JSON.parse(stored);
         // Sync & re-verify user session from database on mount to avoid stale localStorage permissions
+        // Use cached session — don't rely on Supabase for login verification
+        // (Supabase RLS can block queries and cause unwanted logouts)
+        setCurrentUser(parsedUser);
+        setCurrentAuditUser(parsedUser.id, parsedUser.name);
+        
+        // Try to refresh from Supabase in background (don't logout on failure)
         supabase
           .from('employees')
           .select('*')
           .eq('id', parsedUser.id)
           .single()
-          .then(({ data, error }) => {
+          .then(({ data, error }: any) => {
             if (data && !error) {
               setCurrentUser(data);
               localStorage.setItem('current_user_session', JSON.stringify(data));
               setCurrentAuditUser(data.id, data.name);
-            } else {
-              // If employee no longer exists or there is an error, clear session
-              handleLogout();
             }
+            // If error → keep using cached session, DON'T logout
+          })
+          .catch(() => {
+            // Network error — keep using cached session
           });
       } catch {
         handleLogout();
