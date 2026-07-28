@@ -236,8 +236,14 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
 
     await addAttendanceRecord(record);
     await syncAll();
+    const saved = getTodayRecord(currentUser.id) || getActiveRecord(currentUser.id);
+    if (!saved) {
+      setCheckingIn(false);
+      showNotif('error', 'Check-in save failed. Please try again.');
+      return;
+    }
     checkedInTodayRef.current = true;
-    setTodayRecord(record);
+    setTodayRecord(saved);
     setCheckingIn(false);
     const msg = isSunday ? `Sunday OT Check-in at ${loc}` : `Checked in at ${loc}`;
     showNotif('success', msg);
@@ -259,9 +265,14 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
         notes: `${record.notes} | Late Reason: ${reason}`,
       };
       await addAttendanceRecord(recordWithReason);
+      await syncAll();
+      const saved = getTodayRecord(currentUser.id) || getActiveRecord(currentUser.id);
+      if (!saved) {
+        throw new Error('Late check-in save failed');
+      }
       // ✅ Pehle UI update karo
       checkedInTodayRef.current = true;
-      setTodayRecord(recordWithReason);
+      setTodayRecord(saved);
       // ✅ Phir modal band karo
       setShowLateModal(false);
       setPendingCheckIn(null);
@@ -293,9 +304,14 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     }
     try {
       await addAttendanceRecord(record);
+      await syncAll();
+      const saved = getTodayRecord(currentUser.id) || getActiveRecord(currentUser.id);
+      if (!saved) {
+        throw new Error('Late check-in save failed');
+      }
       // ✅ Pehle UI update karo
       checkedInTodayRef.current = true;
-      setTodayRecord(record);
+      setTodayRecord(saved);
       // ✅ Phir modal band karo
       setShowLateModal(false);
       setPendingCheckIn(null);
@@ -362,9 +378,14 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
     let wifiVerified = true;
     if (!isInsideOffice) { wifiVerified = false; notes += ' | ⚠️ OUTSIDE OFFICE (Unverified)'; }
     const localISOString = getPKTISOString();
-    await updateAttendanceRecord(todayRecord.id, { checkOut: localISOString, totalHours, status, notes, wifiVerified, overtime_hours });
+    const ok = await updateAttendanceRecord(todayRecord.id, { checkOut: localISOString, totalHours, status, notes, wifiVerified, overtime_hours });
+    if (!ok) {
+      showNotif('error', 'Check-out save failed. Please try again.');
+      return;
+    }
     await syncAll();
-    setTodayRecord({ ...todayRecord, checkOut: localISOString, totalHours, status, notes, wifiVerified, overtime_hours });
+    const saved = getTodayRecord(currentUser.id) || getActiveRecord(currentUser.id) || { ...todayRecord, checkOut: localISOString, totalHours, status, notes, wifiVerified, overtime_hours };
+    setTodayRecord(saved as any);
     if (!isInsideOffice) setShowWarningModal(true);
     else showNotif('success', `Checked out! ${totalHours.toFixed(1)}h${otHours > 0 ? ` (OT: +${otHours}h)` : ''}`);
     loadTodayData();

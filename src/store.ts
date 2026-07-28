@@ -408,9 +408,16 @@ export async function addAttendanceRecord(record: AttendanceRecord): Promise<voi
   try {
     const q = table('attendance_logs');
     if (q) {
-      // NOTE: attendance_logs table does NOT have latitude/longitude columns.
+      // attendance_logs has no latitude/longitude columns.
       // GPS coords are saved separately in c_emp_locations for admin map.
-      await q.upsert({
+      const existingServer = await q
+        .select('id')
+        .eq('user_id', numericUserId)
+        .eq('date', record.date)
+        .limit(1)
+        .maybeSingle();
+
+      const payload = {
         user_id:            numericUserId,
         user_name:          emp?.name ?? 'Unknown',
         date:               record.date,
@@ -422,10 +429,18 @@ export async function addAttendanceRecord(record: AttendanceRecord): Promise<voi
         wifi_connected:     record.wifiVerified ? 'true' : 'false',
         notes:              record.notes || getLocationFromIP(record.ipAddress),
         verification_method: record.verification_method || 'gps',
-      });
+      };
+
+      if (existingServer?.data?.id) {
+        await q.update(payload).eq('id', existingServer.data.id);
+      } else {
+        await q.insert(payload);
+      }
       await syncRecords();
     }
-  } catch {}
+  } catch (e) {
+    console.error('addAttendanceRecord failed:', e);
+  }
 }
 
 export async function updateAttendanceRecord(
@@ -433,7 +448,17 @@ export async function updateAttendanceRecord(
   updates: Partial<AttendanceRecord>
 ): Promise<boolean> {
   const records = getAttendanceRecords();
-  const idx = records.findIndex(r => String(r.id) === String(id));
+  let idx = records.findIndex(r => String(r.id) === String(id));
+
+  // Fallback: local optimistic ID like emp-001-2026-07-28 may have become numeric after sync
+  if (idx === -1 && typeof id === 'string' && id.startsWith('emp-')) {
+    const parts = id.split('-');
+    if (parts.length >= 5) {
+      const empId = `${parts[0]}-${parts[1]}`;
+      const date = `${parts[2]}-${parts[3]}-${parts[4]}`;
+      idx = records.findIndex(r => r.employeeId === empId && r.date === date);
+    }
+  }
 
   if (idx === -1) {
     console.error('updateAttendanceRecord: not found —', id);
