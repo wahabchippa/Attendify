@@ -408,6 +408,8 @@ export async function addAttendanceRecord(record: AttendanceRecord): Promise<voi
   try {
     const q = table('attendance_logs');
     if (q) {
+      // NOTE: attendance_logs table does NOT have latitude/longitude columns.
+      // GPS coords are saved separately in c_emp_locations for admin map.
       await q.upsert({
         user_id:            numericUserId,
         user_name:          emp?.name ?? 'Unknown',
@@ -420,8 +422,6 @@ export async function addAttendanceRecord(record: AttendanceRecord): Promise<voi
         wifi_connected:     record.wifiVerified ? 'true' : 'false',
         notes:              record.notes || getLocationFromIP(record.ipAddress),
         verification_method: record.verification_method || 'gps',
-        latitude:           record.latitude || null,
-        longitude:          record.longitude || null,
       });
       await syncRecords();
     }
