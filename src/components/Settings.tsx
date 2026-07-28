@@ -426,7 +426,6 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
               {key:'analytics',label:'Analytics',icon:'📊'},
               {key:'ai',label:'AI',icon:'🤖'},
               {key:'view_all',label:'View All',icon:'👁️'},
-              {key:'gps_map',label:'GPS Map',icon:'🗺️'},
               {key:'push_notifications',label:'Alerts',icon:'🔔'},
               {key:'wfh_approve',label:'WFH',icon:'🏠'},
               {key:'leave_manage',label:'Leaves',icon:'📅'},
@@ -983,7 +982,7 @@ export default function Settings({ currentUser, onLogout }: SettingsProps) {
                   'Device binding & security',
                   'Complete audit trail',
                   'Smart admin alerts',
-                  'GPS Live Map',
+                  'Attendance System',
                 ].map((f, i) => (
                   <li key={i} className="flex items-center gap-2.5 text-slate-600 text-sm font-medium">
                     <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center shrink-0">

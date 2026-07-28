@@ -39,8 +39,6 @@ export interface AttendanceRecord {
   notes?: string;
   selfie_url?: string | null;        // 🆕 Selfie proof
   verification_method?: string;      // 🆕 'gps' | 'ip' | 'manual'
-  latitude?: number | null;
-  longitude?: number | null;
 }
 
 // =============================================

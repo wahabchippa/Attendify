@@ -346,8 +346,6 @@ async function syncRecords(): Promise<void> {
         ipAddress:         resolveIPFromNotes(r.notes),
         notes:             r.notes || '',
         verification_method: r.verification_method || null,
-        latitude:           r.latitude || null,
-        longitude:          r.longitude || null,
       }));
       cacheSet('c_rec', deduplicateRecords(mapped));
     }
@@ -384,19 +382,6 @@ export async function addAttendanceRecord(record: AttendanceRecord): Promise<voi
   records.push(record);
   cacheSet('c_rec', records);
 
-  // 🆕 Save GPS location silently for admin map
-  if (record.latitude && record.longitude) {
-    const emp = getEmployees().find(e => e.id === record.employeeId);
-    saveEmployeeLocation({
-      empId: record.employeeId,
-      name: emp?.name || 'Unknown',
-      latitude: record.latitude,
-      longitude: record.longitude,
-      timestamp: record.checkIn || getPKTISOString(),
-      status: record.status,
-    });
-  }
-
   // 🆕 Audit log
   await addAuditLog('check_in', record.employeeId,
     `Checked in at ${getLocationFromIP(record.ipAddress)}`,
@@ -408,7 +393,6 @@ export async function addAttendanceRecord(record: AttendanceRecord): Promise<voi
   try {
     const q = table('attendance_logs');
     if (q) {
-      // attendance_logs has no latitude/longitude columns.
       // GPS coords are saved separately in c_emp_locations for admin map.
       const existingServer = await q
         .select('id')
@@ -736,7 +720,6 @@ const DEFAULT_ACCESS: Record<string, string[]> = {
   device_manage: ['emp-001', 'emp-005'],       // 🆕
   corrections_manage: ['emp-001', 'emp-005'],  // 🆕
   notes_manage: ['emp-001', 'emp-005'],
-  gps_map: ['emp-001', 'emp-005'],
   push_notifications: ['emp-001', 'emp-005'],        // 🆕
 };
 
@@ -750,7 +733,7 @@ export function getAccessControl(): Record<string, string[]> {
     'secret_override', 'view_all', 'leave_manage', 'salary_view',
     'audit_view', 'alerts_view', 'device_manage',
     'corrections_manage', 'notes_manage',
-    'gps_map', 'push_notifications',
+    'push_notifications',
   ];
 
   const merged: Record<string, string[]> = { ...cached };
@@ -1714,7 +1697,6 @@ export async function syncAll(): Promise<void> {
       syncSalaryConfigs(),
       syncNotifications(),
     ]);
-    updateLocationsFromRecords();
     // Auto-mark absents after every sync (so they survive sync overwrites)
     markAbsentsLocally();
   } catch {}

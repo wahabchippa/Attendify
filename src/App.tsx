@@ -18,9 +18,8 @@ import { useLocationPermission } from './hooks/useLocationPermission';
 import LocationPermissionDialog from './components/LocationPermissionDialog';
 import NotificationBell from './components/NotificationBell';
 import WeatherWidget from './components/WeatherWidget';
-import GPSLiveMap from './components/GPSLiveMap';
 import PushNotifications from './components/PushNotifications';
-type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile' | 'gps-map' | 'notifications';
+type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile' | 'notifications';
 
 const getInitials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
@@ -90,11 +89,6 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
     ),
   },
   {
-    key: 'gps-map',
-    label: 'GPS Map',
-    icon: (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>),
-  },
-  {
     key: 'notifications',
     label: 'Alerts',
     icon: (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>),
@@ -124,41 +118,20 @@ export default function App() {
   const navTimeoutRef = import.meta.env.VITE_SUPABASE_URL ? { current: null as any } : { current: null }; // Quick ref holder to clear active transition timeouts
 
   useEffect(() => {
-    initializeApp().finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
+    // Step 1: Restore session from localStorage FIRST (instant, no network)
     const stored = localStorage.getItem('current_user_session');
     if (stored) {
       try {
         const parsedUser = JSON.parse(stored);
-        // Sync & re-verify user session from database on mount to avoid stale localStorage permissions
-        // Use cached session — don't rely on Supabase for login verification
-        // (Supabase RLS can block queries and cause unwanted logouts)
         setCurrentUser(parsedUser);
         setCurrentAuditUser(parsedUser.id, parsedUser.name);
-        
-        // Try to refresh from Supabase in background (don't logout on failure)
-        supabase
-          .from('employees')
-          .select('*')
-          .eq('id', parsedUser.id)
-          .single()
-          .then(({ data, error }: any) => {
-            if (data && !error) {
-              setCurrentUser(data);
-              localStorage.setItem('current_user_session', JSON.stringify(data));
-              setCurrentAuditUser(data.id, data.name);
-            }
-            // If error → keep using cached session, DON'T logout
-          })
-          .catch(() => {
-            // Network error — keep using cached session
-          });
       } catch {
-        handleLogout();
+        localStorage.removeItem('current_user_session');
       }
     }
+
+    // Step 2: Initialize app (sync data from Supabase)
+    initializeApp().finally(() => setLoading(false));
   }, []);
 
   const handleLogin = (employee: Employee) => {
@@ -240,7 +213,6 @@ export default function App() {
     if (item.key === 'ai-search')  return hasAccess(currentUser.id, 'ai');
     if (item.key === 'analytics')  return hasAccess(currentUser.id, 'analytics');
     if (item.key === 'settings')       return hasAccess(currentUser.id, 'settings');
-    if (item.key === 'gps-map')        return currentUser.role === 'admin';
     if (item.key === 'notifications')  return currentUser.role === 'admin' || hasAccess(currentUser.id, 'push_notifications');
     if (item.key === 'leave')      return true;
     if (item.key === 'correction') return true;
@@ -398,7 +370,6 @@ export default function App() {
             {currentPage === 'leave'      && <LeaveManagement  currentUser={currentUser} />}
             {currentPage === 'correction' && <CorrectionRequest currentUser={currentUser} />}
             {currentPage === 'profile'       && <EmployeeProfile    currentUser={currentUser} />}
-            {currentPage === 'gps-map'       && <GPSLiveMap         currentUser={currentUser} />}
             {currentPage === 'notifications' && <PushNotifications  currentUser={currentUser} />}
           </div>
         </main>

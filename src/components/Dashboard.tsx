@@ -218,7 +218,6 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
       date: localDate, checkIn: localISOString, checkOut: null,
       status: isLate ? 'late' : 'present', totalHours: 0, wifiVerified: true,
       ipAddress: result.ipAddress, notes: isSunday ? `SUNDAY OT | ${loc}` : loc,
-      latitude: result.latitude || null, longitude: result.longitude || null,
     };
 
     if (isLate && !isSunday) {
