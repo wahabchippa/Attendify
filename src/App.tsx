@@ -109,7 +109,13 @@ export default function App() {
   const { updateRequired, updateInfo } = useAppUpdate();
   const { status, showSettingsDialog, checkPermission, openAppSettings } = useLocationPermission();
 
-  const [currentUser, setCurrentUser]       = useState<Employee | null>(null);
+  const [currentUser, setCurrentUser]       = useState<Employee | null>(() => {
+    try {
+      const stored = localStorage.getItem('current_user_session');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return null;
+  });
   const [currentPage, setCurrentPage]       = useState<Page>('dashboard');
   const [sidebarOpen, setSidebarOpen]       = useState(false);
   const [loading, setLoading]               = useState(true);
@@ -118,19 +124,11 @@ export default function App() {
   const navTimeoutRef = import.meta.env.VITE_SUPABASE_URL ? { current: null as any } : { current: null }; // Quick ref holder to clear active transition timeouts
 
   useEffect(() => {
-    // Step 1: Restore session from localStorage FIRST (instant, no network)
-    const stored = localStorage.getItem('current_user_session');
-    if (stored) {
-      try {
-        const parsedUser = JSON.parse(stored);
-        setCurrentUser(parsedUser);
-        setCurrentAuditUser(parsedUser.id, parsedUser.name);
-      } catch {
-        localStorage.removeItem('current_user_session');
-      }
+    // Set audit user from initial session
+    if (currentUser) {
+      setCurrentAuditUser(currentUser.id, currentUser.name);
     }
-
-    // Step 2: Initialize app (sync data from Supabase)
+    // Initialize app (sync data from Supabase)
     initializeApp().finally(() => setLoading(false));
   }, []);
 
