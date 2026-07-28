@@ -18,8 +18,9 @@ import { useLocationPermission } from './hooks/useLocationPermission';
 import LocationPermissionDialog from './components/LocationPermissionDialog';
 import NotificationBell from './components/NotificationBell';
 import WeatherWidget from './components/WeatherWidget';
+import GPSLiveMap from './components/GPSLiveMap';
 import PushNotifications from './components/PushNotifications';
-type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile' | 'notifications';
+type Page = 'dashboard' | 'history' | 'ai-search' | 'analytics' | 'settings' | 'leave' | 'correction' | 'profile' | 'gps-map' | 'notifications';
 
 const getInitials = (name: string) =>
   name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
@@ -85,6 +86,16 @@ const NAV_ITEMS: { key: Page; label: string; icon: React.ReactNode }[] = [
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'gps-map',
+    label: 'GPS Map',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
       </svg>
     ),
   },
@@ -211,6 +222,7 @@ export default function App() {
     if (item.key === 'ai-search')  return hasAccess(currentUser.id, 'ai');
     if (item.key === 'analytics')  return hasAccess(currentUser.id, 'analytics');
     if (item.key === 'settings')       return hasAccess(currentUser.id, 'settings');
+    if (item.key === 'gps-map')        return currentUser.role === 'admin';
     if (item.key === 'notifications')  return currentUser.role === 'admin' || hasAccess(currentUser.id, 'push_notifications');
     if (item.key === 'leave')      return true;
     if (item.key === 'correction') return true;
